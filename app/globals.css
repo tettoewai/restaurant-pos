@@ -2,32 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+.bg-secondary {
+  background-color: #ff6565;
+}
+.side-active {
+  border: 1px solid #ff6565;
+}
+.secondary-color {
+  color: #ff6565;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+.top-bar {
+  overflow: hidden;
+  width: 100%;
+  height: 64px;
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 2px;
+}
+.loadingDiv {
+  background-image: conic-gradient(red 20deg, transparent 120deg);
+  height: 2300%;
+  width: 150%;
+  position: absolute;
+  left: -20%;
+  top: -1100%;
+  animation: rotate 2s infinite linear;
+}
+@keyframes rotate {
+  100% {
+    transform: rotate(-360deg);
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
 }
