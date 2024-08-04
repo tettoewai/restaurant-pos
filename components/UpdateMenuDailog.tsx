@@ -20,7 +20,7 @@ import MultipleSelector from "./MultipleSelector";
 
 interface Props {
   id: number;
-  menuCategory: MenuCategory[];
+  menuCategory?: MenuCategory[];
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
@@ -51,18 +51,6 @@ export default function UpdateMenuDialog({
     getPrevMenu();
   }, [isOpen, id]);
   const formRef = useRef<HTMLFormElement>(null);
-  const closeModal = () => {
-    onClose();
-    setMenuImage(null);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    if (formRef.current) {
-      formRef.current.reset();
-      setSelectedCategory(new Set([]));
-    }
-  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -79,7 +67,6 @@ export default function UpdateMenuDialog({
     const { message, isSuccess } = await updateMenu({ formData });
     if (isSuccess) {
       toast.success(message);
-      closeModal();
     } else {
       toast.error(message);
     }
@@ -129,7 +116,7 @@ export default function UpdateMenuDialog({
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                       <span className="truncate ...">{prevData.assetUrl}</span>
                       <IoMdClose
-                        className="text-red-500 size-7 cursor-pointer"
+                        className="text-primary size-7 cursor-pointer"
                         onClick={() => {
                           setPrevData({ ...prevData, assetUrl: "" });
                           setMenuImage(null);
@@ -140,7 +127,7 @@ export default function UpdateMenuDialog({
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                       <span className="truncate ...">{menuImage.name}</span>
                       <IoMdClose
-                        className="text-red-500 size-7 cursor-pointer"
+                        className="text-primary size-7 cursor-pointer"
                         onClick={() => setMenuImage(null)}
                       />
                     </div>
@@ -163,7 +150,7 @@ export default function UpdateMenuDialog({
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                   >
-                    Create
+                    Update
                   </Button>
                 </ModalFooter>
               </form>

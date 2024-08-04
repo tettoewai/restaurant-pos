@@ -15,7 +15,7 @@ export const FullScreenButton = () => {
     <>
       {isFullScreen ? (
         <GoScreenNormal
-          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1"
+          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
           onClick={() => {
             screenfull.isEnabled && screenfull.exit();
             setIsFullScreen(false);
@@ -23,7 +23,7 @@ export const FullScreenButton = () => {
         />
       ) : (
         <GoScreenFull
-          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1"
+          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
           onClick={() => {
             screenfull.isEnabled && screenfull.request();
             setIsFullScreen(true);

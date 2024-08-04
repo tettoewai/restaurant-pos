@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction } from "react";
 interface Props {
   selectedList: Set<string>;
   setSelectedList: Dispatch<SetStateAction<Set<string>>>;
-  list: MenuCategory[];
+  list?: MenuCategory[];
   isRequired: boolean;
 }
 
@@ -23,6 +23,7 @@ export default function MultipleSelector({
       setSelectedList(new Set(e.target.value.split(",")));
     }
   };
+  if (!list) return;
   return (
     <div>
       <Select

@@ -7,9 +7,9 @@ import {
 } from "react-icons/io";
 import { IoMenu } from "react-icons/io5";
 import { FullScreenButton } from "./FullScreenButton";
-import ModeButton from "./ModeButton";
 import UserProfile from "./UserProfile";
 import { Button } from "@nextui-org/react";
+import { ModeButton } from "./Buttons";
 interface Props {
   sideBarOpen: boolean;
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -21,7 +21,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
         <div className="flex items-center space-x-3">
           <button
             type="button"
-            className="flex lg:hidden w-10 h-10 cursor-pointer m-1 items-center p-1 text-red-500"
+            className="flex lg:hidden w-10 h-10 cursor-pointer m-1 items-center p-1 text-primary"
             onClick={() => setSideBarOpen(!sideBarOpen)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -33,7 +33,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
           </button>
           <button
             type="button"
-            className="hidden lg:flex w-10 h-10 cursor-pointer m-1 items-center p-2 text-red-500"
+            className="hidden lg:flex w-10 h-10 cursor-pointer m-1 items-center p-2 text-primary"
             onClick={() => {
               setSideBarOpen(!sideBarOpen);
             }}
@@ -49,7 +49,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
         </div>
         <div className="flex h-full items-center mr-2">
           <FullScreenButton />
-          <IoIosNotifications className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1" />
+          <IoIosNotifications className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1" />
           <ModeButton />
           <UserProfile />
         </div>

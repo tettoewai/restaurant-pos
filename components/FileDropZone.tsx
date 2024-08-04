@@ -25,7 +25,7 @@ function FileDropZone({ onDrop, maxSize = 3000000 }: Props) {
         <p>Drag and drop some files here, or click to select files</p>
       )}
       {fileRejections.length > 0 && (
-        <div className="text-red-500">
+        <div className="text-primary">
           {fileRejections.map(({ file, errors }) => (
             <div key={file.name}>
               {errors.map((e) => (

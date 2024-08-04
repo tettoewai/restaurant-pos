@@ -1,6 +1,5 @@
 "use client";
 import {
-  Button,
   cn,
   Dropdown,
   DropdownItem,
@@ -9,19 +8,31 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { MenuCategory } from "@prisma/client";
-import { useState } from "react";
 import { IoMdMore } from "react-icons/io";
-import UpdateMenuDialog from "./UpdateMenuDailog";
 import { MdDelete, MdEdit } from "react-icons/md";
+import DeleteMenuDialog from "./DeleteMenuDailog";
+import UpdateMenuDialog from "./UpdateMenuDailog";
 
 interface Props {
   id: number;
-  itemType: "menu";
-  categories: MenuCategory[];
+  itemType: "menu" | "menuCategory";
+  categories?: MenuCategory[];
 }
 
 export default function MoreOptionButton({ id, itemType, categories }: Props) {
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const {
+    isOpen: isUpdateOpen,
+    onOpen: onUpdateOpen,
+    onOpenChange: onUpdateOpenChange,
+    onClose: onUpdateClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onOpenChange: onDeleteOpenChange,
+    onClose: onDeleteClose,
+  } = useDisclosure();
   const iconClasses =
     "text-xl text-default-500 pointer-events-none flex-shrink-0";
   return (
@@ -36,26 +47,33 @@ export default function MoreOptionButton({ id, itemType, categories }: Props) {
           <DropdownItem
             key="edit"
             endContent={<MdEdit className={iconClasses} />}
-            onClick={onOpen}
+            onClick={onUpdateOpen}
           >
-            Edit file
+            Edit
           </DropdownItem>
           <DropdownItem
             key="delete"
             className="text-danger"
             color="danger"
             endContent={<MdDelete className={cn(iconClasses, "text-danger")} />}
+            onClick={onDeleteOpen}
           >
-            Delete file
+            Delete
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
       <UpdateMenuDialog
         id={id}
         menuCategory={categories}
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        onClose={onClose}
+        isOpen={isUpdateOpen}
+        onOpenChange={onUpdateOpenChange}
+        onClose={onUpdateClose}
+      />
+      <DeleteMenuDialog
+        id={id}
+        onClose={onDeleteClose}
+        onOpenChange={onDeleteOpenChange}
+        isOpen={isDeleteOpen}
       />
     </>
   );

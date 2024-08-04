@@ -1,11 +1,14 @@
 "use client";
 
+import { DropdownItem, useDisclosure } from "@nextui-org/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GoScreenFull, GoScreenNormal } from "react-icons/go";
-import { MdDarkMode, MdLightMode } from "react-icons/md";
+import { MdDarkMode, MdEdit, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
+import UpdateMenuDialog from "./UpdateMenuDailog";
+import { MenuCategory } from "@prisma/client";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
@@ -18,7 +21,7 @@ export const FullScreenButton = () => {
     <>
       {isFullScreen ? (
         <GoScreenNormal
-          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1"
+          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
           onClick={() => {
             screenfull.isEnabled && screenfull.exit();
             setIsFullScreen(false);
@@ -26,7 +29,7 @@ export const FullScreenButton = () => {
         />
       ) : (
         <GoScreenFull
-          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1"
+          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
           onClick={() => {
             screenfull.isEnabled && screenfull.request();
             setIsFullScreen(true);
@@ -37,18 +40,18 @@ export const FullScreenButton = () => {
   );
 };
 
-function ModeButton() {
+export function ModeButton() {
   const { setTheme, resolvedTheme } = useTheme();
   return (
     <>
       {resolvedTheme === "dark" ? (
         <MdDarkMode
-          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1"
+          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
           onClick={() => setTheme("light")}
         />
       ) : (
         <MdLightMode
-          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-red-500 p-1"
+          className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
           onClick={() => setTheme("dark")}
         />
       )}
@@ -56,4 +59,7 @@ function ModeButton() {
   );
 }
 
-export default ModeButton;
+interface EditProps {
+  id: number;
+  categories?: MenuCategory[];
+}

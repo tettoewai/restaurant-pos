@@ -6,21 +6,18 @@ import { getServerSession } from "next-auth";
 import { Suspense } from "react";
 
 const Menu = async () => {
-  const session = await getServerSession();
-  const userEmail = session?.user?.email;
-  if (!userEmail) return;
   const menus = await fetchMenus();
   const menuCategory = await fetchMenuCategory();
   return (
     <div>
       <div className="w-full flex justify-between items-center">
-        <div>
-          <span>Menu</span>
-          <span>Manage your menus</span>
+        <div className="flex flex-col pl-4">
+          <span className="text-primary">Menu</span>
+          <span className="text-sm text-gray-600">Manage your menus</span>
         </div>
         <NewMenuDialog menuCategory={menuCategory} />
       </div>
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap mt-2">
         {menus.map((item, index) => (
           <Suspense key={index} fallback={<MenuLoading />}>
             <MenuCard

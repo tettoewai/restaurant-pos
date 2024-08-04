@@ -38,7 +38,7 @@ export async function fetchMenuCategory() {
   try {
     const company = await fetchCompany();
     const menuCategory = await prisma.menuCategory.findMany({
-      where: { companyId: company?.id },
+      where: { companyId: company?.id, isArchived: false },
       orderBy: { id: "asc" },
     });
     return menuCategory;
@@ -86,7 +86,7 @@ export async function fetchMenus() {
     const menuCategoryMenus = await fetchMenuCategoryMenu();
     const menuCategoryMenuIds = menuCategoryMenus.map((item) => item.menuId);
     const menus = await prisma.menu.findMany({
-      where: { id: { in: menuCategoryMenuIds } },
+      where: { id: { in: menuCategoryMenuIds }, isArchived: false },
       orderBy: { id: "asc" },
     });
     return menus;

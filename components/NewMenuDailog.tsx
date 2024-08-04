@@ -66,7 +66,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
     <div className="relative">
       <Button
         onPress={onOpen}
-        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
+        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
         New Menu
       </Button>
@@ -110,7 +110,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                       <span className="truncate ...">{menuImage.name}</span>
                       <IoMdClose
-                        className="text-red-500 size-7 cursor-pointer"
+                        className="text-primary size-7 cursor-pointer"
                         onClick={() => setMenuImage(null)}
                       />
                     </div>

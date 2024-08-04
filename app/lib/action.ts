@@ -116,6 +116,23 @@ export async function updateMenu({ formData }: Props) {
     };
   }
 }
+
+export async function DeleteMenu(id: number) {
+  try {
+    await prisma.menu.update({
+      where: { id: id },
+      data: { isArchived: true },
+    });
+    revalidatePath("/backoffice/menu");
+    return { message: "Deleted menu successfully.", isSuccess: true };
+  } catch (error) {
+    return {
+      message: "Something went wrong while deleting menu",
+      isSuccess: false,
+    };
+  }
+}
+
 export async function deletImage(id: number) {
   try {
     const menu = await prisma.menu.update({

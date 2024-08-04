@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
-import MoreOptionButoon from "./MoreOptionButton";
+import MoreOptionButton from "./MoreOptionButton";
 import { fetchMenuCategory, fetchMenuCategoryMenu } from "@/app/lib/data";
 import { getServerSession } from "next-auth";
 import { MenuCategory } from "@prisma/client";
@@ -25,7 +25,7 @@ export default async function MenuCard({ id, name, image, price }: Props) {
   return (
     <Card className="bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden">
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
-        <MoreOptionButoon id={id} itemType="menu" categories={categories} />
+        <MoreOptionButton id={id} itemType="menu" categories={categories} />
       </div>
       <div className="flex justify-center items-center h-[57%] w-full">
         <Image
@@ -39,18 +39,18 @@ export default async function MenuCard({ id, name, image, price }: Props) {
       <p className="mt-2 truncate ...">{name}</p>
       {price && (
         <div className="flex items-center mt-1 mb-1">
-          <MdAttachMoney className="text-xl  text-red-500" />
+          <MdAttachMoney className="text-xl text-primary" />
           <p>{price}</p>
         </div>
       )}
       <div className="space-x-1">
         {menuCategory.slice(0, 2).map((item, index) => (
-          <Chip variant="faded" color="danger" size="sm" key={item.id}>
+          <Chip variant="bordered" size="sm" key={item.id}>
             {item.name}
           </Chip>
         ))}
         {menuCategory.length > 2 && (
-          <Chip variant="faded" color="danger" size="sm">
+          <Chip variant="light" color="danger" size="sm">
             ....
           </Chip>
         )}

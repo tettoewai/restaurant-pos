@@ -37,7 +37,6 @@ export default function UserProfile() {
             <p className="text-sm">{user.name}</p>
             <p className="text-sm">{user.email}</p>
           </div>
-          <Button onClick={() => signOut()}>Sign Out</Button>
         </>
       ) : null}
     </div>

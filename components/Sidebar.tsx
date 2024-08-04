@@ -54,7 +54,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
         {sideBarItem.map((item, index) => {
           const isActive = pathName === item.route;
           return (
-            <li key={index} className="m-2 relative hover:text-red-500">
+            <li key={index} className="m-2 relative hover:text-primary">
               <Link
                 href={item.route}
                 onClick={() => setSideBarOpen(false)}
@@ -63,7 +63,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                   {
                     "pl-2": sideBarOpen,
                     "justify-center border max-lg:border-none": !sideBarOpen,
-                    "border-red-700 border text-red-500 bg-gray-100 dark:bg-gray-800":
+                    "border-red-700 border text-primary bg-gray-100 dark:bg-gray-800":
                       isActive,
                     border: !isActive,
                   }

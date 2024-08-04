@@ -1,12 +1,12 @@
 import { Providers } from "@/components/Providers";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { Inter } from "next/font/google";
+import { Ubuntu } from "next/font/google";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 import { createDefaultData, fetchUser } from "./lib/data";
 
-const inter = Inter({ subsets: ["latin"] });
+const lato = Ubuntu({ subsets: ["latin"], weight: "500" });
 
 export const metadata: Metadata = {
   title: "Restaurant-pos",
@@ -28,7 +28,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={lato.className}>
         <Providers>{children}</Providers>
       </body>
     </html>
