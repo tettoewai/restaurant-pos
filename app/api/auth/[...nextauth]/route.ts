@@ -10,7 +10,9 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-
+  pages: {
+    signIn: "/login", // Specify the path to your custom sign-in page
+  },
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
