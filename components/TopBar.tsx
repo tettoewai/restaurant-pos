@@ -9,6 +9,7 @@ import { IoMenu } from "react-icons/io5";
 import { FullScreenButton } from "./FullScreenButton";
 import ModeButton from "./ModeButton";
 import UserProfile from "./UserProfile";
+import { Button } from "@nextui-org/react";
 interface Props {
   sideBarOpen: boolean;
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;

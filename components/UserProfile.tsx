@@ -1,7 +1,8 @@
 "use client";
 import { fetchUser } from "@/app/lib/data";
+import { Button } from "@nextui-org/react";
 import { User } from "@prisma/client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -36,6 +37,7 @@ export default function UserProfile() {
             <p className="text-sm">{user.name}</p>
             <p className="text-sm">{user.email}</p>
           </div>
+          <Button onClick={() => signOut()}>Sign Out</Button>
         </>
       ) : null}
     </div>
