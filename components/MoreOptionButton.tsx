@@ -12,6 +12,9 @@ import { IoMdMore } from "react-icons/io";
 import { MdDelete, MdEdit } from "react-icons/md";
 import DeleteMenuDialog from "./DeleteMenuDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
+import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
+import { ReactNode } from "react";
+import DeleteMenuCategoryDialog from "./DeleteMenuCategoryDailog";
 
 interface Props {
   id: number;
@@ -37,7 +40,7 @@ export default function MoreOptionButton({ id, itemType, categories }: Props) {
     "text-xl text-default-500 pointer-events-none flex-shrink-0";
   return (
     <>
-      <Dropdown>
+      <Dropdown className="bg-background">
         <DropdownTrigger>
           <button className="bg-background rounded-md bg-opacity-40 outline-none">
             <IoMdMore className="size-7" />
@@ -62,19 +65,38 @@ export default function MoreOptionButton({ id, itemType, categories }: Props) {
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
-      <UpdateMenuDialog
-        id={id}
-        menuCategory={categories}
-        isOpen={isUpdateOpen}
-        onOpenChange={onUpdateOpenChange}
-        onClose={onUpdateClose}
-      />
-      <DeleteMenuDialog
-        id={id}
-        onClose={onDeleteClose}
-        onOpenChange={onDeleteOpenChange}
-        isOpen={isDeleteOpen}
-      />
+      {itemType === "menu" ? (
+        <>
+          <UpdateMenuDialog
+            id={id}
+            menuCategory={categories}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+          />
+          <DeleteMenuDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+          />
+        </>
+      ) : itemType === "menuCategory" ? (
+        <>
+          <UpdateMenuCategoryDialog
+            id={id}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+          />
+          <DeleteMenuCategoryDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+          />
+        </>
+      ) : null}
     </>
   );
 }

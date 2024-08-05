@@ -67,6 +67,7 @@ export default function UpdateMenuDialog({
     const { message, isSuccess } = await updateMenu({ formData });
     if (isSuccess) {
       toast.success(message);
+      onClose();
     } else {
       toast.error(message);
     }
@@ -78,6 +79,7 @@ export default function UpdateMenuDialog({
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
+        placement="center"
       >
         <ModalContent>
           {(onClose) => (
@@ -116,7 +118,7 @@ export default function UpdateMenuDialog({
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                       <span className="truncate ...">{prevData.assetUrl}</span>
                       <IoMdClose
-                        className="text-primary size-7 cursor-pointer"
+                        className="text-primary size-6x mr-3 cursor-pointer"
                         onClick={() => {
                           setPrevData({ ...prevData, assetUrl: "" });
                           setMenuImage(null);
@@ -127,7 +129,7 @@ export default function UpdateMenuDialog({
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                       <span className="truncate ...">{menuImage.name}</span>
                       <IoMdClose
-                        className="text-primary size-7 cursor-pointer"
+                        className="text-primary size-6x mr-3 cursor-pointer"
                         onClick={() => setMenuImage(null)}
                       />
                     </div>

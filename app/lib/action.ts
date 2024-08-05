@@ -4,6 +4,7 @@ import { config } from "@/config";
 import { prisma } from "@/db";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
+import { fetchCompany } from "./data";
 
 interface Props {
   formData: FormData;
@@ -49,6 +50,53 @@ export async function createMenu({ formData }: Props) {
     console.error(error);
     return {
       message: "Something went wrong while creating menu",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function createMenuCategory(formData: FormData) {
+  const name = formData.get("name") as string;
+  const company = await fetchCompany();
+  const isValid = company && name;
+  if (!isValid)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+
+  try {
+    await prisma.menuCategory.create({
+      data: { name, companyId: company.id },
+    });
+    revalidatePath("/backoffice/menu");
+    return { message: "Created menu category successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while creating menu category",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateMenuCategory(formData: FormData) {
+  const name = formData.get("name") as string;
+  const id = Number(formData.get("id"));
+  const isValid = id && name;
+  if (!isValid)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+  try {
+    await prisma.menuCategory.update({ where: { id }, data: { name } });
+    revalidatePath("/backoffice/menu-category");
+    return { message: "Updated menu category successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while updating menu category",
       isSuccess: false,
     };
   }
@@ -128,6 +176,22 @@ export async function DeleteMenu(id: number) {
   } catch (error) {
     return {
       message: "Something went wrong while deleting menu",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function DeleteMenuCategory(id: number) {
+  try {
+    await prisma.menuCategory.update({
+      where: { id: id },
+      data: { isArchived: true },
+    });
+    revalidatePath("/backoffice/menu-category");
+    return { message: "Deleted menu category successfully.", isSuccess: true };
+  } catch (error) {
+    return {
+      message: "Something went wrong while deleting menu category",
       isSuccess: false,
     };
   }

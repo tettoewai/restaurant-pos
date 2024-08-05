@@ -1,12 +1,17 @@
-import { DeleteMenu } from "@/app/lib/action";
+"use client";
+import { updateMenuCategory } from "@/app/lib/action";
+import { fetchMenuCategoryWithId } from "@/app/lib/data";
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
+import { MenuCategory } from "@prisma/client";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -16,22 +21,32 @@ interface Props {
   onClose: () => void;
 }
 
-export default function DeleteMenuDialog({
+export default function UpdateMenuCategoryDialog({
   id,
   isOpen,
   onOpenChange,
   onClose,
 }: Props) {
+  const [prevData, setPrevData] = useState<MenuCategory | null>(null);
+  useEffect(() => {
+    const getMenuCategory = async () => {
+      const menuCategory = await fetchMenuCategoryWithId(id);
+      setPrevData(menuCategory);
+    };
+    getMenuCategory();
+  }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await DeleteMenu(id);
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    formData.set("id", String(id));
+    const { isSuccess, message } = await updateMenuCategory(formData);
     if (isSuccess) {
       toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
-    }
+    } else toast.error(message);
   };
+
   return (
     <div className="relative">
       <Modal
@@ -44,12 +59,18 @@ export default function DeleteMenuDialog({
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Delete Menu
+                Update Menu Category
               </ModalHeader>
+
               <form onSubmit={handleSubmit}>
                 <ModalBody>
-                  <span>Are you sure you went to delete this menu?</span>
-                  <input type="hidden" name="id" value={id} />
+                  <Input
+                    name="name"
+                    label="Name *"
+                    variant="bordered"
+                    defaultValue={prevData?.name}
+                    required
+                  />
                 </ModalBody>
                 <ModalFooter>
                   <Button
@@ -62,7 +83,7 @@ export default function DeleteMenuDialog({
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                   >
-                    Delete
+                    Update
                   </Button>
                 </ModalFooter>
               </form>

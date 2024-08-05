@@ -1,12 +1,6 @@
 "use client";
 
 import { createMenu } from "@/app/lib/action";
-import { MenuCategory } from "@prisma/client";
-import { Fragment, useRef, useState } from "react";
-import { IoMdClose } from "react-icons/io";
-import { toast } from "react-toastify";
-import FileDropZone from "./FileDropZone";
-import MultipleSelector from "./MultipleSelector";
 import {
   Button,
   Input,
@@ -17,6 +11,12 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/react";
+import { MenuCategory } from "@prisma/client";
+import { useRef, useState } from "react";
+import { IoMdClose } from "react-icons/io";
+import { toast } from "react-toastify";
+import FileDropZone from "./FileDropZone";
+import MultipleSelector from "./MultipleSelector";
 
 interface Props {
   menuCategory: MenuCategory[];
@@ -45,8 +45,6 @@ export default function NewMenuDialog({ menuCategory }: Props) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    const name = formData.get("name");
-    const price = Number(formData.get("price"));
     const selectedCategoryArray = Array.from(selectedCategory);
     formData.append(
       "category",
@@ -74,67 +72,57 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
+        placement="center"
       >
         <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Create Menu
-              </ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">Create Menu</ModalHeader>
 
-              <form ref={formRef} onSubmit={handleSubmit}>
-                <ModalBody>
-                  <Input
-                    name="name"
-                    label="Name *"
-                    variant="bordered"
-                    required
+          <form ref={formRef} onSubmit={handleSubmit}>
+            <ModalBody>
+              <Input name="name" label="Name *" variant="bordered" required />
+              <Input
+                type="number"
+                name="price"
+                label="Price *"
+                variant="bordered"
+                endContent={
+                  <span className="text-default-400 text-small">Kyats</span>
+                }
+                required
+              />
+              <MultipleSelector
+                selectedList={selectedCategory}
+                setSelectedList={setSelectedCategory}
+                list={menuCategory}
+                isRequired
+              />
+              {menuImage ? (
+                <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
+                  <span className="truncate ...">{menuImage.name}</span>
+                  <IoMdClose
+                    className="text-primary size-7 cursor-pointer"
+                    onClick={() => setMenuImage(null)}
                   />
-                  <Input
-                    type="number"
-                    name="price"
-                    label="Price *"
-                    variant="bordered"
-                    endContent={
-                      <span className="text-default-400 text-small">Kyats</span>
-                    }
-                    required
-                  />
-                  <MultipleSelector
-                    selectedList={selectedCategory}
-                    setSelectedList={setSelectedCategory}
-                    list={menuCategory}
-                    isRequired
-                  />
-                  {menuImage ? (
-                    <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
-                      <span className="truncate ...">{menuImage.name}</span>
-                      <IoMdClose
-                        className="text-primary size-7 cursor-pointer"
-                        onClick={() => setMenuImage(null)}
-                      />
-                    </div>
-                  ) : (
-                    <FileDropZone onDrop={(files) => setMenuImage(files[0])} />
-                  )}
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                  >
-                    Create
-                  </Button>
-                </ModalFooter>
-              </form>
-            </>
-          )}
+                </div>
+              ) : (
+                <FileDropZone onDrop={(files) => setMenuImage(files[0])} />
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+              >
+                Create
+              </Button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </div>

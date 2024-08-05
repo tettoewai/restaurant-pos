@@ -107,6 +107,20 @@ export async function fetchMenu(id: number) {
   }
 }
 
+export async function fetchMenuCategoryWithId(id: number) {
+  noStore();
+  try {
+    const company = await fetchCompany();
+    const menuCategory = await prisma.menuCategory.findFirst({
+      where: { id },
+    });
+    return menuCategory;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch MenuCategory data.");
+  }
+}
+
 export async function fetchMenuCategoryMenuWithMenu(id: number) {
   noStore();
   try {

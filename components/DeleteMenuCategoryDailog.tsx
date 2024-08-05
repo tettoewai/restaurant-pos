@@ -1,4 +1,4 @@
-import { DeleteMenu } from "@/app/lib/action";
+import { DeleteMenuCategory } from "@/app/lib/action";
 import {
   Button,
   Modal,
@@ -16,7 +16,7 @@ interface Props {
   onClose: () => void;
 }
 
-export default function DeleteMenuDialog({
+export default function DeleteMenuCategoryDialog({
   id,
   isOpen,
   onOpenChange,
@@ -24,7 +24,7 @@ export default function DeleteMenuDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await DeleteMenu(id);
+    const { isSuccess, message } = await DeleteMenuCategory(id);
     if (isSuccess) {
       toast.success(message);
       onClose();
@@ -44,11 +44,17 @@ export default function DeleteMenuDialog({
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Delete Menu
+                Delete Menu Category
               </ModalHeader>
               <form onSubmit={handleSubmit}>
                 <ModalBody>
-                  <span>Are you sure you went to delete this menu?</span>
+                  <span>
+                    If you delete category, menus that are connected with this
+                    will disappear.
+                  </span>
+                  <span>
+                    Are you sure you went to delete this menu category?
+                  </span>
                   <input type="hidden" name="id" value={id} />
                 </ModalBody>
                 <ModalFooter>
