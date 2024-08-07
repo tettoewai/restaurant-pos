@@ -48,6 +48,56 @@ export async function fetchMenuCategory() {
   }
 }
 
+export async function fetchMenuAddonCategory() {
+  noStore();
+  try {
+    const menu = await fetchMenu();
+    const menuIds = menu.map((item) => item.id);
+    const menuAddonCategory = await prisma.menuAddonCategory.findMany({
+      where: { menuId: { in: menuIds } },
+      orderBy: { id: "asc" },
+    });
+    return menuAddonCategory;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch menuAddonCategory data.");
+  }
+}
+
+export async function fetchAddonCategory() {
+  noStore();
+  try {
+    const menuAddonCategory = await fetchMenuAddonCategory();
+    const addonCategoryIds = menuAddonCategory.map(
+      (item) => item.addonCategoryId
+    );
+    const addonCategory = await prisma.addonCategory.findMany({
+      where: { id: { in: addonCategoryIds }, isArchived: false },
+      orderBy: { id: "asc" },
+    });
+    return addonCategory;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addonCategory data.");
+  }
+}
+
+export async function fetchAddon() {
+  noStore();
+  try {
+    const addonCategory = await fetchAddonCategory();
+    const addonCategoryIds = addonCategory.map((item) => item.id);
+    const addon = await prisma.addon.findMany({
+      where: { addonCategoryId: { in: addonCategoryIds }, isArchived: false },
+      orderBy: { id: "asc" },
+    });
+    return addon;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addon data.");
+  }
+}
+
 export async function fetchDisableLocationMenuCategoies() {
   noStore();
   try {
@@ -80,8 +130,9 @@ export async function fetchMenuCategoryMenu() {
   }
 }
 
-export async function fetchMenus() {
+export async function fetchMenu() {
   noStore();
+  // await new Promise((resolve) => setTimeout(resolve, 5000));
   try {
     const menuCategoryMenus = await fetchMenuCategoryMenu();
     const menuCategoryMenuIds = menuCategoryMenus.map((item) => item.menuId);
@@ -96,10 +147,13 @@ export async function fetchMenus() {
   }
 }
 
-export async function fetchMenu(id: number) {
+export async function fetchMenuWithId(id: number) {
   noStore();
   try {
-    const menu = await prisma.menu.findFirst({ where: { id } });
+    const menu = await prisma.menu.findFirst({
+      where: { id },
+      orderBy: { id: "asc" },
+    });
     return menu;
   } catch (error) {
     console.error("Database Error:", error);
@@ -110,9 +164,9 @@ export async function fetchMenu(id: number) {
 export async function fetchMenuCategoryWithId(id: number) {
   noStore();
   try {
-    const company = await fetchCompany();
     const menuCategory = await prisma.menuCategory.findFirst({
       where: { id },
+      orderBy: { id: "asc" },
     });
     return menuCategory;
   } catch (error) {
@@ -121,10 +175,24 @@ export async function fetchMenuCategoryWithId(id: number) {
   }
 }
 
-export async function fetchMenuCategoryMenuWithMenu(id: number) {
+export async function fetchAddonCategoryWithId(id: number) {
   noStore();
   try {
-    const menu = await fetchMenu(id);
+    const addonCategory = await prisma.addonCategory.findFirst({
+      where: { id },
+      orderBy: { id: "asc" },
+    });
+    return addonCategory;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addonCategory data.");
+  }
+}
+
+export async function fetchMenuCategoryWithMenu(id: number) {
+  noStore();
+  try {
+    const menu = await fetchMenuWithId(id);
     const menuCategoryMenus = await prisma.menuCategoryMenu.findMany({
       where: { menuId: menu?.id },
     });
@@ -132,17 +200,6 @@ export async function fetchMenuCategoryMenuWithMenu(id: number) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch MenuCategoryMenu data.");
-  }
-}
-
-export async function fetchMenuCategoryWithMenu(id: number) {
-  noStore();
-  try {
-    const menuCategoryMenu = await fetchMenuCategoryMenuWithMenu(id);
-    return menuCategoryMenu;
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch Menu category data.");
   }
 }
 

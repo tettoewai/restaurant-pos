@@ -1,20 +1,11 @@
 "use client";
 
-import {
-  Button,
-  DropdownItem,
-  Tooltip,
-  useDisclosure,
-} from "@nextui-org/react";
+import { Tooltip } from "@nextui-org/react";
 import { useTheme } from "next-themes";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GoScreenFull, GoScreenNormal } from "react-icons/go";
-import { MdDarkMode, MdEdit, MdLightMode } from "react-icons/md";
+import { MdDarkMode, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
-import UpdateMenuDialog from "./UpdateMenuDailog";
-import { MenuCategory } from "@prisma/client";
-import NewMenuCategoryDialog from "./NewMenuCategoryDailog";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
@@ -102,24 +93,5 @@ export function ModeButton() {
         </Tooltip>
       )}
     </>
-  );
-}
-
-export function NewMenuCategoryButton() {
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  return (
-    <div>
-      <Button
-        onPress={onOpen}
-        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
-      >
-        New Menu
-      </Button>
-      <NewMenuCategoryDialog
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        onClose={onClose}
-      />
-    </div>
   );
 }

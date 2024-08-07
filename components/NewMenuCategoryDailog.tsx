@@ -1,3 +1,4 @@
+"use client";
 import { createMenuCategory } from "@/app/lib/action";
 import {
   Button,
@@ -7,20 +8,13 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  useDisclosure,
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 
-interface Props {
-  isOpen: boolean;
-  onOpenChange: () => void;
-  onClose: () => void;
-}
+export default function NewMenuCategoryDialog() {
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
-export default function NewMenuCategoryDialog({
-  isOpen,
-  onOpenChange,
-  onClose,
-}: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
@@ -29,10 +23,19 @@ export default function NewMenuCategoryDialog({
     if (isSuccess) {
       toast.success(message);
       onClose();
-    } else toast.error(message);
+    } else {
+      toast.error(message);
+    }
   };
+
   return (
     <div className="relative">
+      <Button
+        onPress={onOpen}
+        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
+      >
+        New Menu Category
+      </Button>
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
@@ -43,7 +46,6 @@ export default function NewMenuCategoryDialog({
           <ModalHeader className="flex flex-col gap-1">
             Create Menu Category
           </ModalHeader>
-
           <form onSubmit={handleSubmit}>
             <ModalBody>
               <Input name="name" label="Name *" variant="bordered" required />

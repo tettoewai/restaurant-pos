@@ -1,8 +1,8 @@
 "use client";
-
-import { createMenu } from "@/app/lib/action";
+import { createAddonCategory, createMenuCategory } from "@/app/lib/action";
 import {
   Button,
+  Checkbox,
   Input,
   Modal,
   ModalBody,
@@ -11,27 +11,26 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/react";
-import { MenuCategory } from "@prisma/client";
-import { useRef, useState } from "react";
-import { IoMdClose } from "react-icons/io";
 import { toast } from "react-toastify";
-import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
+import { useRef, useState } from "react";
+import { Menu } from "@prisma/client";
+import { BsStar } from "react-icons/bs";
 
 interface Props {
-  menuCategory: MenuCategory[];
+  menus: Menu[];
 }
 
-export default function NewMenuDialog({ menuCategory }: Props) {
+export default function NewAddonCategoryDialog({ menus }: Props) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [selectedCategory, setSelectedCategory] = useState<Set<string>>(
-    new Set([])
-  );
-  const [menuImage, setMenuImage] = useState<File | null>(null);
+  const [selectedMenus, setSelectedMenus] = useState<Set<string>>(new Set([]));
+  const [isRequired, setIsRequired] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
+
   const closeModal = () => {
     onClose();
-    setMenuImage(null);
+    setSelectedMenus(new Set([]));
+    setIsRequired(false);
     resetForm();
   };
 
@@ -45,13 +44,10 @@ export default function NewMenuDialog({ menuCategory }: Props) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    const selectedCategoryArray = Array.from(selectedCategory);
-    formData.append(
-      "category",
-      JSON.parse(JSON.stringify(selectedCategoryArray))
-    );
-    menuImage && formData.append("image", menuImage);
-    const { message, isSuccess } = await createMenu({ formData });
+    const selectedMenuArray = Array.from(selectedMenus);
+    formData.append("menu", JSON.parse(JSON.stringify(selectedMenuArray)));
+    formData.set("isRequired", String(isRequired));
+    const { isSuccess, message } = await createAddonCategory(formData);
     if (isSuccess) {
       toast.success(message);
       closeModal();
@@ -59,14 +55,13 @@ export default function NewMenuDialog({ menuCategory }: Props) {
       toast.error(message);
     }
   };
-
   return (
     <div className="relative">
       <Button
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Menu
+        New Addon Category
       </Button>
       <Modal
         isOpen={isOpen}
@@ -75,39 +70,28 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         placement="center"
       >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Create Menu</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            Create Addon Category
+          </ModalHeader>
 
           <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody>
               <Input name="name" label="Name *" variant="bordered" required />
-              <Input
-                type="number"
-                name="price"
-                label="Price *"
-                variant="bordered"
-                endContent={
-                  <span className="text-default-400 text-small">Kyats</span>
-                }
-                required
-              />
               <MultipleSelector
-                selectedList={selectedCategory}
-                setSelectedList={setSelectedCategory}
-                list={menuCategory}
+                selectedList={selectedMenus}
+                setSelectedList={setSelectedMenus}
                 isRequired
-                itemType="menu"
+                menuList={menus}
+                itemType="addonCategory"
               />
-              {menuImage ? (
-                <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
-                  <span className="truncate ...">{menuImage.name}</span>
-                  <IoMdClose
-                    className="text-primary size-7 cursor-pointer"
-                    onClick={() => setMenuImage(null)}
-                  />
-                </div>
-              ) : (
-                <FileDropZone onDrop={(files) => setMenuImage(files[0])} />
-              )}
+              <Checkbox
+                isSelected={isRequired}
+                onValueChange={setIsRequired}
+                icon={<BsStar className="text-primary" />}
+                name="isRequired"
+              >
+                Required
+              </Checkbox>
             </ModalBody>
             <ModalFooter>
               <Button

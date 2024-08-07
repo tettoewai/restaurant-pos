@@ -1,10 +1,13 @@
+import {
+  fetchMenu,
+  fetchMenuAddonCategory,
+  fetchMenuCategory,
+  fetchMenuCategoryMenu,
+} from "@/app/lib/data";
+import { Card, Chip } from "@nextui-org/react";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
-import { fetchMenuCategory, fetchMenuCategoryMenu } from "@/app/lib/data";
-import { getServerSession } from "next-auth";
-import { MenuCategory } from "@prisma/client";
-import { Card, Chip } from "@nextui-org/react";
 
 interface Props {
   id: number;
@@ -27,13 +30,13 @@ export default async function MenuCard({ id, name, image, price }: Props) {
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <MoreOptionButton id={id} itemType="menu" categories={categories} />
       </div>
-      <div className="flex justify-center items-center h-[57%] w-full">
+      <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
         <Image
           src={image || "/default-menu.png"}
           alt="menu"
           width={100}
           height={100}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover "
         />
       </div>
       <p className="mt-2 truncate ...">{name}</p>
@@ -50,7 +53,7 @@ export default async function MenuCard({ id, name, image, price }: Props) {
           </Chip>
         ))}
         {menuCategory.length > 2 && (
-          <Chip variant="light" color="danger" size="sm">
+          <Chip variant="bordered" size="sm">
             ....
           </Chip>
         )}

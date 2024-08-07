@@ -4,7 +4,7 @@ import { config } from "@/config";
 import { prisma } from "@/db";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
-import { fetchCompany } from "./data";
+import { fetchCompany, fetchMenuAddonCategory } from "./data";
 
 interface Props {
   formData: FormData;
@@ -69,7 +69,7 @@ export async function createMenuCategory(formData: FormData) {
     await prisma.menuCategory.create({
       data: { name, companyId: company.id },
     });
-    revalidatePath("/backoffice/menu");
+    revalidatePath("/backoffice/menu-category");
     return { message: "Created menu category successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -165,7 +165,7 @@ export async function updateMenu({ formData }: Props) {
   }
 }
 
-export async function DeleteMenu(id: number) {
+export async function deleteMenu(id: number) {
   try {
     await prisma.menu.update({
       where: { id: id },
@@ -174,6 +174,7 @@ export async function DeleteMenu(id: number) {
     revalidatePath("/backoffice/menu");
     return { message: "Deleted menu successfully.", isSuccess: true };
   } catch (error) {
+    console.log(error);
     return {
       message: "Something went wrong while deleting menu",
       isSuccess: false,
@@ -181,7 +182,24 @@ export async function DeleteMenu(id: number) {
   }
 }
 
-export async function DeleteMenuCategory(id: number) {
+export async function deleteAddonCategory(id: number) {
+  try {
+    await prisma.addonCategory.update({
+      where: { id: id },
+      data: { isArchived: true },
+    });
+    revalidatePath("/backoffice/addon-category");
+    return { message: "Deleted addon category successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while deleting addon category",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deleteMenuCategory(id: number) {
   try {
     await prisma.menuCategory.update({
       where: { id: id },
@@ -190,6 +208,7 @@ export async function DeleteMenuCategory(id: number) {
     revalidatePath("/backoffice/menu-category");
     return { message: "Deleted menu category successfully.", isSuccess: true };
   } catch (error) {
+    console.log(error);
     return {
       message: "Something went wrong while deleting menu category",
       isSuccess: false,
@@ -197,7 +216,100 @@ export async function DeleteMenuCategory(id: number) {
   }
 }
 
-export async function deletImage(id: number) {
+export async function createAddonCategory(FormData: FormData) {
+  const name = FormData.get("name") as string;
+  const menuId = (FormData.get("menu") as string).split(",");
+  const isRequired = FormData.get("isRequired") === "true";
+  const isValid = name && menuId && isRequired != undefined;
+  if (!isValid)
+    return {
+      message: "Missing Requried fields",
+      isSuccess: false,
+    };
+  try {
+    const addonCategory = await prisma.addonCategory.create({
+      data: { name, isRequired },
+    });
+    await prisma.$transaction(
+      menuId.map((item) =>
+        prisma.menuAddonCategory.create({
+          data: { addonCategoryId: addonCategory.id, menuId: Number(item) },
+        })
+      )
+    );
+    revalidatePath("/backoffice/addon-category");
+    return { message: "Created addon category successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while deleting addon category",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateAddonCategory(FormData: FormData) {
+  const id = Number(FormData.get("id"));
+  const name = FormData.get("name") as string;
+  const isRequired = FormData.get("isRequired") === "true";
+  const menuId = String(FormData.get("menu"))
+    .split(",")
+    .map((item) => Number(item));
+  const isValid = id && name && menuId.length > 0 && isRequired != undefined;
+  if (!isValid)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+  try {
+    const addonCategory = await prisma.addonCategory.update({
+      where: { id },
+      data: { name, isRequired },
+    });
+    const menuAddonCategory = await fetchMenuAddonCategory();
+    const validMenuAddonCat = menuAddonCategory.filter(
+      (item) => item.addonCategoryId === id
+    );
+    //toRemove
+    const toRemove = validMenuAddonCat.filter(
+      (item) => !menuId.includes(item.menuId)
+    );
+    if (toRemove.length) {
+      await prisma.menuAddonCategory.deleteMany({
+        where: {
+          menuId: { in: toRemove.map((item) => item.menuId) },
+          addonCategoryId: id,
+        },
+      });
+    }
+    //toAdd
+    const toAdd = menuId.filter(
+      (menuId) => !validMenuAddonCat.find((item) => item.menuId === menuId)
+    );
+    if (toAdd.length) {
+      await prisma.$transaction(
+        toAdd.map((item) =>
+          prisma.menuAddonCategory.create({
+            data: { menuId: item, addonCategoryId: id },
+          })
+        )
+      );
+    }
+    revalidatePath("/backoffice/addon-category");
+    return {
+      message: "Updated addon category successfully",
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while updating menu",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deleteImage(id: number) {
   try {
     const menu = await prisma.menu.update({
       where: { id },

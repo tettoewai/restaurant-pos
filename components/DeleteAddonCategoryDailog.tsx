@@ -1,4 +1,4 @@
-import { deleteMenu } from "@/app/lib/action";
+import { deleteAddonCategory, deleteMenuCategory } from "@/app/lib/action";
 import {
   Button,
   Modal,
@@ -16,7 +16,7 @@ interface Props {
   onClose: () => void;
 }
 
-export default function DeleteMenuDialog({
+export default function DeleteAddonCategoryDialog({
   id,
   isOpen,
   onOpenChange,
@@ -24,7 +24,7 @@ export default function DeleteMenuDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await deleteMenu(id);
+    const { isSuccess, message } = await deleteAddonCategory(id);
     if (isSuccess) {
       toast.success(message);
       onClose();
@@ -44,11 +44,13 @@ export default function DeleteMenuDialog({
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Delete Menu
+                Delete Addon Category
               </ModalHeader>
               <form onSubmit={handleSubmit}>
                 <ModalBody>
-                  <span>Are you sure you went to delete this menu?</span>
+                  <span>
+                    Are you sure you went to delete this addon category?
+                  </span>
                   <input type="hidden" name="id" value={id} />
                 </ModalBody>
                 <ModalFooter>

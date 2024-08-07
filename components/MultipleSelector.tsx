@@ -1,12 +1,14 @@
 import { Select, SelectItem } from "@nextui-org/react";
-import { MenuCategory } from "@prisma/client";
+import { Menu, MenuCategory } from "@prisma/client";
 import { Dispatch, SetStateAction } from "react";
 
 interface Props {
   selectedList: Set<string>;
   setSelectedList: Dispatch<SetStateAction<Set<string>>>;
   list?: MenuCategory[];
+  menuList?: Menu[];
   isRequired: boolean;
+  itemType: "menu" | "addonCategory";
 }
 
 export default function MultipleSelector({
@@ -14,6 +16,8 @@ export default function MultipleSelector({
   setSelectedList,
   list,
   isRequired,
+  menuList,
+  itemType,
 }: Props) {
   const handleSelectionChange = (e: any) => {
     const value = e.target.value;
@@ -23,19 +27,27 @@ export default function MultipleSelector({
       setSelectedList(new Set(e.target.value.split(",")));
     }
   };
-  if (!list) return;
+  const validList =
+    itemType === "menu" ? list : itemType === "addonCategory" ? menuList : null;
+  if (!validList) return;
   return (
     <div>
       <Select
         isRequired
-        label="Menu Category"
+        label={
+          itemType === "menu"
+            ? "Menu Category"
+            : itemType === "addonCategory"
+            ? "Menu"
+            : null
+        }
         selectionMode="multiple"
         selectedKeys={selectedList}
         onChange={handleSelectionChange}
         variant="bordered"
         className="outline-none"
       >
-        {list.map((item) => (
+        {validList.map((item) => (
           <SelectItem key={item.id}>{item.name}</SelectItem>
         ))}
       </Select>

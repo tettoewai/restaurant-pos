@@ -1,4 +1,4 @@
-import { DeleteMenuCategory } from "@/app/lib/action";
+import { deleteMenuCategory } from "@/app/lib/action";
 import {
   Button,
   Modal,
@@ -24,7 +24,7 @@ export default function DeleteMenuCategoryDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await DeleteMenuCategory(id);
+    const { isSuccess, message } = await deleteMenuCategory(id);
     if (isSuccess) {
       toast.success(message);
       onClose();

@@ -1,7 +1,7 @@
 "use client";
 
-import { deletImage, updateMenu } from "@/app/lib/action";
-import { fetchMenu, fetchMenuCategoryWithMenu } from "@/app/lib/data";
+import { deleteImage, updateMenu } from "@/app/lib/action";
+import { fetchMenuCategoryWithMenu, fetchMenuWithId } from "@/app/lib/data";
 import {
   Button,
   Input,
@@ -40,7 +40,7 @@ export default function UpdateMenuDialog({
   const [menuImage, setMenuImage] = useState<File | null>(null);
   useEffect(() => {
     const getPrevMenu = async () => {
-      const prevMenu = await fetchMenu(id);
+      const prevMenu = await fetchMenuWithId(id);
       setPrevData(prevMenu);
       const prevCategories = await fetchMenuCategoryWithMenu(id);
       const prevCategoryIds = prevCategories.map((item) =>
@@ -63,7 +63,7 @@ export default function UpdateMenuDialog({
       JSON.parse(JSON.stringify(selectedCategoryArray))
     );
     menuImage && formData.append("image", menuImage);
-    if (!prevData?.assetUrl) deletImage(id);
+    if (!prevData?.assetUrl) deleteImage(id);
     const { message, isSuccess } = await updateMenu({ formData });
     if (isSuccess) {
       toast.success(message);
@@ -113,6 +113,7 @@ export default function UpdateMenuDialog({
                     setSelectedList={setSelectedCategory}
                     list={menuCategory}
                     isRequired
+                    itemType="menu"
                   />
                   {prevData?.assetUrl ? (
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
