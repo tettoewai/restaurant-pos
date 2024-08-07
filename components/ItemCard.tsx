@@ -1,28 +1,30 @@
 import {
-  fetchAddonCategoryWithId,
-  fetchMenu,
-  fetchMenuAddonCategory,
-  fetchMenuCategory,
-  fetchMenuCategoryMenu,
-} from "@/app/lib/data";
-import {
   Card,
   Chip,
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
+import { Menu, MenuAddonCategory } from "@prisma/client";
 import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
 
 interface Props {
   id: number;
+  name: string;
+  menus: Menu[];
+  menuAddonCategory: MenuAddonCategory[];
   itemType: "addonCategory";
+  required: boolean;
 }
-export default async function ItemCard({ id, itemType }: Props) {
-  const addonCategory = await fetchAddonCategoryWithId(id);
-  const menuAddonCategory = await fetchMenuAddonCategory();
-  const menus = await fetchMenu();
+export default function ItemCard({
+  id,
+  itemType,
+  name,
+  menuAddonCategory,
+  menus,
+  required,
+}: Props) {
   const validMenus = menus.filter((menu) =>
     menuAddonCategory
       .filter((item) => item.addonCategoryId === id)
@@ -36,10 +38,8 @@ export default async function ItemCard({ id, itemType }: Props) {
       </div>
       <TbCategoryPlus className="size-8 mt-8 mb-1 text-primary" />
       <p className="mt-2 truncate ...">
-        {addonCategory?.name}
-        {addonCategory?.isRequired === true ? (
-          <span className="text-primary"> *</span>
-        ) : null}
+        {name}
+        {required ? <span className="text-primary"> *</span> : null}
       </p>
       <div className="mt-4 w-full flex justify-center flex-wrap">
         {validMenus.slice(0, 2).map((item) => (

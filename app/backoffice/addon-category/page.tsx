@@ -1,10 +1,15 @@
-import { fetchAddonCategory, fetchMenu } from "@/app/lib/data";
+import {
+  fetchAddonCategory,
+  fetchMenu,
+  fetchMenuAddonCategory,
+} from "@/app/lib/data";
 import ItemCard from "@/components/ItemCard";
 import NewAddonCategoryDialog from "@/components/NewAddonCategoryDailog";
 
 const AddonCateogory = async () => {
   const addonCategory = await fetchAddonCategory();
   const menus = await fetchMenu();
+  const menuAddonCategory = await fetchMenuAddonCategory();
   return (
     <div>
       <div className="w-full flex justify-between items-center">
@@ -18,7 +23,15 @@ const AddonCateogory = async () => {
       </div>
       <div className="flex flex-wrap mt-2">
         {addonCategory.map((item) => (
-          <ItemCard id={item.id} key={item.id} itemType="addonCategory" />
+          <ItemCard
+            id={item.id}
+            key={item.id}
+            name={item.name}
+            itemType="addonCategory"
+            menus={menus}
+            menuAddonCategory={menuAddonCategory}
+            required={item.isRequired}
+          />
         ))}
       </div>
     </div>
