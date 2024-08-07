@@ -10,16 +10,20 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@nextui-org/react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 export default function NewMenuCategoryDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const { isSuccess, message } = await createMenuCategory(formData);
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       onClose();
@@ -60,6 +64,7 @@ export default function NewMenuCategoryDialog() {
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
               >
                 Create
               </Button>

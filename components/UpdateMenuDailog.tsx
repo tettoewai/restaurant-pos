@@ -38,6 +38,7 @@ export default function UpdateMenuDialog({
     new Set([])
   );
   const [menuImage, setMenuImage] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
     const getPrevMenu = async () => {
       const prevMenu = await fetchMenuWithId(id);
@@ -54,6 +55,7 @@ export default function UpdateMenuDialog({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     formData.set("id", String(id));
@@ -65,6 +67,7 @@ export default function UpdateMenuDialog({
     menuImage && formData.append("image", menuImage);
     if (!prevData?.assetUrl) deleteImage(id);
     const { message, isSuccess } = await updateMenu({ formData });
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       onClose();
@@ -152,6 +155,7 @@ export default function UpdateMenuDialog({
                   <Button
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                    isDisabled={isSubmitting}
                   >
                     Update
                   </Button>

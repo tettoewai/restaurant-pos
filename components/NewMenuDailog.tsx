@@ -28,6 +28,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
     new Set([])
   );
   const [menuImage, setMenuImage] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const closeModal = () => {
     onClose();
@@ -43,6 +44,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const selectedCategoryArray = Array.from(selectedCategory);
@@ -52,6 +54,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
     );
     menuImage && formData.append("image", menuImage);
     const { message, isSuccess } = await createMenu({ formData });
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       closeModal();
@@ -119,6 +122,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
               >
                 Create
               </Button>

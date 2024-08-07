@@ -25,6 +25,7 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const [selectedMenus, setSelectedMenus] = useState<Set<string>>(new Set([]));
   const [isRequired, setIsRequired] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const closeModal = () => {
@@ -42,12 +43,14 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const selectedMenuArray = Array.from(selectedMenus);
     formData.append("menu", JSON.parse(JSON.stringify(selectedMenuArray)));
     formData.set("isRequired", String(isRequired));
     const { isSuccess, message } = await createAddonCategory(formData);
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       closeModal();
@@ -103,6 +106,7 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
               >
                 Create
               </Button>
