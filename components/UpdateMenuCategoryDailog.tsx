@@ -28,6 +28,7 @@ export default function UpdateMenuCategoryDialog({
   onClose,
 }: Props) {
   const [prevData, setPrevData] = useState<MenuCategory | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
     const getMenuCategory = async () => {
       const menuCategory = await fetchMenuCategoryWithId(id);
@@ -37,10 +38,12 @@ export default function UpdateMenuCategoryDialog({
   }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     formData.set("id", String(id));
     const { isSuccess, message } = await updateMenuCategory(formData);
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       onClose();
@@ -82,6 +85,7 @@ export default function UpdateMenuCategoryDialog({
                   <Button
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                    isDisabled={isSubmitting}
                   >
                     Update
                   </Button>
