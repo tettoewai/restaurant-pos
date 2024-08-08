@@ -1,5 +1,5 @@
 import { Select, SelectItem } from "@nextui-org/react";
-import { Menu, MenuCategory } from "@prisma/client";
+import { AddonCategory, Menu, MenuCategory } from "@prisma/client";
 import { Dispatch, SetStateAction } from "react";
 
 interface Props {
@@ -7,8 +7,9 @@ interface Props {
   setSelectedList: Dispatch<SetStateAction<Set<string>>>;
   list?: MenuCategory[];
   menuList?: Menu[];
+  addonCategoryList?: AddonCategory[];
   isRequired: boolean;
-  itemType: "menu" | "addonCategory";
+  itemType: "menu" | "addonCategory" | "addon";
 }
 
 export default function MultipleSelector({
@@ -17,6 +18,7 @@ export default function MultipleSelector({
   list,
   isRequired,
   menuList,
+  addonCategoryList,
   itemType,
 }: Props) {
   const handleSelectionChange = (e: any) => {
@@ -28,7 +30,13 @@ export default function MultipleSelector({
     }
   };
   const validList =
-    itemType === "menu" ? list : itemType === "addonCategory" ? menuList : null;
+    itemType === "menu"
+      ? list
+      : itemType === "addonCategory"
+      ? menuList
+      : itemType === "addon"
+      ? addonCategoryList
+      : null;
   if (!validList) return;
   return (
     <div>
@@ -39,9 +47,11 @@ export default function MultipleSelector({
             ? "Menu Category"
             : itemType === "addonCategory"
             ? "Menu"
+            : itemType === "addon"
+            ? "Addon Category"
             : null
         }
-        selectionMode="multiple"
+        selectionMode={itemType != "addon" ? "multiple" : "single"}
         selectedKeys={selectedList}
         onChange={handleSelectionChange}
         variant="bordered"

@@ -7,7 +7,7 @@ import {
   DropdownTrigger,
   useDisclosure,
 } from "@nextui-org/react";
-import { Menu, MenuCategory } from "@prisma/client";
+import { AddonCategory, Menu, MenuCategory } from "@prisma/client";
 import { IoMdMore } from "react-icons/io";
 import { MdDelete, MdEdit } from "react-icons/md";
 import DeleteMenuDialog from "./DeleteMenuDailog";
@@ -17,12 +17,15 @@ import { ReactNode } from "react";
 import DeleteMenuCategoryDialog from "./DeleteMenuCategoryDailog";
 import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
+import UpdateAddonDialog from "./UpdateAddonDailog";
+import DeleteAddonDialog from "./DeleteAddonDailog";
 
 interface Props {
   id: number;
-  itemType: "menu" | "menuCategory" | "addonCategory";
+  itemType: "menu" | "menuCategory" | "addonCategory" | "addon";
   categories?: MenuCategory[];
   menu?: Menu[];
+  addonCategory?: AddonCategory[];
 }
 
 export default function MoreOptionButton({
@@ -30,6 +33,7 @@ export default function MoreOptionButton({
   itemType,
   categories,
   menu,
+  addonCategory,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -114,6 +118,22 @@ export default function MoreOptionButton({
             menu={menu}
           />
           <DeleteAddonCategoryDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+          />
+        </>
+      ) : itemType === "addon" ? (
+        <>
+          <UpdateAddonDialog
+            id={id}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+            addonCategory={addonCategory}
+          />
+          <DeleteAddonDialog
             id={id}
             onClose={onDeleteClose}
             onOpenChange={onDeleteOpenChange}
