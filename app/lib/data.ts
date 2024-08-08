@@ -98,6 +98,19 @@ export async function fetchAddon() {
   }
 }
 
+export async function fetchAddonWithId(id: number) {
+  noStore();
+  try {
+    const addon = await prisma.addon.findFirst({
+      where: { id },
+    });
+    return addon;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addon data.");
+  }
+}
+
 export async function fetchDisableLocationMenuCategoies() {
   noStore();
   try {

@@ -1,17 +1,16 @@
-"use client";
-import { updateMenuCategory } from "@/app/lib/action";
-import { fetchMenuCategoryWithId } from "@/app/lib/data";
+import {
+  deleteAddon,
+  deleteAddonCategory,
+  deleteMenuCategory,
+} from "@/app/lib/action";
 import {
   Button,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
-import { MenuCategory } from "@prisma/client";
-import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -21,35 +20,22 @@ interface Props {
   onClose: () => void;
 }
 
-export default function UpdateMenuCategoryDialog({
+export default function DeleteAddonDialog({
   id,
   isOpen,
   onOpenChange,
   onClose,
 }: Props) {
-  const [prevData, setPrevData] = useState<MenuCategory | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  useEffect(() => {
-    const getMenuCategory = async () => {
-      const menuCategory = await fetchMenuCategoryWithId(id);
-      setPrevData(menuCategory);
-    };
-    getMenuCategory();
-  }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setIsSubmitting(true);
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
-    formData.set("id", String(id));
-    const { isSuccess, message } = await updateMenuCategory(formData);
-    setIsSubmitting(false);
+    const { isSuccess, message } = await deleteAddon(id);
     if (isSuccess) {
       toast.success(message);
       onClose();
-    } else toast.error(message);
+    } else {
+      toast.error(message);
+    }
   };
-
   return (
     <div className="relative">
       <Modal
@@ -62,18 +48,12 @@ export default function UpdateMenuCategoryDialog({
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Update Menu Category
+                Delete Addon
               </ModalHeader>
-
               <form onSubmit={handleSubmit}>
                 <ModalBody>
-                  <Input
-                    name="name"
-                    label="Name *"
-                    variant="bordered"
-                    defaultValue={prevData?.name}
-                    required
-                  />
+                  <span>Are you sure you went to delete this addon?</span>
+                  <input type="hidden" name="id" value={id} />
                 </ModalBody>
                 <ModalFooter>
                   <Button
@@ -85,9 +65,8 @@ export default function UpdateMenuCategoryDialog({
                   <Button
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                    isDisabled={isSubmitting}
                   >
-                    Update
+                    Delete
                   </Button>
                 </ModalFooter>
               </form>

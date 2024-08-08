@@ -1,6 +1,5 @@
 "use client";
-import { updateMenuCategory } from "@/app/lib/action";
-import { fetchMenuCategoryWithId } from "@/app/lib/data";
+import { fetchAddonWithId } from "@/app/lib/data";
 import {
   Button,
   Input,
@@ -10,8 +9,10 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
-import { MenuCategory } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { Addon, AddonCategory } from "@prisma/client";
+import { useEffect, useRef, useState } from "react";
+import MultipleSelector from "./MultipleSelector";
+import { updateAddon } from "@/app/lib/action";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -19,22 +20,42 @@ interface Props {
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
+  addonCategory?: AddonCategory[];
 }
 
-export default function UpdateMenuCategoryDialog({
+export default function UpdateAddonDialog({
   id,
   isOpen,
   onOpenChange,
   onClose,
+  addonCategory,
 }: Props) {
-  const [prevData, setPrevData] = useState<MenuCategory | null>(null);
+  const [prevData, setPrevData] = useState<Addon | null>(null);
+  const [selectedAddonCat, setSelectedAddonCat] = useState<Set<string>>(
+    new Set([])
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const closeModal = () => {
+    onClose();
+    setSelectedAddonCat(new Set([]));
+    resetForm();
+  };
+
+  const resetForm = () => {
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+  };
+
   useEffect(() => {
-    const getMenuCategory = async () => {
-      const menuCategory = await fetchMenuCategoryWithId(id);
-      setPrevData(menuCategory);
+    const getPrevData = async () => {
+      const addon = await fetchAddonWithId(id);
+      setPrevData(addon);
+      setSelectedAddonCat(new Set(String(addon?.addonCategoryId)));
     };
-    getMenuCategory();
+    getPrevData();
   }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -42,12 +63,19 @@ export default function UpdateMenuCategoryDialog({
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     formData.set("id", String(id));
-    const { isSuccess, message } = await updateMenuCategory(formData);
+    const selectedAddonCatArray = Array.from(selectedAddonCat);
+    formData.append(
+      "addonCategory",
+      JSON.parse(JSON.stringify(selectedAddonCatArray))
+    );
+    const { isSuccess, message } = await updateAddon(formData);
     setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
-      onClose();
-    } else toast.error(message);
+      closeModal();
+    } else {
+      toast.error(message);
+    }
   };
 
   return (
@@ -62,10 +90,10 @@ export default function UpdateMenuCategoryDialog({
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Update Menu Category
+                Update Addon
               </ModalHeader>
 
-              <form onSubmit={handleSubmit}>
+              <form ref={formRef} onSubmit={handleSubmit}>
                 <ModalBody>
                   <Input
                     name="name"
@@ -73,6 +101,13 @@ export default function UpdateMenuCategoryDialog({
                     variant="bordered"
                     defaultValue={prevData?.name}
                     required
+                  />
+                  <MultipleSelector
+                    selectedList={selectedAddonCat}
+                    setSelectedList={setSelectedAddonCat}
+                    isRequired
+                    addonCategoryList={addonCategory}
+                    itemType="addon"
                   />
                 </ModalBody>
                 <ModalFooter>

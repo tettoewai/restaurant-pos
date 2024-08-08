@@ -242,7 +242,63 @@ export async function createAddonCategory(FormData: FormData) {
   } catch (error) {
     console.log(error);
     return {
-      message: "Something went wrong while deleting addon category",
+      message: "Something went wrong while creating addon category",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function createAddon(formData: FormData) {
+  const name = formData.get("name") as string;
+  const addonCategoryId = Number(formData.get("addonCategory"));
+  const isValid = name && addonCategoryId > 0;
+  if (!isValid)
+    return { message: "Missing required fields.", isSuccess: false };
+  try {
+    await prisma.addon.create({ data: { name, addonCategoryId } });
+    revalidatePath("/backoffice/addon");
+    return { message: "Created addon successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while creating addon",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateAddon(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const name = formData.get("name") as string;
+  const addonCategoryId = Number(formData.get("addonCategory"));
+  const isValid = id && name && addonCategoryId > 0;
+  if (!isValid)
+    return { message: "Missing required fields.", isSuccess: false };
+  try {
+    await prisma.addon.update({
+      where: { id },
+      data: { name, addonCategoryId },
+    });
+    revalidatePath("/backoffice/addon");
+    return { message: "Updated addon successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while updating addon",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deleteAddon(id: number) {
+  try {
+    await prisma.addon.update({ where: { id }, data: { isArchived: true } });
+    revalidatePath("backoffice/addon");
+    return { message: "Deleted addon successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while deleting addon",
       isSuccess: false,
     };
   }
