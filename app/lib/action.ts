@@ -4,7 +4,8 @@ import { config } from "@/config";
 import { prisma } from "@/db";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
-import { fetchCompany, fetchMenuAddonCategory } from "./data";
+import { fetchCompany, fetchLocation, fetchMenuAddonCategory } from "./data";
+import QRCode from "qrcode";
 
 interface Props {
   formData: FormData;
@@ -293,7 +294,7 @@ export async function updateAddon(formData: FormData) {
 export async function deleteAddon(id: number) {
   try {
     await prisma.addon.update({ where: { id }, data: { isArchived: true } });
-    revalidatePath("backoffice/addon");
+    revalidatePath("/backoffice/addon");
     return { message: "Deleted addon successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -360,6 +361,204 @@ export async function updateAddonCategory(FormData: FormData) {
     console.error(error);
     return {
       message: "Something went wrong while updating menu",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateSelectLocation(id: number) {
+  try {
+    const location = await fetchLocation();
+    const disselectLocationIds = location
+      .filter((item) => item.id !== id)
+      .map((location) => location.id);
+    await prisma.location.update({ where: { id }, data: { isSelected: true } });
+    await prisma.$transaction(
+      disselectLocationIds.map((item) =>
+        prisma.location.update({
+          where: { id: item },
+          data: { isSelected: false },
+        })
+      )
+    );
+    revalidatePath("/backoffice");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createLocation(formData: FormData) {
+  const name = formData.get("name") as string;
+  const street = formData.get("street") as string;
+  const township = formData.get("township") as string;
+  const city = formData.get("city") as string;
+  const isValid = name && street && township && city;
+  if (!isValid)
+    return { message: "Missing required fields.", isSuccess: false };
+  try {
+    const company = await fetchCompany();
+    company &&
+      (await prisma.location.create({
+        data: { companyId: company.id, name, street, township, city },
+      }));
+    revalidatePath("/backoffice");
+    return { message: "Created location successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while creating location",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateLocation(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const name = formData.get("name") as string;
+  const street = formData.get("street") as string;
+  const township = formData.get("township") as string;
+  const city = formData.get("city") as string;
+  const isValid = id && name && street && township && city;
+  if (!isValid)
+    return { message: "Missing required fields.", isSuccess: false };
+  try {
+    await prisma.location.update({
+      where: { id },
+      data: { name, street, township, city },
+    });
+    revalidatePath("/backoffice");
+    return { message: "Updated location successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while creating location",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deleteLocation(id: number) {
+  try {
+    const location = await fetchLocation();
+    if (location.length < 2) {
+      return {
+        message: "Keep location least one",
+        isSuccess: false,
+      };
+    }
+    const isSelectedId = location.find((item) => item.isSelected === true)?.id;
+    await prisma.location.update({
+      where: { id },
+      data: { isArchived: true, isSelected: false },
+    });
+    const location1 = await fetchLocation();
+    if (isSelectedId === id) {
+      console.log(isSelectedId);
+      console.log(location1[0].id);
+      await prisma.location.update({
+        where: { id: location1[0].id },
+        data: { isSelected: true },
+      });
+    }
+
+    revalidatePath("/backoffice/location");
+    return { message: "Deleted location successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while deleting location",
+      isSuccess: false,
+    };
+  }
+}
+export async function qrUploadCloudinary(imageDataUrl: string) {
+  try {
+    const response = await cloudinary.uploader.upload(imageDataUrl, {
+      folder: "restaurant-pos/tableQr",
+    });
+    return response.secure_url;
+  } catch (err) {
+    console.error("Cloudinary upload failed:", err);
+    return null;
+  }
+}
+
+export const generateQRCode = async (tableUrl: string) => {
+  try {
+    const qrCodeDataUrl = await QRCode.toDataURL(tableUrl);
+    return qrCodeDataUrl;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
+
+export async function createTable(formData: FormData) {
+  const name = formData.get("name") as string;
+  if (!name)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+  try {
+    const locationId = (await fetchLocation()).find(
+      (item) => item.isSelected === true
+    )?.id;
+    const table =
+      locationId &&
+      (await prisma.table.create({ data: { name, locationId, assetUrl: "" } }));
+    const qrCodeData =
+      table &&
+      (await generateQRCode(`${config.orderAppUrl}?tableId=${table.id}`));
+    const qrcodeImage = qrCodeData && (await qrUploadCloudinary(qrCodeData));
+    if (qrcodeImage && table) {
+      await prisma.table.update({
+        where: { id: table.id },
+        data: { assetUrl: qrcodeImage },
+      });
+    }
+    revalidatePath("/backoffice/table");
+    return { message: "Created table successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while creating table",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateTable(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const name = formData.get("name") as string;
+  const isValid = name && id;
+  if (!isValid)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+  try {
+    await prisma.table.update({ where: { id }, data: { name } });
+    revalidatePath("/backoffice/table");
+    return { message: "Updated table successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while updating table",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deleteTable(id: number) {
+  try {
+    await prisma.table.update({ where: { id }, data: { isArchived: true } });
+    revalidatePath("/backoffice/table");
+    return { message: "Deleted table successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while deleting table",
       isSuccess: false,
     };
   }

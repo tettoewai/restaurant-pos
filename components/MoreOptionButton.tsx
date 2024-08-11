@@ -7,7 +7,7 @@ import {
   DropdownTrigger,
   useDisclosure,
 } from "@nextui-org/react";
-import { AddonCategory, Menu, MenuCategory } from "@prisma/client";
+import { AddonCategory, Location, Menu, MenuCategory } from "@prisma/client";
 import { IoMdMore } from "react-icons/io";
 import { MdDelete, MdEdit } from "react-icons/md";
 import DeleteMenuDialog from "./DeleteMenuDailog";
@@ -19,13 +19,24 @@ import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
 import UpdateAddonDialog from "./UpdateAddonDailog";
 import DeleteAddonDialog from "./DeleteAddonDailog";
+import UpdateLocationDialog from "./UpdateLocationDailog";
+import DeleteLocationDialog from "./DeleteLocationDailog";
+import UpdateTableDialog from "./UpdateTableDailog";
+import DeleteTableDialog from "./DeleteTableDailog";
 
 interface Props {
   id: number;
-  itemType: "menu" | "menuCategory" | "addonCategory" | "addon";
+  itemType:
+    | "menu"
+    | "menuCategory"
+    | "addonCategory"
+    | "addon"
+    | "table"
+    | "location";
   categories?: MenuCategory[];
   menu?: Menu[];
   addonCategory?: AddonCategory[];
+  location?: Location[];
 }
 
 export default function MoreOptionButton({
@@ -34,6 +45,7 @@ export default function MoreOptionButton({
   categories,
   menu,
   addonCategory,
+  location,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -134,6 +146,37 @@ export default function MoreOptionButton({
             addonCategory={addonCategory}
           />
           <DeleteAddonDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+          />
+        </>
+      ) : itemType === "location" ? (
+        <>
+          <UpdateLocationDialog
+            id={id}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+          />
+          <DeleteLocationDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+            location={location}
+          />
+        </>
+      ) : itemType === "table" ? (
+        <>
+          <UpdateTableDialog
+            id={id}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+          />
+          <DeleteTableDialog
             id={id}
             onClose={onDeleteClose}
             onOpenChange={onDeleteOpenChange}

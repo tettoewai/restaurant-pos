@@ -1,12 +1,17 @@
-import { deleteAddon } from "@/app/lib/action";
+"use client";
+import { updateMenuCategory, updateTable } from "@/app/lib/action";
+import { fetchMenuCategoryWithId, fetchTableWithId } from "@/app/lib/data";
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
+import { MenuCategory, Table } from "@prisma/client";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -16,22 +21,35 @@ interface Props {
   onClose: () => void;
 }
 
-export default function DeleteAddonDialog({
+export default function UpdateTableDialog({
   id,
   isOpen,
   onOpenChange,
   onClose,
 }: Props) {
+  const [prevData, setPrevData] = useState<Table | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => {
+    const getTable = async () => {
+      const table = await fetchTableWithId(id);
+      setPrevData(table);
+    };
+    getTable();
+  }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await deleteAddon(id);
+    setIsSubmitting(true);
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    formData.set("id", String(id));
+    const { isSuccess, message } = await updateTable(formData);
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
-    }
+    } else toast.error(message);
   };
+
   return (
     <div className="relative">
       <Modal
@@ -44,12 +62,18 @@ export default function DeleteAddonDialog({
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Delete Addon
+                Update Table
               </ModalHeader>
+
               <form onSubmit={handleSubmit}>
                 <ModalBody>
-                  <span>Are you sure you went to delete this addon?</span>
-                  <input type="hidden" name="id" value={id} />
+                  <Input
+                    name="name"
+                    label="Name *"
+                    variant="bordered"
+                    defaultValue={prevData?.name}
+                    required
+                  />
                 </ModalBody>
                 <ModalFooter>
                   <Button
@@ -61,8 +85,9 @@ export default function DeleteAddonDialog({
                   <Button
                     type="submit"
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                    isDisabled={isSubmitting}
                   >
-                    Delete
+                    Update
                   </Button>
                 </ModalFooter>
               </form>
