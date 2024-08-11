@@ -6,7 +6,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import { BiSolidCategoryAlt, BiSolidFoodMenu } from "react-icons/bi";
-import { MdRestaurantMenu, MdSpaceDashboard } from "react-icons/md";
+import {
+  MdLocationOn,
+  MdRestaurantMenu,
+  MdSpaceDashboard,
+  MdTableBar,
+} from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
 
 interface Props {
@@ -42,6 +47,16 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       name: "Addon",
       route: "/backoffice/addon",
       icon: <MdRestaurantMenu />,
+    },
+    {
+      name: "Table",
+      route: "/backoffice/table",
+      icon: <MdTableBar />,
+    },
+    {
+      name: "Location",
+      route: "/backoffice/location",
+      icon: <MdLocationOn />,
     },
   ];
 

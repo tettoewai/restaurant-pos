@@ -1,9 +1,7 @@
-import { fetchMenuCategory, fetchMenu } from "@/app/lib/data";
+import { fetchMenu, fetchMenuCategory } from "@/app/lib/data";
 import { MenuLoading } from "@/app/ui/skeletons";
-import ItemCard from "@/components/ItemCard";
 import MenuCard from "@/components/MenuCard";
 import NewMenuDialog from "@/components/NewMenuDailog";
-import { getServerSession } from "next-auth";
 import { Suspense } from "react";
 
 const Menu = async () => {

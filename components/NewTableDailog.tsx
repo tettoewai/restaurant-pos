@@ -1,30 +1,32 @@
-import { deleteMenuCategory } from "@/app/lib/action";
+"use client";
+import {
+  createLocation,
+  createMenuCategory,
+  createTable,
+} from "@/app/lib/action";
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  useDisclosure,
 } from "@nextui-org/react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
-interface Props {
-  id: number;
-  isOpen: boolean;
-  onOpenChange: () => void;
-  onClose: () => void;
-}
-
-export default function DeleteMenuCategoryDialog({
-  id,
-  isOpen,
-  onOpenChange,
-  onClose,
-}: Props) {
+export default function NewTableDialog() {
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await deleteMenuCategory(id);
+    setIsSubmitting(true);
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const { isSuccess, message } = await createTable(formData);
+    setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
       onClose();
@@ -32,8 +34,15 @@ export default function DeleteMenuCategoryDialog({
       toast.error(message);
     }
   };
+
   return (
     <div className="relative">
+      <Button
+        onPress={onOpen}
+        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
+      >
+        New Table
+      </Button>
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
@@ -42,16 +51,11 @@ export default function DeleteMenuCategoryDialog({
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            Delete Menu Category
+            Create Table
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <span>
-                If you delete category, menus that are connected with this will
-                disappear.
-              </span>
-              <span>Are you sure you went to delete this menu category?</span>
-              <input type="hidden" name="id" value={id} />
+              <Input name="name" label="Name *" variant="bordered" required />
             </ModalBody>
             <ModalFooter>
               <Button
@@ -63,8 +67,9 @@ export default function DeleteMenuCategoryDialog({
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
               >
-                Delete
+                Create
               </Button>
             </ModalFooter>
           </form>

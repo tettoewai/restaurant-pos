@@ -1,3 +1,4 @@
+import { Tooltip } from "@nextui-org/react";
 import { Dispatch, SetStateAction } from "react";
 import {
   IoIosArrowBack,
@@ -6,9 +7,9 @@ import {
   IoMdClose,
 } from "react-icons/io";
 import { IoMenu } from "react-icons/io5";
-import UserProfile from "./UserProfile";
-import { Button, Tooltip } from "@nextui-org/react";
 import { FullScreenButton, ModeButton } from "./Buttons";
+import LocationToggle from "./LocationToggle";
+import UserProfile from "./UserProfile";
 interface Props {
   sideBarOpen: boolean;
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -16,8 +17,8 @@ interface Props {
 export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
   return (
     <div className="top-bar z-10">
-      <div className="content bg-background">
-        <div className="flex items-center space-x-3">
+      <div className="content bg-background flex items-center">
+        <div className="flex items-center space-x-2">
           <button
             type="button"
             className="flex lg:hidden w-10 h-10 cursor-pointer m-1 items-center p-1 text-primary"
@@ -53,8 +54,10 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
             </button>
           </Tooltip>
 
-          <p>TTW-Restaurant POS</p>
+          <span className="hidden md:flex">TTW -</span>
+          <span>Restaurant POS</span>
         </div>
+        <LocationToggle />
         <div className="flex h-full items-center mr-2">
           <FullScreenButton />
           <Tooltip

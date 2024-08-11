@@ -4,6 +4,7 @@ interface Config {
   cloudinaryCloudName: string;
   cloudinaryApiKey: string;
   cloudinaryApiSecret: string;
+  orderAppUrl: string;
 }
 
 export const config: Config = {
@@ -12,4 +13,5 @@ export const config: Config = {
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
+  orderAppUrl: process.env.NEXT_PUBLIC_ORDER_APP_URL || "",
 };

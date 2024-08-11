@@ -1,4 +1,4 @@
-import { deleteMenuCategory } from "@/app/lib/action";
+import { deleteAddon, deleteLocation } from "@/app/lib/action";
 import {
   Button,
   Modal,
@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
+import { Location } from "@prisma/client";
 import { toast } from "react-toastify";
 
 interface Props {
@@ -14,19 +15,29 @@ interface Props {
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
+  location?: Location[];
 }
 
-export default function DeleteMenuCategoryDialog({
+export default function DeleteLocationDialog({
   id,
   isOpen,
   onOpenChange,
   onClose,
+  location,
 }: Props) {
+  const handleLocal = () => {
+    const isUpdateLocation = localStorage.getItem("isUpdateLocation") || "";
+    localStorage.setItem(
+      "isUpdateLocation",
+      isUpdateLocation === "false" ? "true" : "false"
+    );
+  };
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const { isSuccess, message } = await deleteMenuCategory(id);
+    const { isSuccess, message } = await deleteLocation(id);
     if (isSuccess) {
       toast.success(message);
+      handleLocal();
       onClose();
     } else {
       toast.error(message);
@@ -42,15 +53,11 @@ export default function DeleteMenuCategoryDialog({
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            Delete Menu Category
+            Delete Location
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <span>
-                If you delete category, menus that are connected with this will
-                disappear.
-              </span>
-              <span>Are you sure you went to delete this menu category?</span>
+              <span>Are you sure you went to delete this location?</span>
               <input type="hidden" name="id" value={id} />
             </ModalBody>
             <ModalFooter>

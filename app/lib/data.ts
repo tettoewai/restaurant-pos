@@ -1,7 +1,7 @@
 "use server";
 import { prisma } from "@/db";
 import { getServerSession } from "next-auth";
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
 interface Props {
   email: string;
@@ -216,6 +216,63 @@ export async function fetchMenuCategoryWithMenu(id: number) {
   }
 }
 
+export async function fetchLocation() {
+  noStore();
+  try {
+    const company = await fetchCompany();
+    const location = await prisma.location.findMany({
+      where: { companyId: company?.id, isArchived: false },
+      orderBy: { id: "asc" },
+    });
+    return location;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch location data.");
+  }
+}
+
+export async function fetchLocationWithId(id: number) {
+  noStore();
+  try {
+    const location = await prisma.location.findFirst({ where: { id } });
+    return location;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch location data.");
+  }
+}
+
+export async function fetchTable() {
+  noStore();
+  try {
+    const location = await fetchLocation();
+    const selectedLocationId = location.find(
+      (item) => item.isSelected === true
+    )?.id;
+    const table = await prisma.table.findMany({
+      where: {
+        locationId: selectedLocationId,
+        isArchived: false,
+      },
+      orderBy: { id: "asc" },
+    });
+    return table;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch table data.");
+  }
+}
+export async function fetchTableWithId(id: number) {
+  noStore();
+  try {
+    const table = await prisma.table.findFirst({ where: { id } });
+    return table;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch table data.");
+  }
+}
+
 export async function createDefaultData({ email, name }: Props) {
   try {
     const newCompany = await prisma.company.create({
@@ -236,6 +293,7 @@ export async function createDefaultData({ email, name }: Props) {
         township: "Default township",
         city: "Default city",
         companyId: newCompany.id,
+        isSelected: true,
       },
     });
     let newTable = await prisma.table.create({

@@ -5,10 +5,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
-import { AddonCategory, Menu, MenuAddonCategory } from "@prisma/client";
+import {
+  AddonCategory,
+  Location,
+  Menu,
+  MenuAddonCategory,
+} from "@prisma/client";
 import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
-import { MdRestaurantMenu } from "react-icons/md";
+import { MdLocationOn, MdRestaurantMenu, MdTableBar } from "react-icons/md";
+import Image from "next/image";
 
 interface Props {
   id: number;
@@ -17,8 +23,10 @@ interface Props {
   addonCategory?: AddonCategory[];
   addonCategoryId?: number;
   menuAddonCategory?: MenuAddonCategory[];
-  itemType: "addonCategory" | "addon";
+  itemType: "addonCategory" | "addon" | "table" | "location";
   required?: boolean;
+  assetUrl?: string;
+  location?: Location[];
 }
 export default function ItemCard({
   id,
@@ -29,7 +37,10 @@ export default function ItemCard({
   required,
   addonCategoryId,
   addonCategory,
+  assetUrl,
+  location,
 }: Props) {
+  const iconClasses = "size-8 mt-8 mb-1 text-primary";
   const validMenus =
     menuAddonCategory &&
     menus?.filter((menu) =>
@@ -46,12 +57,31 @@ export default function ItemCard({
           itemType={itemType}
           addonCategory={addonCategory}
           menu={menus}
+          location={location}
         />
       </div>
       {itemType === "addonCategory" ? (
-        <TbCategoryPlus className="size-8 mt-8 mb-1 text-primary" />
+        <TbCategoryPlus className={iconClasses} />
       ) : itemType === "addon" ? (
-        <MdRestaurantMenu className="size-8 mt-8 mb-1 text-primary" />
+        <MdRestaurantMenu className={iconClasses} />
+      ) : itemType === "table" ? (
+        <div className="flex justify-center items-center h-3/4 w-full overflow-hidden">
+          {assetUrl ? (
+            <Image
+              src={assetUrl}
+              alt="menu"
+              width={100}
+              height={100}
+              className="h-full w-full object-contain "
+            />
+          ) : (
+            <MdTableBar className={iconClasses} />
+          )}
+        </div>
+      ) : itemType === "location" ? (
+        <div className="flex justify-center items-center h-3/4 w-full overflow-hidden">
+          <MdLocationOn className={iconClasses} />
+        </div>
       ) : null}
       <p className="mt-2 truncate ...">
         {name}

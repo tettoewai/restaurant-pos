@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx prisma migrate deploy && npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -18,6 +18,7 @@
     "next": "14.2.5",
     "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
+    "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
