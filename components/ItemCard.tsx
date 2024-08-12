@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   Chip,
@@ -7,6 +8,7 @@ import {
 } from "@nextui-org/react";
 import {
   AddonCategory,
+  DisabledLocationMenuCategory,
   Location,
   Menu,
   MenuAddonCategory,
@@ -30,8 +32,9 @@ interface Props {
   required?: boolean;
   assetUrl?: string;
   location?: Location[];
+  disableLocationMenuCategory?: DisabledLocationMenuCategory[];
 }
-export default async function ItemCard({
+export default function ItemCard({
   id,
   itemType,
   name,
@@ -42,6 +45,7 @@ export default async function ItemCard({
   addonCategory,
   assetUrl,
   location,
+  disableLocationMenuCategory,
 }: Props) {
   const iconClasses = "size-8 mb-1 text-primary";
   const validMenus =
@@ -52,10 +56,9 @@ export default async function ItemCard({
         .map((menuAddonCat) => menuAddonCat.menuId)
         .includes(menu.id)
     );
-  const disableLocationMenuCategory = await fetchDisableLocationMenuCat();
-  const isExist = disableLocationMenuCategory.find(
-    (item) => item.menuCategoryId === id
-  );
+  const isExist =
+    disableLocationMenuCategory &&
+    disableLocationMenuCategory.find((item) => item.menuCategoryId === id);
 
   return (
     <Card

@@ -111,22 +111,6 @@ export async function fetchAddonWithId(id: number) {
   }
 }
 
-export async function fetchDisableLocationMenuCategoies() {
-  noStore();
-  try {
-    const menuCategories = await fetchMenuCategory();
-    const menuCategoryIds =
-      menuCategories && menuCategories.map((item) => item.id);
-    const disableLocationMenuCategories =
-      await prisma.disabledLocationMenuCategory.findMany({
-        where: { menuCategoryId: { in: menuCategoryIds } },
-      });
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch disableLocationMenuCategory data.");
-  }
-}
-
 export async function fetchMenuCategoryMenu() {
   noStore();
   try {
