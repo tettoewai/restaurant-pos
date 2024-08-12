@@ -11,7 +11,7 @@ export default function SignIn() {
           onClick={() =>
             signIn("google", { callbackUrl: "/backoffice/dashboard" })
           }
-          className="bg-cyan-500 hover:bg-cyan-600 rounded-md w-52 h-10 text-white"
+          className="bg-primary rounded-md w-52 h-10 text-white"
         >
           Sign in with Google
         </Button>

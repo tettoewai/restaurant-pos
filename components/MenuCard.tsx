@@ -1,13 +1,21 @@
 import {
+  fetchDisableLocationMenu,
   fetchMenu,
   fetchMenuAddonCategory,
   fetchMenuCategory,
   fetchMenuCategoryMenu,
 } from "@/app/lib/data";
-import { Card, Chip } from "@nextui-org/react";
+import {
+  Card,
+  Chip,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@nextui-org/react";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
+import clsx from "clsx";
 
 interface Props {
   id: number;
@@ -25,8 +33,15 @@ export default async function MenuCard({ id, name, image, price }: Props) {
   const menuCategory = categories.filter((item) =>
     validMenuCategoryIds.includes(item.id)
   );
+  const disableLocationMenu = await fetchDisableLocationMenu();
+  const isExist = disableLocationMenu.find((item) => item.menuId === id);
   return (
-    <Card className="bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden">
+    <Card
+      className={clsx(
+        "bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden",
+        { "opacity-70": isExist }
+      )}
+    >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <MoreOptionButton id={id} itemType="menu" categories={categories} />
       </div>
@@ -53,9 +68,22 @@ export default async function MenuCard({ id, name, image, price }: Props) {
           </Chip>
         ))}
         {menuCategory.length > 2 && (
-          <Chip variant="bordered" size="sm">
-            ....
-          </Chip>
+          <Popover placement="bottom-start" showArrow={true}>
+            <PopoverTrigger>
+              <Chip variant="bordered" size="sm" className="cursor-pointer">
+                ....
+              </Chip>
+            </PopoverTrigger>
+            <PopoverContent className="p-2">
+              <div className="space-y-1 flex flex-col">
+                {menuCategory.slice(2).map((item) => (
+                  <Chip variant="bordered" size="sm" key={item.id}>
+                    {item.name}
+                  </Chip>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
     </Card>

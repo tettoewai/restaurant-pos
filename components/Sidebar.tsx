@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import { BiSolidCategoryAlt, BiSolidFoodMenu } from "react-icons/bi";
+import { IoFastFood } from "react-icons/io5";
+
 import {
   MdLocationOn,
   MdRestaurantMenu,
@@ -31,6 +33,11 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       name: "Dashboard",
       route: "/backoffice/dashboard",
       icon: <MdSpaceDashboard />,
+    },
+    {
+      name: "Order",
+      route: "/backoffice/order",
+      icon: <IoFastFood />,
     },
     {
       name: "Menu category",

@@ -15,6 +15,9 @@ import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
 import { MdLocationOn, MdRestaurantMenu, MdTableBar } from "react-icons/md";
 import Image from "next/image";
+import { BiSolidCategoryAlt } from "react-icons/bi";
+import { fetchDisableLocationMenuCat } from "@/app/lib/data";
+import clsx from "clsx";
 
 interface Props {
   id: number;
@@ -23,12 +26,12 @@ interface Props {
   addonCategory?: AddonCategory[];
   addonCategoryId?: number;
   menuAddonCategory?: MenuAddonCategory[];
-  itemType: "addonCategory" | "addon" | "table" | "location";
+  itemType: "addonCategory" | "addon" | "table" | "location" | "menuCategory";
   required?: boolean;
   assetUrl?: string;
   location?: Location[];
 }
-export default function ItemCard({
+export default async function ItemCard({
   id,
   itemType,
   name,
@@ -40,7 +43,7 @@ export default function ItemCard({
   assetUrl,
   location,
 }: Props) {
-  const iconClasses = "size-8 mt-8 mb-1 text-primary";
+  const iconClasses = "size-8 mb-1 text-primary";
   const validMenus =
     menuAddonCategory &&
     menus?.filter((menu) =>
@@ -49,8 +52,18 @@ export default function ItemCard({
         .map((menuAddonCat) => menuAddonCat.menuId)
         .includes(menu.id)
     );
+  const disableLocationMenuCategory = await fetchDisableLocationMenuCat();
+  const isExist = disableLocationMenuCategory.find(
+    (item) => item.menuCategoryId === id
+  );
+
   return (
-    <Card className="bg-background w-[170px] h-44 p-1 mr-2 mb-2 md:w-48 flex flex-col items-center relative overflow-hidden">
+    <Card
+      className={clsx(
+        "bg-background w-[170px] h-44 p-1 mr-2 mb-2 md:w-48 flex flex-col items-center relative overflow-hidden justify-center",
+        { "opacity-70": isExist && itemType === "menuCategory" }
+      )}
+    >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <MoreOptionButton
           id={id}
@@ -64,6 +77,8 @@ export default function ItemCard({
         <TbCategoryPlus className={iconClasses} />
       ) : itemType === "addon" ? (
         <MdRestaurantMenu className={iconClasses} />
+      ) : itemType === "menuCategory" ? (
+        <BiSolidCategoryAlt className={iconClasses} />
       ) : itemType === "table" ? (
         <div className="flex justify-center items-center h-3/4 w-full overflow-hidden">
           {assetUrl ? (

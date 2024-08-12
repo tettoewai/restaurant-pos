@@ -528,6 +528,80 @@ export async function createTable(formData: FormData) {
   }
 }
 
+export async function handleDisableLocationMenu({
+  available,
+  menuId,
+}: {
+  available: boolean;
+  menuId: number;
+}) {
+  try {
+    const locationId = (await fetchLocation()).find(
+      (item) => item.isSelected === true
+    )?.id;
+    if (available) {
+      const item = await prisma.disabledLocationMenu.findFirst({
+        where: { menuId, locationId },
+      });
+      item &&
+        (await prisma.disabledLocationMenu.delete({ where: { id: item.id } }));
+      revalidatePath("/backoffice/menu");
+      return { message: "Enable available successfully.", isSuccess: true };
+    } else {
+      locationId &&
+        (await prisma.disabledLocationMenu.create({
+          data: { menuId, locationId },
+        }));
+      revalidatePath("/backoffice/menu");
+      return { message: "Disable available successfully.", isSuccess: true };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while toggling available menu",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function handleDisableLocationMenuCat({
+  available,
+  menuCategoryId,
+}: {
+  available: boolean;
+  menuCategoryId: number;
+}) {
+  try {
+    const locationId = (await fetchLocation()).find(
+      (item) => item.isSelected === true
+    )?.id;
+    if (available) {
+      const item = await prisma.disabledLocationMenuCategory.findFirst({
+        where: { menuCategoryId, locationId },
+      });
+      item &&
+        (await prisma.disabledLocationMenuCategory.delete({
+          where: { id: item.id },
+        }));
+      revalidatePath("/backoffice/menu-category");
+      return { message: "Enable available successfully.", isSuccess: true };
+    } else {
+      locationId &&
+        (await prisma.disabledLocationMenuCategory.create({
+          data: { menuCategoryId, locationId },
+        }));
+      revalidatePath("/backoffice/menu-category");
+      return { message: "Disable available successfully.", isSuccess: true };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while toggling available menu",
+      isSuccess: false,
+    };
+  }
+}
+
 export async function updateTable(formData: FormData) {
   const id = Number(formData.get("id"));
   const name = formData.get("name") as string;

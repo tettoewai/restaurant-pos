@@ -245,13 +245,12 @@ export async function fetchLocationWithId(id: number) {
 export async function fetchTable() {
   noStore();
   try {
-    const location = await fetchLocation();
-    const selectedLocationId = location.find(
-      (item) => item.isSelected === true
-    )?.id;
+    const selectedLocation = await prisma.location.findFirst({
+      where: { isSelected: true },
+    });
     const table = await prisma.table.findMany({
       where: {
-        locationId: selectedLocationId,
+        locationId: selectedLocation?.id,
         isArchived: false,
       },
       orderBy: { id: "asc" },
@@ -270,6 +269,47 @@ export async function fetchTableWithId(id: number) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch table data.");
+  }
+}
+
+export async function fetchSelectedLocation() {
+  try {
+    const selectedLocation = await prisma.location.findFirst({
+      where: { isSelected: true },
+    });
+    return selectedLocation;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch selected location data.");
+  }
+}
+
+export async function fetchDisableLocationMenu() {
+  noStore();
+  try {
+    const selectedLocation = await fetchSelectedLocation();
+    const disabledLocationMenu = await prisma.disabledLocationMenu.findMany({
+      where: { locationId: selectedLocation?.id },
+    });
+    return disabledLocationMenu;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch disable location menu data.");
+  }
+}
+
+export async function fetchDisableLocationMenuCat() {
+  noStore();
+  try {
+    const selectedLocation = await fetchSelectedLocation();
+    const disabledLocationMenuCat =
+      await prisma.disabledLocationMenuCategory.findMany({
+        where: { locationId: selectedLocation?.id },
+      });
+    return disabledLocationMenuCat;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch disable location menu data.");
   }
 }
 

@@ -12,6 +12,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
 } from "@nextui-org/react";
 import { AddonCategory, Menu } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
@@ -138,7 +139,11 @@ export default function UpdateAddonCategoryDialog({
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                     isDisabled={isSubmitting}
                   >
-                    Update
+                    {isSubmitting ? (
+                      <Spinner color="white" />
+                    ) : (
+                      <span>Update</span>
+                    )}
                   </Button>
                 </ModalFooter>
               </form>

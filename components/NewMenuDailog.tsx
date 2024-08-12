@@ -17,6 +17,7 @@ import { IoMdClose } from "react-icons/io";
 import { toast } from "react-toastify";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
+import { Spinner } from "@nextui-org/spinner";
 
 interface Props {
   menuCategory: MenuCategory[];
@@ -124,7 +125,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting}
               >
-                Create
+                {isSubmitting ? <Spinner color="white" /> : <span>Create</span>}
               </Button>
             </ModalFooter>
           </form>
