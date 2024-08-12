@@ -81,21 +81,25 @@ export default function MoreOptionButton({
       : null;
   useEffect(() => {
     const getDisableLocationMenu = async () => {
-      const disableLocationMenu = await fetchDisableLocationMenu();
-      const disableLocationMenuCat = await fetchDisableLocationMenuCat();
-      const isExist = disableLocationMenu.find((item) => item.menuId === id);
-      const isExistCat = disableLocationMenuCat.find(
-        (item) => item.menuCategoryId === id
-      );
-      if (isExist) {
-        setAvailable(false);
-      } else {
-        setAvailable(true);
-      }
-      if (isExistCat) {
-        setAvailableMenuCat(false);
-      } else {
-        setAvailableMenuCat(true);
+      try {
+        const disableLocationMenu = await fetchDisableLocationMenu();
+        const disableLocationMenuCat = await fetchDisableLocationMenuCat();
+        const isExist = disableLocationMenu.find((item) => item.menuId === id);
+        const isExistCat = disableLocationMenuCat.find(
+          (item) => item.menuCategoryId === id
+        );
+        if (isExist) {
+          setAvailable(false);
+        } else {
+          setAvailable(true);
+        }
+        if (isExistCat) {
+          setAvailableMenuCat(false);
+        } else {
+          setAvailableMenuCat(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch disable location menu:", error);
       }
     };
     getDisableLocationMenu();

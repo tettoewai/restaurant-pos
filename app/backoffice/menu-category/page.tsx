@@ -1,9 +1,10 @@
-import { fetchMenuCategory } from "@/app/lib/data";
+import { fetchDisableLocationMenuCat, fetchMenuCategory } from "@/app/lib/data";
 import ItemCard from "@/components/ItemCard";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";
 
 const MenuCateogory = async () => {
   const menuCategory = await fetchMenuCategory();
+  const disableLocationMenuCategory = await fetchDisableLocationMenuCat();
   return (
     <div>
       <div className="w-full flex justify-between items-center">
@@ -22,6 +23,7 @@ const MenuCateogory = async () => {
             key={item.id}
             id={item.id}
             name={item.name}
+            disableLocationMenuCategory={disableLocationMenuCategory}
           />
         ))}
       </div>
