@@ -1,6 +1,6 @@
 "use client";
 import { fetchUser } from "@/app/lib/data";
-import { Button } from "@nextui-org/react";
+import { Avatar, Button } from "@nextui-org/react";
 import { User } from "@prisma/client";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -19,19 +19,12 @@ export default function UserProfile() {
       getUser(sessionEmail);
     }
   }, [sessionEmail]);
-  const imageUrl = user?.image || "/my_logo.jpg";
   return (
-    <div className="h-full overflow-hidden hidden lg:flex">
+    <div className="h-full hidden lg:flex items-center justify-center">
       {user ? (
         <>
-          <div className="rounded-full h-full p-1">
-            <Image
-              src={imageUrl}
-              alt="profile"
-              width={50}
-              height={50}
-              className="h-full"
-            />
+          <div className="m-1 h-full flex items-center justify-center">
+            <Avatar src={user.image || ""} />
           </div>
           <div className="flex flex-col h-full justify-center">
             <p className="text-sm">{user.name}</p>

@@ -37,6 +37,10 @@ export default function Locationtoggle() {
   const handleSelectChange = (e: any) => {
     setSelectedKey(e);
     updateSelectLocation(Number(e.currentKey));
+    localStorage.setItem(
+      "isUpdateLocation",
+      isUpdateLocation === "false" ? "true" : "false"
+    );
   };
 
   const selectedLocation = location.find(

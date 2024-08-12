@@ -54,8 +54,9 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
             </button>
           </Tooltip>
 
-          <span className="hidden md:flex">TTW -</span>
-          <span>Restaurant POS</span>
+          <span>TTW -</span>
+          <span className="hidden md:flex">Restaurant </span>
+          <span>POS</span>
         </div>
         <LocationToggle />
         <div className="flex h-full items-center mr-2">
