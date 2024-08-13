@@ -20,6 +20,7 @@ import Image from "next/image";
 import { BiSolidCategoryAlt } from "react-icons/bi";
 import { fetchDisableLocationMenuCat } from "@/app/lib/data";
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 
 interface Props {
   id: number;
@@ -56,10 +57,17 @@ export default function ItemCard({
         .map((menuAddonCat) => menuAddonCat.menuId)
         .includes(menu.id)
     );
-  const isExist =
-    disableLocationMenuCategory &&
-    disableLocationMenuCategory.find((item) => item.menuCategoryId === id);
-
+  const isUpdateLocation =
+    typeof window !== "undefined"
+      ? localStorage.getItem("isUpdateLocation")
+      : null;
+  const [isExist, setIsExist] = useState<DisabledLocationMenuCategory>();
+  useEffect(() => {
+    setIsExist(
+      disableLocationMenuCategory &&
+        disableLocationMenuCategory.find((item) => item.menuCategoryId === id)
+    );
+  }, [isUpdateLocation, disableLocationMenuCategory, id]);
   return (
     <Card
       className={clsx(

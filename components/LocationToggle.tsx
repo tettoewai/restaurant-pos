@@ -1,6 +1,6 @@
 "use client";
 import { updateSelectLocation } from "@/app/lib/action";
-import { fetchLocation } from "@/app/lib/data";
+import { fetchLocation, fetchSelectedLocation } from "@/app/lib/data";
 import {
   Button,
   Dropdown,
@@ -25,10 +25,9 @@ export default function Locationtoggle() {
   useEffect(() => {
     const getLocation = async () => {
       const locations = await fetchLocation();
+      const selectedLocation = await fetchSelectedLocation();
       setLocation(locations);
-      setSelectedKey(
-        new Set(String(locations.find((item) => item.isSelected === true)?.id))
-      );
+      setSelectedKey(new Set(String(selectedLocation?.id)));
     };
 
     getLocation();

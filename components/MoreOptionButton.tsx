@@ -80,25 +80,29 @@ export default function MoreOptionButton({
     // add other item types if needed
   });
 
-  const fetchDisableData = async () => {
-    try {
-      let data;
-      if (itemType === "menu") {
-        data = await fetchDisableLocationMenu();
-        const isItemDisabled = data.some((item) => item.menuId === id);
-        setAvailability((prev) => ({ ...prev, menu: !isItemDisabled }));
-      } else if (itemType === "menuCategory") {
-        data = await fetchDisableLocationMenuCat();
-        const isItemDisabled = data.some((item) => item.menuCategoryId === id);
-        setAvailability((prev) => ({ ...prev, menuCategory: !isItemDisabled }));
-      }
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-      toast.error("Failed to fetch data. Please try again.");
-    }
-  };
-
   useEffect(() => {
+    const fetchDisableData = async () => {
+      try {
+        let data;
+        if (itemType === "menu") {
+          data = await fetchDisableLocationMenu();
+          const isItemDisabled = data.some((item) => item.menuId === id);
+          setAvailability((prev) => ({ ...prev, menu: !isItemDisabled }));
+        } else if (itemType === "menuCategory") {
+          data = await fetchDisableLocationMenuCat();
+          const isItemDisabled = data.some(
+            (item) => item.menuCategoryId === id
+          );
+          setAvailability((prev) => ({
+            ...prev,
+            menuCategory: !isItemDisabled,
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        toast.error("Failed to fetch data. Please try again.");
+      }
+    };
     fetchDisableData();
   }, [itemType, id]);
 

@@ -15,6 +15,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
+import { useEffect, useState } from "react";
 
 interface Props {
   id: number;
@@ -34,14 +35,20 @@ export default function MenuCard({
   menuCategoryMenu,
   disableLocationMenu,
 }: Props) {
-  if (!categories) return;
   const validMenuCategoryIds = menuCategoryMenu
     .filter((item) => item.menuId === id)
     .map((categoryMenu) => categoryMenu.menuCategoryId);
   const menuCategory = categories.filter((item) =>
     validMenuCategoryIds.includes(item.id)
   );
-  const isExist = disableLocationMenu.find((item) => item.menuId === id);
+  const isUpdateLocation =
+    typeof window !== "undefined"
+      ? localStorage.getItem("isUpdateLocation")
+      : null;
+  const [isExist, setIsExist] = useState<DisabledLocationMenu>();
+  useEffect(() => {
+    setIsExist(disableLocationMenu.find((item) => item.menuId === id));
+  }, [isUpdateLocation, disableLocationMenu, id]);
   return (
     <Card
       className={clsx(
