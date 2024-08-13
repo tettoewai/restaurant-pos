@@ -258,8 +258,9 @@ export async function fetchTableWithId(id: number) {
 
 export async function fetchSelectedLocation() {
   try {
+    const companyId = (await fetchCompany())?.id;
     const selectedLocation = await prisma.location.findFirst({
-      where: { isSelected: true },
+      where: { isSelected: true, companyId },
     });
     return selectedLocation;
   } catch (error) {

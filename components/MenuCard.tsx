@@ -1,10 +1,4 @@
-import {
-  fetchDisableLocationMenu,
-  fetchMenu,
-  fetchMenuAddonCategory,
-  fetchMenuCategory,
-  fetchMenuCategoryMenu,
-} from "@/app/lib/data";
+"use client";
 import {
   Card,
   Chip,
@@ -12,20 +6,34 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
+import {
+  DisabledLocationMenu,
+  MenuCategory,
+  MenuCategoryMenu,
+} from "@prisma/client";
+import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
-import clsx from "clsx";
 
 interface Props {
   id: number;
   name: string;
   image?: string | null;
   price?: number;
+  categories: MenuCategory[];
+  menuCategoryMenu: MenuCategoryMenu[];
+  disableLocationMenu: DisabledLocationMenu[];
 }
-export default async function MenuCard({ id, name, image, price }: Props) {
-  const categories = await fetchMenuCategory();
-  const menuCategoryMenu = await fetchMenuCategoryMenu();
+export default function MenuCard({
+  id,
+  name,
+  image,
+  price,
+  categories,
+  menuCategoryMenu,
+  disableLocationMenu,
+}: Props) {
   if (!categories) return;
   const validMenuCategoryIds = menuCategoryMenu
     .filter((item) => item.menuId === id)
@@ -33,13 +41,12 @@ export default async function MenuCard({ id, name, image, price }: Props) {
   const menuCategory = categories.filter((item) =>
     validMenuCategoryIds.includes(item.id)
   );
-  const disableLocationMenu = await fetchDisableLocationMenu();
   const isExist = disableLocationMenu.find((item) => item.menuId === id);
   return (
     <Card
       className={clsx(
         "bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden",
-        { "opacity-70": isExist }
+        { "opacity-50": isExist }
       )}
     >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">

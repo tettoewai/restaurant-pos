@@ -1,4 +1,9 @@
-import { fetchMenu, fetchMenuCategory } from "@/app/lib/data";
+import {
+  fetchDisableLocationMenu,
+  fetchMenu,
+  fetchMenuCategory,
+  fetchMenuCategoryMenu,
+} from "@/app/lib/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MenuCard from "@/components/MenuCard";
 import NewMenuDialog from "@/components/NewMenuDailog";
@@ -7,6 +12,9 @@ import { Suspense } from "react";
 const Menu = async () => {
   const menus = await fetchMenu();
   const menuCategory = await fetchMenuCategory();
+  const menuCategoryMenu = await fetchMenuCategoryMenu();
+  const disableLocationMenu = await fetchDisableLocationMenu();
+  console.log(disableLocationMenu);
   return (
     <div>
       <div className="w-full flex justify-between items-center">
@@ -24,6 +32,9 @@ const Menu = async () => {
               name={item.name}
               image={item.assetUrl}
               price={item.price}
+              categories={menuCategory}
+              menuCategoryMenu={menuCategoryMenu}
+              disableLocationMenu={disableLocationMenu}
             />
           </Suspense>
         ))}

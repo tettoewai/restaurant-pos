@@ -4,7 +4,12 @@ import { config } from "@/config";
 import { prisma } from "@/db";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
-import { fetchCompany, fetchLocation, fetchMenuAddonCategory } from "./data";
+import {
+  fetchCompany,
+  fetchLocation,
+  fetchMenuAddonCategory,
+  fetchSelectedLocation,
+} from "./data";
 import QRCode from "qrcode";
 
 interface Props {
@@ -536,9 +541,7 @@ export async function handleDisableLocationMenu({
   menuId: number;
 }) {
   try {
-    const locationId = (await fetchLocation()).find(
-      (item) => item.isSelected === true
-    )?.id;
+    const locationId = (await fetchSelectedLocation())?.id;
     if (available) {
       const item = await prisma.disabledLocationMenu.findFirst({
         where: { menuId, locationId },
@@ -572,9 +575,7 @@ export async function handleDisableLocationMenuCat({
   menuCategoryId: number;
 }) {
   try {
-    const locationId = (await fetchLocation()).find(
-      (item) => item.isSelected === true
-    )?.id;
+    const locationId = (await fetchSelectedLocation())?.id;
     if (available) {
       const item = await prisma.disabledLocationMenuCategory.findFirst({
         where: { menuCategoryId, locationId },
