@@ -15,7 +15,10 @@ import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
-import { useEffect, useState } from "react";
+import {
+  fetchDisableLocationMenu,
+  fetchMenuCategoryMenu,
+} from "@/app/lib/data";
 
 interface Props {
   id: number;
@@ -23,32 +26,23 @@ interface Props {
   image?: string | null;
   price?: number;
   categories: MenuCategory[];
-  menuCategoryMenu: MenuCategoryMenu[];
-  disableLocationMenu: DisabledLocationMenu[];
 }
-export default function MenuCard({
+export default async function MenuCard({
   id,
   name,
   image,
   price,
   categories,
-  menuCategoryMenu,
-  disableLocationMenu,
 }: Props) {
+  const menuCategoryMenu = await fetchMenuCategoryMenu();
+  const disableLocationMenu = await fetchDisableLocationMenu();
   const validMenuCategoryIds = menuCategoryMenu
     .filter((item) => item.menuId === id)
     .map((categoryMenu) => categoryMenu.menuCategoryId);
   const menuCategory = categories.filter((item) =>
     validMenuCategoryIds.includes(item.id)
   );
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
-  const [isExist, setIsExist] = useState<DisabledLocationMenu>();
-  useEffect(() => {
-    setIsExist(disableLocationMenu.find((item) => item.menuId === id));
-  }, [isUpdateLocation, disableLocationMenu, id]);
+  const isExist = disableLocationMenu.find((item) => item.menuId === id);
   return (
     <Card
       className={clsx(

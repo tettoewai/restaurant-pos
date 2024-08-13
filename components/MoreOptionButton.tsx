@@ -107,7 +107,7 @@ export default function MoreOptionButton({
       }
     };
     getDisableLocationMenu();
-  }, [isUpdateLocation, id]);
+  }, [isUpdateLocation, id, itemType]);
   const handleSwitchChange = async (e: boolean) => {
     if (itemType === "menu") {
       const { isSuccess } = await handleDisableLocationMenu({
