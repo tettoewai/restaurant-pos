@@ -1,5 +1,13 @@
 "use client";
 import {
+  handleDisableLocationMenu,
+  handleDisableLocationMenuCat,
+} from "@/app/lib/action";
+import {
+  fetchDisableLocationMenu,
+  fetchDisableLocationMenuCat,
+} from "@/app/lib/data";
+import {
   cn,
   Dropdown,
   DropdownItem,
@@ -9,6 +17,7 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { AddonCategory, Location, Menu, MenuCategory } from "@prisma/client";
+import { useEffect, useState } from "react";
 import { IoMdMore } from "react-icons/io";
 import { MdDelete, MdEdit } from "react-icons/md";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
@@ -17,23 +26,13 @@ import DeleteLocationDialog from "./DeleteLocationDailog";
 import DeleteMenuCategoryDialog from "./DeleteMenuCategoryDailog";
 import DeleteMenuDialog from "./DeleteMenuDailog";
 import DeleteTableDialog from "./DeleteTableDailog";
-import { MenuAvailable } from "./MenuAvailable";
 import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import UpdateAddonDialog from "./UpdateAddonDailog";
 import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
-import { useEffect, useState } from "react";
-import {
-  fetchDisableLocationMenu,
-  fetchDisableLocationMenuCat,
-} from "@/app/lib/data";
-import {
-  handleDisableLocationMenu,
-  handleDisableLocationMenuCat,
-} from "@/app/lib/action";
-import MenuCard from "./MenuCard";
+import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -82,21 +81,27 @@ export default function MoreOptionButton({
   useEffect(() => {
     const getDisableLocationMenu = async () => {
       try {
-        const disableLocationMenu = await fetchDisableLocationMenu();
-        const disableLocationMenuCat = await fetchDisableLocationMenuCat();
-        const isExist = disableLocationMenu.find((item) => item.menuId === id);
-        const isExistCat = disableLocationMenuCat.find(
-          (item) => item.menuCategoryId === id
-        );
-        if (isExist) {
-          setAvailable(false);
+        if (itemType === "menu") {
+          const disableLocationMenu = await fetchDisableLocationMenu();
+          const isExist = disableLocationMenu.find(
+            (item) => item.menuId === id
+          );
+          if (isExist) {
+            setAvailable(false);
+          } else {
+            setAvailable(true);
+          }
         } else {
-          setAvailable(true);
-        }
-        if (isExistCat) {
-          setAvailableMenuCat(false);
-        } else {
-          setAvailableMenuCat(true);
+          const disableLocationMenuCat = await fetchDisableLocationMenuCat();
+          const isExistCat = disableLocationMenuCat.find(
+            (item) => item.menuCategoryId === id
+          );
+
+          if (isExistCat) {
+            setAvailableMenuCat(false);
+          } else {
+            setAvailableMenuCat(true);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch disable location menu:", error);
@@ -104,13 +109,23 @@ export default function MoreOptionButton({
     };
     getDisableLocationMenu();
   }, [isUpdateLocation, id]);
-  const handleSwitchChange = (e: boolean) => {
+  const handleSwitchChange = async (e: boolean) => {
     if (itemType === "menu") {
-      handleDisableLocationMenu({ available: e, menuId: id });
-      setAvailable(e);
+      const { isSuccess } = await handleDisableLocationMenu({
+        available: e,
+        menuId: id,
+      });
+      if (isSuccess) {
+        setAvailable(e);
+      }
     } else {
-      handleDisableLocationMenuCat({ available: e, menuCategoryId: id });
-      setAvailableMenuCat(e);
+      const { isSuccess } = await handleDisableLocationMenuCat({
+        available: e,
+        menuCategoryId: id,
+      });
+      if (isSuccess) {
+        setAvailableMenuCat(e);
+      }
     }
   };
   return (

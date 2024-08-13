@@ -458,8 +458,6 @@ export async function deleteLocation(id: number) {
     });
     const location1 = await fetchLocation();
     if (isSelectedId === id) {
-      console.log(isSelectedId);
-      console.log(location1[0].id);
       await prisma.location.update({
         where: { id: location1[0].id },
         data: { isSelected: true },

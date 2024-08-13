@@ -14,7 +14,6 @@ const Menu = async () => {
   const menuCategory = await fetchMenuCategory();
   const menuCategoryMenu = await fetchMenuCategoryMenu();
   const disableLocationMenu = await fetchDisableLocationMenu();
-  console.log(disableLocationMenu);
   return (
     <div>
       <div className="w-full flex justify-between items-center">

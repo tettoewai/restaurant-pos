@@ -34,9 +34,9 @@ export default function Locationtoggle() {
     getLocation();
   }, [isUpdateLocation]);
 
-  const handleSelectChange = (e: any) => {
+  const handleSelectChange = async (e: any) => {
     setSelectedKey(e);
-    updateSelectLocation(Number(e.currentKey));
+    await updateSelectLocation(Number(e.currentKey));
     localStorage.setItem(
       "isUpdateLocation",
       isUpdateLocation === "false" ? "true" : "false"
