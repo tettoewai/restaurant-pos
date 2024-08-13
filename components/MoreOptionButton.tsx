@@ -70,64 +70,185 @@ export default function MoreOptionButton({
     onOpenChange: onDeleteOpenChange,
     onClose: onDeleteClose,
   } = useDisclosure();
+
   const iconClasses =
     "text-xl text-default-500 pointer-events-none flex-shrink-0";
-  const [available, setAvailable] = useState<boolean>(false);
-  const [availableMenuCat, setAvailableMenuCat] = useState<boolean>(false);
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
-  useEffect(() => {
-    const getDisableLocationMenu = async () => {
-      try {
-        if (itemType === "menu") {
-          const disableLocationMenu = await fetchDisableLocationMenu();
-          const isExist = disableLocationMenu.find(
-            (item) => item.menuId === id
-          );
-          if (isExist) {
-            setAvailable(false);
-          } else {
-            setAvailable(true);
-          }
-        } else {
-          const disableLocationMenuCat = await fetchDisableLocationMenuCat();
-          const isExistCat = disableLocationMenuCat.find(
-            (item) => item.menuCategoryId === id
-          );
 
-          if (isExistCat) {
-            setAvailableMenuCat(false);
-          } else {
-            setAvailableMenuCat(true);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch disable location menu:", error);
+  const [availability, setAvailability] = useState({
+    menu: false,
+    menuCategory: false,
+    // add other item types if needed
+  });
+
+  const fetchDisableData = async () => {
+    try {
+      let data;
+      if (itemType === "menu") {
+        data = await fetchDisableLocationMenu();
+        const isItemDisabled = data.some((item) => item.menuId === id);
+        setAvailability((prev) => ({ ...prev, menu: !isItemDisabled }));
+      } else if (itemType === "menuCategory") {
+        data = await fetchDisableLocationMenuCat();
+        const isItemDisabled = data.some((item) => item.menuCategoryId === id);
+        setAvailability((prev) => ({ ...prev, menuCategory: !isItemDisabled }));
       }
-    };
-    getDisableLocationMenu();
-  }, [isUpdateLocation, id]);
-  const handleSwitchChange = async (e: boolean) => {
-    if (itemType === "menu") {
-      const { isSuccess } = await handleDisableLocationMenu({
-        available: e,
-        menuId: id,
-      });
-      if (isSuccess) {
-        setAvailable(e);
-      }
-    } else {
-      const { isSuccess } = await handleDisableLocationMenuCat({
-        available: e,
-        menuCategoryId: id,
-      });
-      if (isSuccess) {
-        setAvailableMenuCat(e);
-      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+      toast.error("Failed to fetch data. Please try again.");
     }
   };
+
+  useEffect(() => {
+    fetchDisableData();
+  }, [itemType, id]);
+
+  const handleSwitchChange = async (e: boolean) => {
+    try {
+      let result;
+      if (itemType === "menu") {
+        result = await handleDisableLocationMenu({ available: e, menuId: id });
+        if (result.isSuccess) setAvailability((prev) => ({ ...prev, menu: e }));
+      } else if (itemType === "menuCategory") {
+        result = await handleDisableLocationMenuCat({
+          available: e,
+          menuCategoryId: id,
+        });
+        if (result.isSuccess)
+          setAvailability((prev) => ({ ...prev, menuCategory: e }));
+      }
+    } catch (error) {
+      console.error("Failed to update availability:", error);
+      toast.error("Failed to update availability. Please try again.");
+    }
+  };
+
+  const getDialogComponents = () => {
+    switch (itemType) {
+      case "menu":
+        return {
+          updateDialog: (
+            <UpdateMenuDialog
+              id={id}
+              menuCategory={categories}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          ),
+          deleteDialog: (
+            <DeleteMenuDialog
+              id={id}
+              onClose={onDeleteClose}
+              onOpenChange={onDeleteOpenChange}
+              isOpen={isDeleteOpen}
+            />
+          ),
+        };
+      case "menuCategory":
+        return {
+          updateDialog: (
+            <UpdateMenuCategoryDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          ),
+          deleteDialog: (
+            <DeleteMenuCategoryDialog
+              id={id}
+              onClose={onDeleteClose}
+              onOpenChange={onDeleteOpenChange}
+              isOpen={isDeleteOpen}
+            />
+          ),
+        };
+      case "addonCategory":
+        return {
+          updateDialog: (
+            <UpdateAddonCategoryDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+              menu={menu}
+            />
+          ),
+          deleteDialog: (
+            <DeleteAddonCategoryDialog
+              id={id}
+              onClose={onDeleteClose}
+              onOpenChange={onDeleteOpenChange}
+              isOpen={isDeleteOpen}
+            />
+          ),
+        };
+      case "addon":
+        return {
+          updateDialog: (
+            <UpdateAddonDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+              addonCategory={addonCategory}
+            />
+          ),
+          deleteDialog: (
+            <DeleteAddonDialog
+              id={id}
+              onClose={onDeleteClose}
+              onOpenChange={onDeleteOpenChange}
+              isOpen={isDeleteOpen}
+            />
+          ),
+        };
+      case "location":
+        return {
+          updateDialog: (
+            <UpdateLocationDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          ),
+          deleteDialog: (
+            <DeleteLocationDialog
+              id={id}
+              onClose={onDeleteClose}
+              onOpenChange={onDeleteOpenChange}
+              isOpen={isDeleteOpen}
+              location={location}
+            />
+          ),
+        };
+      case "table":
+        return {
+          updateDialog: (
+            <UpdateTableDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          ),
+          deleteDialog: (
+            <DeleteTableDialog
+              id={id}
+              onClose={onDeleteClose}
+              onOpenChange={onDeleteOpenChange}
+              isOpen={isDeleteOpen}
+            />
+          ),
+        };
+      default:
+        return { updateDialog: null, deleteDialog: null };
+    }
+  };
+
+  const { updateDialog, deleteDialog } = getDialogComponents();
+
   return (
     <>
       <Dropdown className="bg-background min-w-12">
@@ -150,7 +271,7 @@ export default function MoreOptionButton({
               key="available"
               endContent={
                 <Switch
-                  isSelected={available}
+                  isSelected={availability.menu}
                   onValueChange={handleSwitchChange}
                   className="m-0"
                   size="sm"
@@ -166,7 +287,7 @@ export default function MoreOptionButton({
               key="available"
               endContent={
                 <Switch
-                  isSelected={availableMenuCat}
+                  isSelected={availability.menuCategory}
                   onValueChange={handleSwitchChange}
                   className="m-0"
                   size="sm"
@@ -190,101 +311,8 @@ export default function MoreOptionButton({
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
-      {itemType === "menu" ? (
-        <>
-          <UpdateMenuDialog
-            id={id}
-            menuCategory={categories}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
-          <DeleteMenuDialog
-            id={id}
-            onClose={onDeleteClose}
-            onOpenChange={onDeleteOpenChange}
-            isOpen={isDeleteOpen}
-          />
-        </>
-      ) : itemType === "menuCategory" ? (
-        <>
-          <UpdateMenuCategoryDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
-          <DeleteMenuCategoryDialog
-            id={id}
-            onClose={onDeleteClose}
-            onOpenChange={onDeleteOpenChange}
-            isOpen={isDeleteOpen}
-          />
-        </>
-      ) : itemType === "addonCategory" ? (
-        <>
-          <UpdateAddonCategoryDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-            menu={menu}
-          />
-          <DeleteAddonCategoryDialog
-            id={id}
-            onClose={onDeleteClose}
-            onOpenChange={onDeleteOpenChange}
-            isOpen={isDeleteOpen}
-          />
-        </>
-      ) : itemType === "addon" ? (
-        <>
-          <UpdateAddonDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-            addonCategory={addonCategory}
-          />
-          <DeleteAddonDialog
-            id={id}
-            onClose={onDeleteClose}
-            onOpenChange={onDeleteOpenChange}
-            isOpen={isDeleteOpen}
-          />
-        </>
-      ) : itemType === "location" ? (
-        <>
-          <UpdateLocationDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
-          <DeleteLocationDialog
-            id={id}
-            onClose={onDeleteClose}
-            onOpenChange={onDeleteOpenChange}
-            isOpen={isDeleteOpen}
-            location={location}
-          />
-        </>
-      ) : itemType === "table" ? (
-        <>
-          <UpdateTableDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
-          <DeleteTableDialog
-            id={id}
-            onClose={onDeleteClose}
-            onOpenChange={onDeleteOpenChange}
-            isOpen={isDeleteOpen}
-          />
-        </>
-      ) : null}
+      {updateDialog}
+      {deleteDialog}
     </>
   );
 }
