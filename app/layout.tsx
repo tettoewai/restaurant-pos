@@ -5,6 +5,7 @@ import { Ubuntu } from "next/font/google";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 import { createDefaultData, fetchUser } from "./lib/data";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const lato = Ubuntu({ subsets: ["latin"], weight: "500" });
 
@@ -30,6 +31,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={lato.className}>
         <Providers>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
