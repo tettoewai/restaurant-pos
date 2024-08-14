@@ -40,17 +40,24 @@ export default function UpdateMenuDialog({
   );
   const [menuImage, setMenuImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    const getPrevMenu = async () => {
-      const prevMenu = await fetchMenuWithId(id);
-      setPrevData(prevMenu);
-      const prevCategories = await fetchMenuCategoryWithMenu(id);
-      const prevCategoryIds = prevCategories.map((item) =>
-        String(item.menuCategoryId)
-      );
-      setSelectedCategory(new Set(prevCategoryIds));
-    };
-    getPrevMenu();
+    if (isOpen) {
+      const getPrevMenu = async () => {
+        setIsLoading(true);
+        const [prevMenu, prevCategories] = await Promise.all([
+          fetchMenuWithId(id),
+          fetchMenuCategoryWithMenu(id),
+        ]);
+        setPrevData(prevMenu);
+        const prevCategoryIds = prevCategories.map((item) =>
+          String(item.menuCategoryId)
+        );
+        setSelectedCategory(new Set(prevCategoryIds));
+        setIsLoading(false);
+      };
+      getPrevMenu();
+    }
   }, [isOpen, id]);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -86,14 +93,13 @@ export default function UpdateMenuDialog({
         placement="center"
       >
         <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Update Menu
-              </ModalHeader>
-
-              <form ref={formRef} onSubmit={handleSubmit}>
-                <ModalBody>
+          <ModalHeader className="flex flex-col gap-1">Update Menu</ModalHeader>
+          <form ref={formRef} onSubmit={handleSubmit}>
+            <ModalBody>
+              {isLoading ? (
+                <Spinner size="sm" />
+              ) : (
+                <>
                   <Input
                     name="name"
                     label="Name *"
@@ -145,29 +151,25 @@ export default function UpdateMenuDialog({
                       }}
                     />
                   )}
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                    isDisabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Spinner color="white" />
-                    ) : (
-                      <span>Update</span>
-                    )}
-                  </Button>
-                </ModalFooter>
-              </form>
-            </>
-          )}
+                </>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
+              >
+                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+              </Button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </div>

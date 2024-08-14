@@ -1,4 +1,3 @@
-"use client";
 import {
   Card,
   Chip,
@@ -26,6 +25,8 @@ interface Props {
   image?: string | null;
   price?: number;
   categories: MenuCategory[];
+  menuCategoryMenu: MenuCategoryMenu[];
+  disableLocationMenu: DisabledLocationMenu[];
 }
 export default async function MenuCard({
   id,
@@ -33,9 +34,9 @@ export default async function MenuCard({
   image,
   price,
   categories,
+  menuCategoryMenu,
+  disableLocationMenu,
 }: Props) {
-  const menuCategoryMenu = await fetchMenuCategoryMenu();
-  const disableLocationMenu = await fetchDisableLocationMenu();
   const validMenuCategoryIds = menuCategoryMenu
     .filter((item) => item.menuId === id)
     .map((categoryMenu) => categoryMenu.menuCategoryId);
@@ -51,7 +52,12 @@ export default async function MenuCard({
       )}
     >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
-        <MoreOptionButton id={id} itemType="menu" categories={categories} />
+        <MoreOptionButton
+          id={id}
+          itemType="menu"
+          categories={categories}
+          disableLocationMenu={disableLocationMenu}
+        />
       </div>
       <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
         <Image

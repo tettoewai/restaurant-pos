@@ -30,6 +30,7 @@ export default function UpdateLocationDialog({
 }: Props) {
   const [prevData, setPrevData] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const handleLocal = () => {
     const isUpdateLocation = localStorage.getItem("isUpdateLocation") || "";
     localStorage.setItem(
@@ -38,11 +39,15 @@ export default function UpdateLocationDialog({
     );
   };
   useEffect(() => {
-    const getPrevData = async () => {
-      const location = await fetchLocationWithId(id);
-      location && setPrevData(location);
-    };
-    getPrevData();
+    if (isOpen) {
+      const getPrevData = async () => {
+        setIsLoading(true);
+        const location = await fetchLocationWithId(id);
+        location && setPrevData(location);
+        setIsLoading(false);
+      };
+      getPrevData();
+    }
   }, [isOpen, id]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -75,34 +80,40 @@ export default function UpdateLocationDialog({
 
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <Input
-                name="name"
-                label="Name *"
-                variant="bordered"
-                required
-                defaultValue={prevData?.name}
-              />
-              <Input
-                name="street"
-                label="Street *"
-                variant="bordered"
-                defaultValue={prevData?.street}
-                required
-              />
-              <Input
-                name="township"
-                label="Township *"
-                variant="bordered"
-                defaultValue={prevData?.township}
-                required
-              />
-              <Input
-                name="city"
-                label="City *"
-                variant="bordered"
-                required
-                defaultValue={prevData?.city}
-              />
+              {isLoading ? (
+                <Spinner size="sm" />
+              ) : (
+                <>
+                  <Input
+                    name="name"
+                    label="Name *"
+                    variant="bordered"
+                    required
+                    defaultValue={prevData?.name}
+                  />
+                  <Input
+                    name="street"
+                    label="Street *"
+                    variant="bordered"
+                    defaultValue={prevData?.street}
+                    required
+                  />
+                  <Input
+                    name="township"
+                    label="Township *"
+                    variant="bordered"
+                    defaultValue={prevData?.township}
+                    required
+                  />
+                  <Input
+                    name="city"
+                    label="City *"
+                    variant="bordered"
+                    required
+                    defaultValue={prevData?.city}
+                  />
+                </>
+              )}
             </ModalBody>
             <ModalFooter>
               <Button

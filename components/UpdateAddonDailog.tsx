@@ -36,6 +36,7 @@ export default function UpdateAddonDialog({
     new Set([])
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const closeModal = () => {
@@ -51,12 +52,16 @@ export default function UpdateAddonDialog({
   };
 
   useEffect(() => {
-    const getPrevData = async () => {
-      const addon = await fetchAddonWithId(id);
-      setPrevData(addon);
-      setSelectedAddonCat(new Set(String(addon?.addonCategoryId)));
-    };
-    getPrevData();
+    if (isOpen) {
+      const getPrevData = async () => {
+        setIsLoading(true);
+        const addon = await fetchAddonWithId(id);
+        setPrevData(addon);
+        setSelectedAddonCat(new Set(String(addon?.addonCategoryId)));
+        setIsLoading(false);
+      };
+      getPrevData();
+    }
   }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -88,14 +93,16 @@ export default function UpdateAddonDialog({
         placement="center"
       >
         <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Update Addon
-              </ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            Update Addon
+          </ModalHeader>
 
-              <form ref={formRef} onSubmit={handleSubmit}>
-                <ModalBody>
+          <form ref={formRef} onSubmit={handleSubmit}>
+            <ModalBody>
+              {isLoading ? (
+                <Spinner size="sm" />
+              ) : (
+                <>
                   <Input
                     name="name"
                     label="Name *"
@@ -110,29 +117,26 @@ export default function UpdateAddonDialog({
                     addonCategoryList={addonCategory}
                     itemType="addon"
                   />
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                    isDisabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Spinner color="white" />
-                    ) : (
-                      <span>Update</span>
-                    )}
-                  </Button>
-                </ModalFooter>
-              </form>
-            </>
-          )}
+                </>
+              )}
+            </ModalBody>
+
+            <ModalFooter>
+              <Button
+                className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
+              >
+                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+              </Button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </div>

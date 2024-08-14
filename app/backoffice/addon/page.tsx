@@ -3,8 +3,10 @@ import ItemCard from "@/components/ItemCard";
 import NewAddonDialog from "@/components/NewAddonDailog";
 
 const Addon = async () => {
-  const addon = await fetchAddon();
-  const addonCategory = await fetchAddonCategory();
+  const [addon, addonCategory] = await Promise.all([
+    fetchAddon(),
+    fetchAddonCategory(),
+  ]);
   return (
     <div>
       <div className="w-full flex justify-between items-center">

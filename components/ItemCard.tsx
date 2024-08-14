@@ -13,14 +13,13 @@ import {
   Menu,
   MenuAddonCategory,
 } from "@prisma/client";
+import clsx from "clsx";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { BiSolidCategoryAlt } from "react-icons/bi";
+import { MdLocationOn, MdRestaurantMenu, MdTableBar } from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
-import { MdLocationOn, MdRestaurantMenu, MdTableBar } from "react-icons/md";
-import Image from "next/image";
-import { BiSolidCategoryAlt } from "react-icons/bi";
-import { fetchDisableLocationMenuCat } from "@/app/lib/data";
-import clsx from "clsx";
-import { useEffect, useState } from "react";
 
 interface Props {
   id: number;
@@ -82,6 +81,7 @@ export default function ItemCard({
           addonCategory={addonCategory}
           menu={menus}
           location={location}
+          disableLocationMenuCat={disableLocationMenuCategory}
         />
       </div>
       {itemType === "addonCategory" ? (

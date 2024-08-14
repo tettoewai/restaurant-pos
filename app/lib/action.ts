@@ -109,6 +109,7 @@ export async function updateMenuCategory(formData: FormData) {
 }
 
 export async function updateMenu({ formData }: Props) {
+  console.log(formData);
   const id = Number(formData.get("id"));
   const name = formData.get("name") as string;
   const price = Number(formData.get("price"));

@@ -30,12 +30,17 @@ export default function UpdateTableDialog({
 }: Props) {
   const [prevData, setPrevData] = useState<Table | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    const getTable = async () => {
-      const table = await fetchTableWithId(id);
-      setPrevData(table);
-    };
-    getTable();
+    if (isOpen) {
+      setIsLoading(true);
+      const getTable = async () => {
+        const table = await fetchTableWithId(id);
+        setPrevData(table);
+        setIsLoading(false);
+      };
+      getTable();
+    }
   }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -60,44 +65,40 @@ export default function UpdateTableDialog({
         placement="center"
       >
         <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Update Table
-              </ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            Update Table
+          </ModalHeader>
 
-              <form onSubmit={handleSubmit}>
-                <ModalBody>
-                  <Input
-                    name="name"
-                    label="Name *"
-                    variant="bordered"
-                    defaultValue={prevData?.name}
-                    required
-                  />
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                    isDisabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Spinner color="white" />
-                    ) : (
-                      <span>Update</span>
-                    )}
-                  </Button>
-                </ModalFooter>
-              </form>
-            </>
-          )}
+          <form onSubmit={handleSubmit}>
+            <ModalBody>
+              {isLoading ? (
+                <Spinner size="sm" />
+              ) : (
+                <Input
+                  name="name"
+                  label="Name *"
+                  variant="bordered"
+                  defaultValue={prevData?.name}
+                  required
+                />
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting}
+              >
+                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+              </Button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </div>

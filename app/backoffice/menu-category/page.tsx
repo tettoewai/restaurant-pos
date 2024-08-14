@@ -3,8 +3,10 @@ import ItemCard from "@/components/ItemCard";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";
 
 const MenuCateogory = async () => {
-  const menuCategory = await fetchMenuCategory();
-  const disableLocationMenuCategory = await fetchDisableLocationMenuCat();
+  const [menuCategory, disableLocationMenuCategory] = await Promise.all([
+    fetchMenuCategory(),
+    fetchDisableLocationMenuCat(),
+  ]);
   return (
     <div>
       <div className="w-full flex justify-between items-center">

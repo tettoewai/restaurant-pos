@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "app/lib/**.ts": {
-      "maxDuration": 60
-    }
-  }
-}

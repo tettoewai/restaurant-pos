@@ -23,14 +23,16 @@ export default function Locationtoggle() {
       ? localStorage.getItem("isUpdateLocation")
       : null;
   useEffect(() => {
-    const getLocation = async () => {
-      const locations = await fetchLocation();
-      const selectedLocation = await fetchSelectedLocation();
+    const getSelectedLocation = async () => {
+      const [locations, selectedLocation] = await Promise.all([
+        fetchLocation(),
+        fetchSelectedLocation(),
+      ]);
       setLocation(locations);
       setSelectedKey(new Set(String(selectedLocation?.id)));
     };
 
-    getLocation();
+    getSelectedLocation();
   }, [isUpdateLocation]);
 
   const handleSelectChange = async (e: any) => {
@@ -42,9 +44,9 @@ export default function Locationtoggle() {
     );
   };
 
-  const selectedLocation = location.find(
+  const selectedLocationName = location.find(
     (item) => item.id === Number(Array.from(selectedKey)[0])
-  );
+  )?.name;
 
   return (
     <Dropdown>
@@ -55,7 +57,7 @@ export default function Locationtoggle() {
           startContent={<MdLocationOn className="text-primary" />}
           endContent={<IoIosArrowDown className="text-primary" />}
         >
-          {selectedLocation?.name}
+          {selectedLocationName}
         </Button>
       </DropdownTrigger>
       <DropdownMenu

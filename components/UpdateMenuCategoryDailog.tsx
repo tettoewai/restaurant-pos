@@ -28,15 +28,22 @@ export default function UpdateMenuCategoryDialog({
   onOpenChange,
   onClose,
 }: Props) {
-  const [prevData, setPrevData] = useState<MenuCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [prevData, setPrevData] = useState<MenuCategory | null>(null);
+
   useEffect(() => {
-    const getMenuCategory = async () => {
-      const menuCategory = await fetchMenuCategoryWithId(id);
-      setPrevData(menuCategory);
-    };
-    getMenuCategory();
+    if (isOpen) {
+      const getMenuCategory = async () => {
+        setIsLoading(true);
+        const menuCategory = await fetchMenuCategoryWithId(id);
+        setPrevData(menuCategory);
+        setIsLoading(false);
+      };
+      getMenuCategory();
+    }
   }, [isOpen, id]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -48,7 +55,9 @@ export default function UpdateMenuCategoryDialog({
     if (isSuccess) {
       toast.success(message);
       onClose();
-    } else toast.error(message);
+    } else {
+      toast.error(message);
+    }
   };
 
   return (
@@ -60,44 +69,42 @@ export default function UpdateMenuCategoryDialog({
         placement="center"
       >
         <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Update Menu Category
-              </ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            Update Menu Category
+          </ModalHeader>
 
-              <form onSubmit={handleSubmit}>
-                <ModalBody>
-                  <Input
-                    name="name"
-                    label="Name *"
-                    variant="bordered"
-                    defaultValue={prevData?.name}
-                    required
-                  />
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                    isDisabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Spinner color="white" />
-                    ) : (
-                      <span>Update</span>
-                    )}
-                  </Button>
-                </ModalFooter>
-              </form>
-            </>
-          )}
+          <form onSubmit={handleSubmit}>
+            <ModalBody>
+              {isLoading ? (
+                <div className="flex justify-center">
+                  <Spinner size="sm" />
+                </div>
+              ) : (
+                <Input
+                  name="name"
+                  label="Name *"
+                  variant="bordered"
+                  defaultValue={prevData?.name}
+                  required
+                />
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isSubmitting || isLoading}
+              >
+                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+              </Button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </div>

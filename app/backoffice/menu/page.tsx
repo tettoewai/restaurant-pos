@@ -12,6 +12,8 @@ import { Suspense } from "react";
 const Menu = async () => {
   const menus = await fetchMenu();
   const menuCategory = await fetchMenuCategory();
+  const menuCategoryMenu = await fetchMenuCategoryMenu();
+  const disableLocationMenu = await fetchDisableLocationMenu();
 
   return (
     <div>
@@ -31,6 +33,8 @@ const Menu = async () => {
               image={item.assetUrl}
               price={item.price}
               categories={menuCategory}
+              menuCategoryMenu={menuCategoryMenu}
+              disableLocationMenu={disableLocationMenu}
             />
           </Suspense>
         ))}
