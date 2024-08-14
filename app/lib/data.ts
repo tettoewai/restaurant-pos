@@ -229,9 +229,7 @@ export async function fetchLocationWithId(id: number) {
 export async function fetchTable() {
   noStore();
   try {
-    const selectedLocation = await prisma.location.findFirst({
-      where: { isSelected: true },
-    });
+    const selectedLocation = await fetchSelectedLocation();
     const table = await prisma.table.findMany({
       where: {
         locationId: selectedLocation?.id,
