@@ -1,24 +1,24 @@
 "use client";
 import { fetchUser } from "@/app/lib/data";
-import { Avatar, Button } from "@nextui-org/react";
+import { UserProfileSkeleton } from "@/app/ui/skeletons";
+import { Avatar } from "@nextui-org/react";
 import { User } from "@prisma/client";
-import { signOut, useSession } from "next-auth/react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function UserProfile() {
   const [user, setUser] = useState<User | null>(null);
-  const session = useSession();
-  const sessionEmail = session.data?.user?.email;
-  const getUser = async (email: string) => {
-    const user = await fetchUser();
-    user && setUser(user);
-  };
+  const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
-    if (sessionEmail) {
-      getUser(sessionEmail);
-    }
-  }, [sessionEmail]);
+    const getUser = async () => {
+      setLoading(true);
+      const user = await fetchUser();
+      user && setUser(user);
+      setLoading(false);
+    };
+    getUser();
+  }, []);
+  if (loading) return <UserProfileSkeleton />;
   return (
     <div className="h-full hidden lg:flex items-center justify-center">
       {user ? (

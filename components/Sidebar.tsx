@@ -30,14 +30,14 @@ interface SideBarItem {
 export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   const sideBarItem: SideBarItem[] = [
     {
-      name: "Dashboard",
-      route: "/backoffice/dashboard",
-      icon: <MdSpaceDashboard />,
-    },
-    {
       name: "Order",
       route: "/backoffice/order",
       icon: <IoFastFood />,
+    },
+    {
+      name: "Dashboard",
+      route: "/backoffice/dashboard",
+      icon: <MdSpaceDashboard />,
     },
     {
       name: "Menu category",
