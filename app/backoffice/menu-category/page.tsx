@@ -1,6 +1,8 @@
 import { fetchDisableLocationMenuCat, fetchMenuCategory } from "@/app/lib/data";
+import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";
+import { Suspense } from "react";
 
 const MenuCateogory = async () => {
   const [menuCategory, disableLocationMenuCategory] = await Promise.all([
@@ -20,13 +22,9 @@ const MenuCateogory = async () => {
       </div>
       <div className="flex flex-wrap mt-2">
         {menuCategory.map((item) => (
-          <ItemCard
-            itemType="menuCategory"
-            key={item.id}
-            id={item.id}
-            name={item.name}
-            disableLocationMenuCategory={disableLocationMenuCategory}
-          />
+          <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
+            <ItemCard itemType="menuCategory" id={item.id} name={item.name} />
+          </Suspense>
         ))}
       </div>
     </div>

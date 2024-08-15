@@ -1,6 +1,8 @@
 import { fetchLocation } from "@/app/lib/data";
+import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewLocationDialog from "@/components/NewLocationDailog";
+import { Suspense } from "react";
 
 export default async function Location() {
   const location = await fetchLocation();
@@ -15,13 +17,9 @@ export default async function Location() {
       </div>
       <div className="flex flex-wrap mt-2">
         {location.map((item) => (
-          <ItemCard
-            key={item.id}
-            id={item.id}
-            name={item.name}
-            itemType="location"
-            location={location}
-          />
+          <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
+            <ItemCard id={item.id} name={item.name} itemType="location" />
+          </Suspense>
         ))}
       </div>
     </div>

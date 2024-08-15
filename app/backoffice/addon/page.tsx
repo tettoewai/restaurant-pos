@@ -1,6 +1,8 @@
 import { fetchAddon, fetchAddonCategory } from "@/app/lib/data";
+import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewAddonDialog from "@/components/NewAddonDailog";
+import { Suspense } from "react";
 
 const Addon = async () => {
   const [addon, addonCategory] = await Promise.all([
@@ -18,14 +20,14 @@ const Addon = async () => {
       </div>
       <div className="flex flex-wrap mt-2">
         {addon.map((addon) => (
-          <ItemCard
-            itemType="addon"
-            id={addon.id}
-            key={addon.id}
-            name={addon.name}
-            addonCategoryId={addon.addonCategoryId}
-            addonCategory={addonCategory}
-          />
+          <Suspense key={addon.id} fallback={<ItemCardSkeleton />}>
+            <ItemCard
+              itemType="addon"
+              id={addon.id}
+              name={addon.name}
+              addonCategoryId={addon.addonCategoryId}
+            />
+          </Suspense>
         ))}
       </div>
     </div>

@@ -1,4 +1,10 @@
-"use client";
+import {
+  fetchAddonCategory,
+  fetchDisableLocationMenuCat,
+  fetchLocation,
+  fetchMenu,
+  fetchMenuAddonCategory,
+} from "@/app/lib/data";
 import {
   Card,
   Chip,
@@ -6,16 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
-import {
-  AddonCategory,
-  DisabledLocationMenuCategory,
-  Location,
-  Menu,
-  MenuAddonCategory,
-} from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { BiSolidCategoryAlt } from "react-icons/bi";
 import { MdLocationOn, MdRestaurantMenu, MdTableBar } from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
@@ -24,30 +22,32 @@ import MoreOptionButton from "./MoreOptionButton";
 interface Props {
   id: number;
   name: string;
-  menus?: Menu[];
-  addonCategory?: AddonCategory[];
   addonCategoryId?: number;
-  menuAddonCategory?: MenuAddonCategory[];
   itemType: "addonCategory" | "addon" | "table" | "location" | "menuCategory";
   required?: boolean;
   assetUrl?: string;
-  location?: Location[];
-  disableLocationMenuCategory?: DisabledLocationMenuCategory[];
 }
-export default function ItemCard({
+export default async function ItemCard({
   id,
   itemType,
   name,
-  menuAddonCategory,
-  menus,
   required,
   addonCategoryId,
-  addonCategory,
   assetUrl,
-  location,
-  disableLocationMenuCategory,
 }: Props) {
   const iconClasses = "size-8 mb-1 text-primary";
+  const menuAddonCategory =
+    itemType === "addonCategory" ? await fetchMenuAddonCategory() : undefined;
+  const menus = itemType === "addonCategory" ? await fetchMenu() : undefined;
+  const addonCategory =
+    itemType === "addonCategory" || itemType === "addon"
+      ? await fetchAddonCategory()
+      : undefined;
+  const location = itemType === "location" ? await fetchLocation() : undefined;
+  const disableLocationMenuCategory =
+    itemType === "menuCategory"
+      ? await fetchDisableLocationMenuCat()
+      : undefined;
   const validMenus =
     menuAddonCategory &&
     menus?.filter((menu) =>
@@ -56,21 +56,18 @@ export default function ItemCard({
         .map((menuAddonCat) => menuAddonCat.menuId)
         .includes(menu.id)
     );
+  const disableLocationMenuCat = await fetchDisableLocationMenuCat();
+  const isExist = disableLocationMenuCat.find(
+    (item) => item.menuCategoryId === id
+  );
   const isUpdateLocation =
     typeof window !== "undefined"
       ? localStorage.getItem("isUpdateLocation")
       : null;
-  const [isExist, setIsExist] = useState<DisabledLocationMenuCategory>();
-  useEffect(() => {
-    setIsExist(
-      disableLocationMenuCategory &&
-        disableLocationMenuCategory.find((item) => item.menuCategoryId === id)
-    );
-  }, [isUpdateLocation, disableLocationMenuCategory, id]);
   return (
     <Card
       className={clsx(
-        "bg-background w-[170px] h-44 p-1 mr-2 mb-2 md:w-48 flex flex-col items-center relative overflow-hidden justify-center",
+        "bg-background w-60 h-48 p-1 mr-2 mb-2 md:w-48 flex flex-col items-center relative overflow-hidden justify-center",
         { "opacity-70": isExist && itemType === "menuCategory" }
       )}
     >
@@ -114,11 +111,11 @@ export default function ItemCard({
         {required ? <span className="text-primary"> *</span> : null}
       </p>
       <div className="mt-4 w-full flex justify-center flex-wrap">
-        {addonCategory && (
+        {addonCategory && itemType !== "addonCategory" ? (
           <Chip variant="bordered" className="m-[1px]" size="sm">
             {addonCategory.find((item) => item.id === addonCategoryId)?.name}
           </Chip>
-        )}
+        ) : null}
         {validMenus &&
           validMenus.slice(0, 2).map((item) => (
             <Chip

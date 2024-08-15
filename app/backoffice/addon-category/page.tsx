@@ -3,8 +3,10 @@ import {
   fetchMenu,
   fetchMenuAddonCategory,
 } from "@/app/lib/data";
+import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewAddonCategoryDialog from "@/components/NewAddonCategoryDailog";
+import { Suspense } from "react";
 
 const AddonCateogory = async () => {
   const [addonCategory, menus, menuAddonCategory] = await Promise.all([
@@ -25,15 +27,14 @@ const AddonCateogory = async () => {
       </div>
       <div className="flex flex-wrap mt-2">
         {addonCategory.map((item) => (
-          <ItemCard
-            id={item.id}
-            key={item.id}
-            name={item.name}
-            itemType="addonCategory"
-            menus={menus}
-            menuAddonCategory={menuAddonCategory}
-            required={item.isRequired}
-          />
+          <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
+            <ItemCard
+              id={item.id}
+              name={item.name}
+              itemType="addonCategory"
+              required={item.isRequired}
+            />
+          </Suspense>
         ))}
       </div>
     </div>

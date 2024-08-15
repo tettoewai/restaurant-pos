@@ -7,6 +7,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Spinner,
 } from "@nextui-org/react";
 import { Location } from "@prisma/client";
 import React, { useEffect, useState } from "react";
@@ -18,21 +19,24 @@ export default function Locationtoggle() {
     new Set([])
   );
   const [location, setLocation] = useState<Location[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const isUpdateLocation =
     typeof window !== "undefined"
       ? localStorage.getItem("isUpdateLocation")
       : null;
   useEffect(() => {
-    const getSelectedLocation = async () => {
+    const getLocation = async () => {
+      setIsLoading(true);
       const [locations, selectedLocation] = await Promise.all([
         fetchLocation(),
         fetchSelectedLocation(),
       ]);
       setLocation(locations);
       setSelectedKey(new Set(String(selectedLocation?.id)));
+      setIsLoading(false);
     };
 
-    getSelectedLocation();
+    getLocation();
   }, [isUpdateLocation]);
 
   const handleSelectChange = async (e: any) => {
@@ -51,14 +55,18 @@ export default function Locationtoggle() {
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button
-          variant="flat"
-          className="bg-background"
-          startContent={<MdLocationOn className="text-primary" />}
-          endContent={<IoIosArrowDown className="text-primary" />}
-        >
-          {selectedLocationName}
-        </Button>
+        {isLoading ? (
+          <Spinner size="sm" />
+        ) : (
+          <Button
+            variant="flat"
+            className="bg-background"
+            startContent={<MdLocationOn className="text-primary" />}
+            endContent={<IoIosArrowDown className="text-primary" />}
+          >
+            {selectedLocationName}
+          </Button>
+        )}
       </DropdownTrigger>
       <DropdownMenu
         aria-label="location select"

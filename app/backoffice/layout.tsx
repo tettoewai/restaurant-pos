@@ -1,10 +1,9 @@
 "use client";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
-import TopLoading from "@/components/TopLoading";
 import { ScrollShadow } from "@nextui-org/react";
 import { useTheme } from "next-themes";
-import { ReactNode, Suspense, useState } from "react";
+import { ReactNode, useState } from "react";
 import { ToastContainer } from "react-toastify";
 
 interface Props {
