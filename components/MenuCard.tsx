@@ -14,10 +14,6 @@ import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
-import {
-  fetchDisableLocationMenu,
-  fetchMenuCategoryMenu,
-} from "@/app/lib/data";
 
 interface Props {
   id: number;

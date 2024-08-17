@@ -23,6 +23,34 @@ cloudinary.config({
   secure: true,
 });
 
+export async function updateCompany(formData: FormData) {
+  const name = formData.get("name") as string;
+  const street = formData.get("street") as string;
+  const township = formData.get("township") as string;
+  const city = formData.get("city") as string;
+  const isValid = name && street && township && city;
+  if (!isValid)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+  try {
+    const company = await fetchCompany();
+    await prisma.company.update({
+      where: { id: company?.id },
+      data: { name, street, township, city },
+    });
+    revalidatePath("/backoffice");
+    return { message: "Updated company successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while updating company",
+      isSuccess: false,
+    };
+  }
+}
+
 export async function createMenu({ formData }: Props) {
   const name = formData.get("name") as string;
   const price = Number(formData.get("price"));

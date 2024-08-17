@@ -15,6 +15,7 @@ import {
   MdTableBar,
 } from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
+import { IoSettings } from "react-icons/io5";
 
 interface Props {
   sideBarOpen: boolean;
@@ -64,6 +65,11 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       name: "Location",
       route: "/backoffice/location",
       icon: <MdLocationOn />,
+    },
+    {
+      name: "Setting",
+      route: "/backoffice/setting",
+      icon: <IoSettings />,
     },
   ];
 

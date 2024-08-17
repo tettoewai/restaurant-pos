@@ -9,7 +9,7 @@ export default function Home() {
         <Link href={"/backoffice/dashboard"}>
           <Button className="bg-primary m-2 rounded-sm p-2">Backoffice</Button>
         </Link>
-        <Link href={"/order"}>
+        <Link href={"/order?tableId=1"}>
           <Button className="bg-orange-300 m-2 rounded-sm p-2">Order</Button>
         </Link>
       </div>
