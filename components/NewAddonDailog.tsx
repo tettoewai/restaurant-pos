@@ -81,6 +81,7 @@ export default function NewAddonDialog({ addonCategory }: Props) {
           <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody>
               <Input name="name" label="Name *" variant="bordered" required />
+              <Input name="price" label="Price" variant="bordered" />
               <MultipleSelector
                 selectedList={selectedAddonCat}
                 setSelectedList={setSelectedAddonCat}

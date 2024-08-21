@@ -13,7 +13,7 @@ export default async function Table() {
         </div>
         <NewTableDialog />
       </div>
-      <div className="flex flex-wrap mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 mt-2">
         {tables.length > 0 ? (
           tables.map((item) => (
             <ItemCard

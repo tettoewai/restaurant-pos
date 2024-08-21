@@ -18,7 +18,7 @@ const Addon = async () => {
         </div>
         <NewAddonDialog addonCategory={addonCategory} />
       </div>
-      <div className="flex flex-wrap mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 mt-2">
         {addon.map((addon) => (
           <Suspense key={addon.id} fallback={<ItemCardSkeleton />}>
             <ItemCard
@@ -26,6 +26,7 @@ const Addon = async () => {
               id={addon.id}
               name={addon.name}
               addonCategoryId={addon.addonCategoryId}
+              price={addon.price}
             />
           </Suspense>
         ))}

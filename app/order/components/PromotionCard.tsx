@@ -1,42 +1,40 @@
 "use client";
+import { Card, Divider, ScrollShadow } from "@nextui-org/react";
 import { useEffect, useRef } from "react";
-import { Card, ScrollShadow } from "@nextui-org/react";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 export default function PromotionCard() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const cards = [1, 2, 3, 4, 5, 6]; // Example data for cards
+  const cards = [1, 2, 3, 4, 5];
 
   useEffect(() => {
-    const scroll = () => {
+    const interval = setInterval(() => {
       if (scrollRef.current) {
-        if (
-          scrollRef.current.scrollLeft + scrollRef.current.clientWidth >=
-          scrollRef.current.scrollWidth / 2
-        ) {
-          // Reset scroll position to the beginning for infinite loop effect
-          scrollRef.current.scrollTo({ left: 0, behavior: "auto" });
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        if (scrollLeft + clientWidth + 1 >= scrollWidth) {
+          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
         } else {
-          scrollRef.current.scrollBy({ left: 100, behavior: "smooth" });
+          scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
         }
       }
-    };
+    }, 5000); // adjust the time interval (in milliseconds)
 
-    const interval = setInterval(scroll, 5000); // Adjust the interval duration for speed
-
-    return () => clearInterval(interval);
+    return () => clearInterval(interval); // Cleanup the interval on component unmount
   }, []);
 
   return (
-    <div className="flex items-center flex-col">
-      <span className="mb-2 text-primary">Promotions (Coming soon)</span>
+    <div className="flex items-center flex-col relative">
+      <span className="mb-2 text-primary text-center">
+        Promotions (Coming soon)
+        <Divider className="bg-gray-400 w-56 mt-1" />
+      </span>
       <ScrollShadow
         hideScrollBar
-        size={0}
+        isEnabled={false}
         orientation="horizontal"
         className="w-full flex space-x-1 p-1 justify-start snap-mandatory snap-x scroll-smooth"
         ref={scrollRef}
       >
-        {/* Render original set of cards */}
         {cards.map((item, index) => (
           <Card
             key={index}
@@ -47,6 +45,26 @@ export default function PromotionCard() {
           </Card>
         ))}
       </ScrollShadow>
+      <div className="hidden md:flex">
+        <button
+          className="absolute left-4 top-28 bg-gray-200 bg-opacity-50 rounded-sm h-10 text-lg"
+          onClick={() => {
+            scrollRef.current &&
+              scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
+          }}
+        >
+          <IoIosArrowBack />
+        </button>
+        <button
+          className="absolute right-4 top-28 bg-gray-200 bg-opacity-50 rounded-sm h-10 text-lg"
+          onClick={() => {
+            scrollRef.current &&
+              scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
+          }}
+        >
+          <IoIosArrowForward />
+        </button>
+      </div>
     </div>
   );
 }

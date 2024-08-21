@@ -30,7 +30,7 @@ const TopBarOrder = () => {
     getData();
   }, [tableId]);
   return (
-    <div className="w-full bg-background h-16 rounded-md flex items-center justify-between">
+    <div className="w-full bg-background h-16 rounded-md flex items-center justify-between fixed top-0 z-20">
       <button
         type="button"
         className="flex lg:hidden w-10 h-10 cursor-pointer m-1 items-center p-1 text-primary"

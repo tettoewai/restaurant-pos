@@ -53,6 +53,7 @@ export async function updateCompany(formData: FormData) {
 
 export async function createMenu({ formData }: Props) {
   const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
   const price = Number(formData.get("price"));
   const category = (formData.get("category") as string).split(",");
   const image = formData.get("image");
@@ -67,7 +68,7 @@ export async function createMenu({ formData }: Props) {
     }
 
     const menu = await prisma.menu.create({
-      data: { name, price, assetUrl: imageUrl },
+      data: { name, price, assetUrl: imageUrl, description },
     });
 
     await prisma.$transaction(
@@ -140,6 +141,7 @@ export async function updateMenu({ formData }: Props) {
   console.log(formData);
   const id = Number(formData.get("id"));
   const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
   const price = Number(formData.get("price"));
   const category = (formData.get("category") as string).split(",");
   const categoryIds = category.map((item) => Number(item));
@@ -151,12 +153,12 @@ export async function updateMenu({ formData }: Props) {
       const imageUrl = (await uploadImage(formData)) as string;
       const menu = await prisma.menu.update({
         where: { id },
-        data: { name, price, assetUrl: imageUrl },
+        data: { name, price, assetUrl: imageUrl, description },
       });
     } else {
       const menu = await prisma.menu.update({
         where: { id },
-        data: { name, price },
+        data: { name, price, description },
       });
     }
     const menuCategoryMenu = await prisma.menuCategoryMenu.findMany({
@@ -285,12 +287,13 @@ export async function createAddonCategory(FormData: FormData) {
 
 export async function createAddon(formData: FormData) {
   const name = formData.get("name") as string;
+  const price = Number(formData.get("price"));
   const addonCategoryId = Number(formData.get("addonCategory"));
   const isValid = name && addonCategoryId > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
-    await prisma.addon.create({ data: { name, addonCategoryId } });
+    await prisma.addon.create({ data: { name, price, addonCategoryId } });
     revalidatePath("/backoffice/addon");
     return { message: "Created addon successfully.", isSuccess: true };
   } catch (error) {
@@ -305,6 +308,7 @@ export async function createAddon(formData: FormData) {
 export async function updateAddon(formData: FormData) {
   const id = Number(formData.get("id"));
   const name = formData.get("name") as string;
+  const price = Number(formData.get("price"));
   const addonCategoryId = Number(formData.get("addonCategory"));
   const isValid = id && name && addonCategoryId > 0;
   if (!isValid)
@@ -312,7 +316,7 @@ export async function updateAddon(formData: FormData) {
   try {
     await prisma.addon.update({
       where: { id },
-      data: { name, addonCategoryId },
+      data: { name, price, addonCategoryId },
     });
     revalidatePath("/backoffice/addon");
     return { message: "Updated addon successfully.", isSuccess: true };

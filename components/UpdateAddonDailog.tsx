@@ -110,6 +110,12 @@ export default function UpdateAddonDialog({
                     defaultValue={prevData?.name}
                     required
                   />
+                  <Input
+                    name="price"
+                    label="Price"
+                    variant="bordered"
+                    defaultValue={String(prevData?.price)}
+                  />
                   <MultipleSelector
                     selectedList={selectedAddonCat}
                     setSelectedList={setSelectedAddonCat}

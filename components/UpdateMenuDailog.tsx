@@ -125,6 +125,12 @@ export default function UpdateMenuDialog({
                     isRequired
                     itemType="menu"
                   />
+                  <Input
+                    name="description"
+                    label="Description"
+                    variant="bordered"
+                    defaultValue={prevData?.description || ""}
+                  />
                   {prevData?.assetUrl ? (
                     <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                       <span className="truncate ...">{prevData.assetUrl}</span>

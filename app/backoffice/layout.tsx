@@ -18,7 +18,7 @@ const Layout = ({ children }: Props) => {
         <TopBar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
       </div>
 
-      <div className="flex pl-1 h-[88%]">
+      <div className="flex h-[88%]">
         <Sidebar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
         <ScrollShadow hideScrollBar className="pl-2 w-full max-h-full vertical">
           {children}

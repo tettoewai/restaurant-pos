@@ -15,7 +15,12 @@ import {
 import clsx from "clsx";
 import Image from "next/image";
 import { BiSolidCategoryAlt } from "react-icons/bi";
-import { MdLocationOn, MdRestaurantMenu, MdTableBar } from "react-icons/md";
+import {
+  MdAttachMoney,
+  MdLocationOn,
+  MdRestaurantMenu,
+  MdTableBar,
+} from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
 
@@ -26,6 +31,7 @@ interface Props {
   itemType: "addonCategory" | "addon" | "table" | "location" | "menuCategory";
   required?: boolean;
   assetUrl?: string;
+  price?: number;
 }
 export default async function ItemCard({
   id,
@@ -34,6 +40,7 @@ export default async function ItemCard({
   required,
   addonCategoryId,
   assetUrl,
+  price,
 }: Props) {
   const iconClasses = "size-8 mb-1 text-primary";
   const menuAddonCategory =
@@ -67,7 +74,7 @@ export default async function ItemCard({
   return (
     <Card
       className={clsx(
-        "bg-background w-60 h-48 p-1 mr-2 mb-2 md:w-48 flex flex-col items-center relative overflow-hidden justify-center",
+        "bg-background w-44 h-48 p-1 mr-2 mb-2 md:w-52 flex flex-col items-center relative overflow-hidden justify-center",
         { "opacity-70": isExist && itemType === "menuCategory" }
       )}
     >
@@ -146,6 +153,12 @@ export default async function ItemCard({
           </Popover>
         )}
       </div>
+      {price !== undefined && (
+        <div className="flex items-center mt-1 mb-1">
+          <MdAttachMoney className="text-xl text-primary" />
+          <p>{price}</p>
+        </div>
+      )}
     </Card>
   );
 }

@@ -101,6 +101,11 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                 isRequired
                 itemType="menu"
               />
+              <Input
+                name="description"
+                label="Description"
+                variant="bordered"
+              />
               {menuImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                   <span className="truncate ...">{menuImage.name}</span>

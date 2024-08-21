@@ -78,7 +78,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   return (
     <div
       className={clsx(
-        "bg-background h-[88%] lg:h-full transition-all absolute z-20 top-16 mt-2 lg:mt-0 left-1 lg:static rounded-md shadow-sm",
+        "bg-background h-[88%] lg:h-full transition-all absolute z-20 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm",
         {
           "w-52": sideBarOpen,
           "w-0 lg:w-16": !sideBarOpen,

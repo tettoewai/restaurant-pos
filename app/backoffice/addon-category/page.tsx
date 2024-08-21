@@ -25,7 +25,7 @@ const AddonCateogory = async () => {
         </div>
         <NewAddonCategoryDialog menus={menus} />
       </div>
-      <div className="flex flex-wrap mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 mt-2">
         {addonCategory.map((item) => (
           <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
             <ItemCard
