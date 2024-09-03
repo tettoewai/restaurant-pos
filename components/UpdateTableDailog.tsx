@@ -1,6 +1,9 @@
 "use client";
 import { updateMenuCategory, updateTable } from "@/app/lib/backoffice/action";
-import { fetchMenuCategoryWithId, fetchTableWithId } from "@/app/lib/data";
+import {
+  fetchMenuCategoryWithId,
+  fetchTableWithId,
+} from "@/app/lib/backoffice/data";
 import {
   Button,
   Input,

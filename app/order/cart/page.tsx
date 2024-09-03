@@ -69,7 +69,7 @@ export default function Cart() {
               <BsCartX className="size-12 text-primary mb-4" />
               <span>Hungry?</span>
               <span className="text-sm">
-                You haven't added anything to your cart!
+                You have not added anything to your cart!
               </span>
               <Link href={`/order?tableId=${tableId}`}>
                 <Button className="bg-primary mt-4 text-white">Browse</Button>

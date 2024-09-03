@@ -12,7 +12,7 @@ import { Addon, AddonCategory, Menu, Order } from "@prisma/client";
 import Image from "next/image";
 import { BsCartX } from "react-icons/bs";
 
-function activeOrder({ searchParams }: { searchParams: { tableId: string } }) {
+function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
   const tableId = Number(searchParams.tableId);
   // Fetch orders with SWR
   const { data: orders = [], error: orderError } = useSWR<Order[]>(
@@ -113,7 +113,7 @@ function activeOrder({ searchParams }: { searchParams: { tableId: string } }) {
             <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
               <BsCartX className="size-12 text-primary mb-4" />
               <span>Hungry?</span>
-              <span className="text-sm">You haven't ordered anything!</span>
+              <span className="text-sm">You have not ordered anything!</span>
               <Link href={`/order?tableId=${tableId}`}>
                 <Button className="bg-primary mt-4 text-white">Browse</Button>
               </Link>
@@ -125,4 +125,4 @@ function activeOrder({ searchParams }: { searchParams: { tableId: string } }) {
   );
 }
 
-export default activeOrder;
+export default ActiveOrder;

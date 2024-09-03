@@ -2,7 +2,7 @@ import {
   fetchAddonCategory,
   fetchMenu,
   fetchMenuAddonCategory,
-} from "@/app/lib/data";
+} from "@/app/lib/backoffice/data";
 import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewAddonCategoryDialog from "@/components/NewAddonCategoryDailog";

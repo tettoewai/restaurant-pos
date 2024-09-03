@@ -1,4 +1,4 @@
-import { fetchAddon, fetchAddonCategory } from "@/app/lib/data";
+import { fetchAddon, fetchAddonCategory } from "@/app/lib/backoffice/data";
 import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewAddonDialog from "@/components/NewAddonDailog";

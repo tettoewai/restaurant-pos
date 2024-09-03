@@ -1,4 +1,4 @@
-import { fetchTable } from "@/app/lib/data";
+import { fetchTable } from "@/app/lib/backoffice/data";
 import ItemCard from "@/components/ItemCard";
 import NewTableDialog from "@/components/NewTableDailog";
 

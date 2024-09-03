@@ -8,7 +8,7 @@ import {
   fetchCompany,
   fetchMenuCategoryWithId,
   fetchTableWithId,
-} from "@/app/lib/data";
+} from "@/app/lib/backoffice/data";
 import {
   Button,
   Input,

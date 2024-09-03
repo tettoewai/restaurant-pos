@@ -1,4 +1,4 @@
-import { fetchLocation } from "@/app/lib/data";
+import { fetchLocation } from "@/app/lib/backoffice/data";
 import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewLocationDialog from "@/components/NewLocationDailog";

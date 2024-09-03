@@ -34,7 +34,7 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
       params.delete("cartId");
       replace(`${pathname}?${params.toString()}`);
     }
-  }, [validCarts]);
+  }, [validCarts, pathname, replace, searchParams]);
   const validAddonCat = addon.filter((item) =>
     validCarts?.addons.includes(item.id)
   );

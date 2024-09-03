@@ -3,7 +3,7 @@ import {
   fetchMenu,
   fetchMenuCategory,
   fetchMenuCategoryMenu,
-} from "@/app/lib/data";
+} from "@/app/lib/backoffice/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MenuCard from "@/components/MenuCard";
 import NewMenuDialog from "@/components/NewMenuDailog";

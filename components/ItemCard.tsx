@@ -4,7 +4,7 @@ import {
   fetchLocation,
   fetchMenu,
   fetchMenuAddonCategory,
-} from "@/app/lib/data";
+} from "@/app/lib/backoffice/data";
 import {
   Card,
   Chip,

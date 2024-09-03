@@ -1,4 +1,7 @@
-import { fetchDisableLocationMenuCat, fetchMenuCategory } from "@/app/lib/data";
+import {
+  fetchDisableLocationMenuCat,
+  fetchMenuCategory,
+} from "@/app/lib/backoffice/data";
 import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";

@@ -1,8 +1,5 @@
 "use client";
-import {
-  fetchAddonCategoryWithId,
-  fetchMenuAddonCategory,
-} from "@/app/lib/data";
+
 import {
   Button,
   Checkbox,
@@ -20,6 +17,10 @@ import MultipleSelector from "./MultipleSelector";
 import { BsStar } from "react-icons/bs";
 import { updateAddonCategory } from "@/app/lib/backoffice/action";
 import { toast } from "react-toastify";
+import {
+  fetchAddonCategoryWithId,
+  fetchMenuAddonCategory,
+} from "@/app/lib/backoffice/data";
 
 interface Props {
   id: number;

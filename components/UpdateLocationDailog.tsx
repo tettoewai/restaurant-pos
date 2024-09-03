@@ -3,7 +3,10 @@ import {
   updateLocation,
   updateMenuCategory,
 } from "@/app/lib/backoffice/action";
-import { fetchLocationWithId, fetchMenuCategoryWithId } from "@/app/lib/data";
+import {
+  fetchLocationWithId,
+  fetchMenuCategoryWithId,
+} from "@/app/lib/backoffice/data";
 import {
   Button,
   Input,

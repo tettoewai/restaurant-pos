@@ -1,5 +1,4 @@
 "use client";
-import { fetchAddonWithId } from "@/app/lib/data";
 import {
   Button,
   Input,
@@ -15,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
 import { updateAddon } from "@/app/lib/backoffice/action";
 import { toast } from "react-toastify";
+import { fetchAddonWithId } from "@/app/lib/backoffice/data";
 
 interface Props {
   id: number;
