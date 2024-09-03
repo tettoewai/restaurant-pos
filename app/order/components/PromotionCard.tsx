@@ -14,7 +14,7 @@ export default function PromotionCard() {
         if (scrollLeft + clientWidth + 1 >= scrollWidth) {
           scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
         } else {
-          scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
+          scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
         }
       }
     }, 5000); // adjust the time interval (in milliseconds)

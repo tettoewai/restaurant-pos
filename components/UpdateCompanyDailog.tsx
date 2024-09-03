@@ -3,7 +3,7 @@ import {
   updateCompany,
   updateMenuCategory,
   updateTable,
-} from "@/app/lib/action";
+} from "@/app/lib/backoffice/action";
 import {
   fetchCompany,
   fetchMenuCategoryWithId,

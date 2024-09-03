@@ -111,6 +111,19 @@ export async function fetchAddonWithId(id: number) {
   }
 }
 
+export async function fetchAddonWithIds(ids: number[]) {
+  noStore();
+  try {
+    const addon = await prisma.addon.findMany({
+      where: { id: { in: ids } },
+    });
+    return addon;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addon data.");
+  }
+}
+
 export async function fetchMenuCategoryMenu() {
   noStore();
   try {
@@ -158,6 +171,20 @@ export async function fetchMenuWithId(id: number) {
   }
 }
 
+export async function fetchMenuWithIds(ids: number[]) {
+  noStore();
+  try {
+    const menu = await prisma.menu.findMany({
+      where: { id: { in: ids } },
+      orderBy: { id: "asc" },
+    });
+    return menu;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch Menu data.");
+  }
+}
+
 export async function fetchMenuCategoryWithId(id: number) {
   noStore();
   try {
@@ -178,6 +205,19 @@ export async function fetchAddonCategoryWithId(id: number) {
     const addonCategory = await prisma.addonCategory.findFirst({
       where: { id },
       orderBy: { id: "asc" },
+    });
+    return addonCategory;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addonCategory data.");
+  }
+}
+
+export async function fetchAddonCategoryWithIds(ids: number[]) {
+  noStore();
+  try {
+    const addonCategory = await prisma.addonCategory.findMany({
+      where: { id: { in: ids } },
     });
     return addonCategory;
   } catch (error) {

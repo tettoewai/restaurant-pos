@@ -1,7 +1,6 @@
 "use client";
 
-import { deleteImage, updateMenu } from "@/app/lib/action";
-import { fetchMenuCategoryWithMenu, fetchMenuWithId } from "@/app/lib/data";
+import { deleteImage, updateMenu } from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,
@@ -18,6 +17,10 @@ import { IoMdClose } from "react-icons/io";
 import { toast } from "react-toastify";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
+import {
+  fetchMenuWithId,
+  fetchMenuCategoryWithMenu,
+} from "@/app/lib/backoffice/data";
 
 interface Props {
   id: number;

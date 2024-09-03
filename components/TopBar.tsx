@@ -21,7 +21,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
         <div className="flex items-center space-x-2">
           <button
             type="button"
-            className="flex lg:hidden w-10 h-10 cursor-pointer m-1 items-center p-1 text-primary"
+            className="flex lg:hidden w-10 h-10 cursor-pointer ml-1 items-center p-1 text-primary"
             onClick={() => setSideBarOpen(!sideBarOpen)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -40,7 +40,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
           >
             <button
               type="button"
-              className="hidden lg:flex w-10 h-10 cursor-pointer m-1 items-center p-2 text-primary"
+              className="hidden lg:flex w-10 h-10 cursor-pointer ml-1 items-center p-2 text-primary"
               onClick={() => {
                 setSideBarOpen(!sideBarOpen);
               }}
@@ -54,9 +54,9 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
             </button>
           </Tooltip>
 
-          <span>TTW -</span>
-          <span className="hidden md:flex">Restaurant </span>
-          <span>POS</span>
+          <span className="text-sm font-bold">TTW -</span>
+          <span className="hidden md:flex text-sm font-bold">Restaurant </span>
+          <span className="text-sm font-bold">POS</span>
         </div>
         <LocationToggle />
         <div className="flex h-full items-center mr-2">

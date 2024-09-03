@@ -1,5 +1,8 @@
 "use client";
-import { updateLocation, updateMenuCategory } from "@/app/lib/action";
+import {
+  updateLocation,
+  updateMenuCategory,
+} from "@/app/lib/backoffice/action";
 import { fetchLocationWithId, fetchMenuCategoryWithId } from "@/app/lib/data";
 import {
   Button,

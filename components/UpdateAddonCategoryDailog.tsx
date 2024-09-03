@@ -18,7 +18,7 @@ import { AddonCategory, Menu } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
 import { BsStar } from "react-icons/bs";
-import { updateAddonCategory } from "@/app/lib/action";
+import { updateAddonCategory } from "@/app/lib/backoffice/action";
 import { toast } from "react-toastify";
 
 interface Props {

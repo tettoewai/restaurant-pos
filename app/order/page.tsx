@@ -3,15 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { MdAttachMoney } from "react-icons/md";
-import {
-  fetchCompany,
-  fetchMenuCategoryMenu,
-  fetchTableWithId,
-} from "../lib/data";
 
-import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/dataOrder";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
+import {
+  fetchTableWithId,
+  fetchCompany,
+  fetchMenuCategoryMenu,
+} from "../lib/backoffice/data";
+import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/order/data";
 
 const Order = async ({
   searchParams,
@@ -54,9 +54,8 @@ const Order = async ({
 
         <Spacer y={2} />
         <ScrollShadow
-          hideScrollBar
           orientation="horizontal"
-          className="w-full flex space-x-1 p-1 justify-start"
+          className="w-full flex space-x-1 pb-3 justify-start"
         >
           <Link href={`?tableId=${tableId}`}>
             <Chip

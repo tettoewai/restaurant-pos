@@ -1,4 +1,7 @@
-import { deleteAddonCategory, deleteMenuCategory } from "@/app/lib/action";
+import {
+  deleteAddonCategory,
+  deleteMenuCategory,
+} from "@/app/lib/backoffice/action";
 import {
   Button,
   Modal,

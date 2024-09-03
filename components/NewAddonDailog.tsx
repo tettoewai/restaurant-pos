@@ -1,5 +1,5 @@
 "use client";
-import { createAddon } from "@/app/lib/action";
+import { createAddon } from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,

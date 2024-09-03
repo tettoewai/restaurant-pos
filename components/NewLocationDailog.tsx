@@ -1,5 +1,8 @@
 "use client";
-import { createLocation, createMenuCategory } from "@/app/lib/action";
+import {
+  createLocation,
+  createMenuCategory,
+} from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,

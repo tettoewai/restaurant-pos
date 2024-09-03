@@ -1,6 +1,6 @@
 "use client";
 
-import { createMenu } from "@/app/lib/action";
+import { createMenu } from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,

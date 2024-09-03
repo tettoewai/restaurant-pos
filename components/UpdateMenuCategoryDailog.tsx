@@ -1,5 +1,5 @@
 "use client";
-import { updateMenuCategory } from "@/app/lib/action";
+import { updateMenuCategory } from "@/app/lib/backoffice/action";
 import { fetchMenuCategoryWithId } from "@/app/lib/data";
 import {
   Button,

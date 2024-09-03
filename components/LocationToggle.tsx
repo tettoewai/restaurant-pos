@@ -1,6 +1,9 @@
 "use client";
-import { updateSelectLocation } from "@/app/lib/action";
-import { fetchLocation, fetchSelectedLocation } from "@/app/lib/data";
+import { updateSelectLocation } from "@/app/lib/backoffice/action";
+import {
+  fetchLocation,
+  fetchSelectedLocation,
+} from "@/app/lib/backoffice/data";
 import {
   Button,
   Dropdown,

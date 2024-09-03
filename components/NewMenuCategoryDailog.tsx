@@ -1,5 +1,5 @@
 "use client";
-import { createMenuCategory } from "@/app/lib/action";
+import { createMenuCategory } from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,

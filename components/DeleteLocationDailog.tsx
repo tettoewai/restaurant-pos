@@ -1,4 +1,4 @@
-import { deleteAddon, deleteLocation } from "@/app/lib/action";
+import { deleteAddon, deleteLocation } from "@/app/lib/backoffice/action";
 import {
   Button,
   Modal,

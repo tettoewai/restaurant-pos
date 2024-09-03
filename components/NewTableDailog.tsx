@@ -3,7 +3,7 @@ import {
   createLocation,
   createMenuCategory,
   createTable,
-} from "@/app/lib/action";
+} from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,

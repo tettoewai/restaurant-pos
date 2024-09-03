@@ -1,22 +1,36 @@
+"use server";
 import { unstable_noStore as noStore } from "next/cache";
-import { fetchLocationWithId, fetchTableWithId } from "./data";
 import { prisma } from "@/db";
+import { fetchLocationWithId, fetchTableWithId } from "../backoffice/data";
+import { ORDERSTATUS } from "@prisma/client";
 
 async function fetchDisabledLocationMenuCatIds(locationId: number) {
-  const disabledLocationMenuCat =
-    await prisma.disabledLocationMenuCategory.findMany({
-      where: { locationId },
-      select: { menuCategoryId: true },
-    });
-  return disabledLocationMenuCat.map((item) => item.menuCategoryId);
+  noStore();
+  try {
+    const disabledLocationMenuCat =
+      await prisma.disabledLocationMenuCategory.findMany({
+        where: { locationId },
+        select: { menuCategoryId: true },
+      });
+    return disabledLocationMenuCat.map((item) => item.menuCategoryId);
+  } catch (error) {
+    console.error("Error in disabledLocationMenuCat:", error);
+    throw new Error("Failed to fetch disabledLocationMenuCat data.");
+  }
 }
 
 async function fetchDisabledLocationMenuIds(locationId: number) {
-  const disabledLocationMenu = await prisma.disabledLocationMenu.findMany({
-    where: { locationId },
-    select: { menuId: true },
-  });
-  return disabledLocationMenu.map((item) => item.menuId);
+  noStore();
+  try {
+    const disabledLocationMenu = await prisma.disabledLocationMenu.findMany({
+      where: { locationId },
+      select: { menuId: true },
+    });
+    return disabledLocationMenu.map((item) => item.menuId);
+  } catch (error) {
+    console.error("Error in disabledLocationMenu:", error);
+    throw new Error("Failed to fetch disabledLocationMenu data.");
+  }
 }
 
 export async function fetchMenuCategoryOrder(tableId: number) {
@@ -80,5 +94,17 @@ export async function fetchMenuOrder(tableId: number) {
   } catch (error) {
     console.error("Error in fetchMenuOrder:", error);
     throw new Error("Failed to fetch Menu data.");
+  }
+}
+
+export async function fetchOrder(tableId: number) {
+  try {
+    const order = await prisma.order.findMany({
+      where: { tableId, status: { notIn: [ORDERSTATUS.PAID] } },
+    });
+    return order;
+  } catch (error) {
+    console.error("Error in fetchOrder:", error);
+    throw new Error("Failed to fetch Order data.");
   }
 }

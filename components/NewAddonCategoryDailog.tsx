@@ -1,5 +1,8 @@
 "use client";
-import { createAddonCategory, createMenuCategory } from "@/app/lib/action";
+import {
+  createAddonCategory,
+  createMenuCategory,
+} from "@/app/lib/backoffice/action";
 import {
   Button,
   Checkbox,
