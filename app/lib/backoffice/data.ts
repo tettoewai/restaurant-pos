@@ -295,6 +295,20 @@ export async function fetchTableWithId(id: number) {
   }
 }
 
+export async function checkTableLocation(id: number) {
+  noStore();
+  try {
+    const selectedLocation = await fetchSelectedLocation();
+    const table = await prisma.table.findFirst({
+      where: { id, locationId: selectedLocation?.id },
+    });
+    return table;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch table data.");
+  }
+}
+
 export async function fetchTableWithIds(ids: number[]) {
   noStore();
   try {
@@ -380,18 +394,20 @@ export async function fetchOrderWithStatus({
         ? ORDERSTATUS.COOKING
         : status === "complete"
         ? ORDERSTATUS.COMPLETE
-        : status === "paid"
-        ? ORDERSTATUS.PAID
         : ORDERSTATUS.PENDING;
-    const order = await prisma.order.findMany({
+
+    return await prisma.order.findMany({
       where: {
         tableId,
         status: { in: [orderStatus] },
       },
+      orderBy: { createdAt: "asc" },
     });
-    return order;
   } catch (error) {
-    console.error("Database Error:", error);
+    console.error(
+      `Database Error for Table ID ${tableId} and Status ${status}:`,
+      error
+    );
     throw new Error("Failed to fetch order data.");
   }
 }

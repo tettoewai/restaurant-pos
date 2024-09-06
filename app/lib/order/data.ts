@@ -102,6 +102,7 @@ export async function fetchOrder(tableId: number) {
   try {
     const order = await prisma.order.findMany({
       where: { tableId, status: { notIn: [ORDERSTATUS.PAID] } },
+      orderBy: { createdAt: "asc" },
     });
     return order;
   } catch (error) {

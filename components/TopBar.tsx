@@ -54,7 +54,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
             </button>
           </Tooltip>
 
-          <span className="text-sm font-bold">TTW -</span>
+          <span className="text-sm font-bold">TTW-</span>
           <span className="hidden md:flex text-sm font-bold">Restaurant </span>
           <span className="text-sm font-bold">POS</span>
         </div>

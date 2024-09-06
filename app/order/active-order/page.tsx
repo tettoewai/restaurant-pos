@@ -18,7 +18,7 @@ function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
   // Fetch orders with SWR
   const { data: orders = [], error: orderError } = useSWR<Order[]>(
     `orders`,
-    () => fetchOrder(tableId),
+    () => fetchOrder(tableId).then((res) => res),
     { refreshInterval: 10000 } // Fetch every 10 seconds
   );
 
