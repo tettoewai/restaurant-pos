@@ -1,5 +1,4 @@
 "use client";
-import useSWR from "swr";
 import {
   fetchAddonCategoryWithIds,
   fetchAddonWithIds,
@@ -8,9 +7,11 @@ import {
 import { fetchOrder } from "@/app/lib/order/data";
 import { formatOrder } from "@/Generial";
 import { Button, Card, Link } from "@nextui-org/react";
-import { Addon, AddonCategory, Menu, Order } from "@prisma/client";
+import { Order } from "@prisma/client";
+import clsx from "clsx";
 import Image from "next/image";
 import { BsCartX } from "react-icons/bs";
+import useSWR from "swr";
 
 function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
   const tableId = Number(searchParams.tableId);
@@ -55,7 +56,7 @@ function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
               <span>Your orders</span>
               <span>Total price: {orderData[0].totalPrice} Ks</span>
             </div>
-            <div className="flex flex-wrap p-1 mt-2 space-x-1">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
               {orderData.map((item) => {
                 const validMenu = menus.find(
                   (mennu) => mennu.id === item.menuId
@@ -65,7 +66,7 @@ function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
                   addonIds.includes(addon.id)
                 );
                 return (
-                  <Card key={item.itemId} className="w-48 min-h-60">
+                  <Card key={item.itemId} className="w-[11em] min-h-60">
                     <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
                       <Image
                         src={validMenu?.assetUrl || "/default-menu.png"}
@@ -100,7 +101,15 @@ function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
                       </div>
                       <div className="text-sm font-thin mt-1 flex justify-between ">
                         <span>Status :</span>
-                        <span> {item.status}</span>
+                        <span
+                          className={clsx({
+                            "text-red-500": item.status === "PENDING",
+                            "text-green-500": item.status === "COMPLETE",
+                            "text-orange-500": item.status === "COOKING",
+                          })}
+                        >
+                          {item.status}
+                        </span>
                       </div>
                     </div>
                   </Card>

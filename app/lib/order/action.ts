@@ -3,9 +3,9 @@ import { CartItem } from "@/context/OrderContext";
 import { prisma } from "@/db";
 import { ORDERSTATUS } from "@prisma/client";
 import { nanoid } from "nanoid";
+import { redirect } from "next/navigation";
 import { fetchAddonWithIds, fetchMenuWithId } from "../backoffice/data";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export const getTotalPrice = async (cartItem: CartItem[]) => {
   const totalPrice = await Promise.all(

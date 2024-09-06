@@ -98,6 +98,7 @@ export async function fetchMenuOrder(tableId: number) {
 }
 
 export async function fetchOrder(tableId: number) {
+  noStore();
   try {
     const order = await prisma.order.findMany({
       where: { tableId, status: { notIn: [ORDERSTATUS.PAID] } },

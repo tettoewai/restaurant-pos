@@ -5,7 +5,6 @@ import { useState } from "react";
 import useSWR from "swr";
 
 export default function UserProfile() {
-  const [loading, setLoading] = useState<boolean>(false);
   const userFetcher = () => fetchUser().then((res) => res);
   const { data, error } = useSWR("user", userFetcher);
   return (

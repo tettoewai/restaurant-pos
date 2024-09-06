@@ -2,15 +2,16 @@
 
 import { config } from "@/config";
 import { prisma } from "@/db";
+import { ORDERSTATUS } from "@prisma/client";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
+import QRCode from "qrcode";
 import {
   fetchCompany,
   fetchLocation,
   fetchMenuAddonCategory,
   fetchSelectedLocation,
 } from "./data";
-import QRCode from "qrcode";
 
 interface Props {
   formData: FormData;
@@ -680,6 +681,39 @@ export async function deleteImage(id: number) {
     console.error(error);
     return {
       message: "Something went wrong while delete image",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateOrderStatus({
+  orderStatus,
+  itemId,
+}: {
+  orderStatus: string;
+  itemId: string;
+}) {
+  try {
+    const orders = await prisma.order.findMany({ where: { itemId } });
+    const orderIds = orders.map((item) => item.id);
+    const status =
+      orderStatus === "pending"
+        ? ORDERSTATUS.PENDING
+        : orderStatus === "cooking"
+        ? ORDERSTATUS.COOKING
+        : orderStatus === "complete"
+        ? ORDERSTATUS.COMPLETE
+        : ORDERSTATUS.PAID;
+    await prisma.order.updateMany({
+      where: { id: { in: orderIds } },
+      data: { status },
+    });
+    revalidatePath(`/backoffice/order`);
+    return { message: "Updated order status successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while update status",
       isSuccess: false,
     };
   }

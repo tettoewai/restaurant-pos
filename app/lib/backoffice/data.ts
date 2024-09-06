@@ -1,5 +1,6 @@
 "use server";
 import { prisma } from "@/db";
+import { ORDERSTATUS } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
@@ -294,6 +295,17 @@ export async function fetchTableWithId(id: number) {
   }
 }
 
+export async function fetchTableWithIds(ids: number[]) {
+  noStore();
+  try {
+    const table = await prisma.table.findMany({ where: { id: { in: ids } } });
+    return table;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch table data.");
+  }
+}
+
 export async function fetchSelectedLocation() {
   try {
     const companyId = (await fetchCompany())?.id;
@@ -333,6 +345,54 @@ export async function fetchDisableLocationMenuCat() {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch disable location menu data.");
+  }
+}
+
+export async function fetchOrder() {
+  noStore();
+  try {
+    const table = await fetchTable();
+    const tableId = table.map((item) => item.id);
+    const order = await prisma.order.findMany({
+      where: {
+        tableId: { in: tableId },
+        status: { notIn: [ORDERSTATUS.PAID] },
+      },
+    });
+    return order;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch order data.");
+  }
+}
+
+export async function fetchOrderWithStatus({
+  status,
+  tableId,
+}: {
+  tableId: number;
+  status: string;
+}) {
+  noStore();
+  try {
+    const orderStatus =
+      status === "cooking"
+        ? ORDERSTATUS.COOKING
+        : status === "complete"
+        ? ORDERSTATUS.COMPLETE
+        : status === "paid"
+        ? ORDERSTATUS.PAID
+        : ORDERSTATUS.PENDING;
+    const order = await prisma.order.findMany({
+      where: {
+        tableId,
+        status: { in: [orderStatus] },
+      },
+    });
+    return order;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch order data.");
   }
 }
 

@@ -8,7 +8,7 @@ import { useContext } from "react";
 import useSWR from "swr";
 
 export default function ConfirmOrderBut() {
-  const { carts } = useContext(OrderContext);
+  const { carts, setCarts } = useContext(OrderContext);
   const searchParams = useSearchParams();
   const tableId = searchParams.get("tableId") as string;
   const validAddons = carts.map((item) => item.addons);
@@ -50,6 +50,11 @@ export default function ConfirmOrderBut() {
     (accumulator, current) => accumulator + current,
     0
   );
+  const handleConfirmOrder = () => {
+    createOrder({ tableId: Number(tableId), cartItem: carts }).then(() =>
+      setCarts([])
+    );
+  };
 
   return (
     <div className="fixed bottom-0 right-0 left-0 m-auto bg-background p-2 rounded-t-md flex flex-col">
@@ -60,9 +65,7 @@ export default function ConfirmOrderBut() {
       <Button
         color="primary"
         className="text-white mt-1"
-        onClick={() =>
-          createOrder({ tableId: Number(tableId), cartItem: carts })
-        }
+        onClick={handleConfirmOrder}
       >
         Confirm Order
       </Button>
