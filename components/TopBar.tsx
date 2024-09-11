@@ -1,14 +1,10 @@
 import { Tooltip } from "@nextui-org/react";
 import { Dispatch, SetStateAction } from "react";
-import {
-  IoIosArrowBack,
-  IoIosArrowForward,
-  IoIosNotifications,
-  IoMdClose,
-} from "react-icons/io";
+import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { IoMenu } from "react-icons/io5";
 import { FullScreenButton, ModeButton } from "./Buttons";
 import LocationToggle from "./LocationToggle";
+import NotificationFeed from "./NotificationFeed";
 import UserProfile from "./UserProfile";
 interface Props {
   sideBarOpen: boolean;
@@ -61,18 +57,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
         <LocationToggle />
         <div className="flex h-full items-center mr-2">
           <FullScreenButton />
-          <Tooltip
-            placement="bottom"
-            content="Notification"
-            className="text-primary"
-            showArrow={true}
-            delay={1000}
-          >
-            <button>
-              <IoIosNotifications className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1" />
-            </button>
-          </Tooltip>
-
+          <NotificationFeed />
           <ModeButton />
           <UserProfile />
         </div>

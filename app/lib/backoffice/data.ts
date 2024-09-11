@@ -216,6 +216,7 @@ export async function fetchAddonCategoryWithId(id: number) {
 
 export async function fetchAddonCategoryWithIds(ids: number[]) {
   noStore();
+  if (ids.length! > 0) return;
   try {
     const addonCategory = await prisma.addonCategory.findMany({
       where: { id: { in: ids } },
@@ -408,6 +409,19 @@ export async function fetchOrderWithStatus({
       `Database Error for Table ID ${tableId} and Status ${status}:`,
       error
     );
+    throw new Error("Failed to fetch order data.");
+  }
+}
+
+export async function fetchNotification() {
+  try {
+    const table = await fetchTable();
+    const notification = await prisma.notification.findMany({
+      where: { tableId: { in: table.map((item) => item.id) } },
+    });
+    return notification;
+  } catch (error) {
+    console.error("Database error for notification", error);
     throw new Error("Failed to fetch order data.");
   }
 }

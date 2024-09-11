@@ -1,5 +1,5 @@
 "use client";
-import { fetchMenuWithIds, fetchAddonWithIds } from "@/app/lib/backoffice/data";
+import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
 import { Button } from "@nextui-org/react";

@@ -82,5 +82,8 @@ export const createOrder = async ({
     })
   );
   await prisma.order.updateMany({ where: { orderSeq }, data: { totalPrice } });
+  await prisma.notification.create({
+    data: { message: "There are new orders", tableId },
+  });
   redirect(`/order/active-order?tableId=${tableId}`);
 };
