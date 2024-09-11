@@ -63,7 +63,7 @@ export default function Locationtoggle() {
         ) : (
           <Button
             variant="flat"
-            className="bg-background"
+            className="bg-background p-0"
             startContent={<MdLocationOn className="text-primary" />}
             endContent={<IoIosArrowDown className="text-primary" />}
           >

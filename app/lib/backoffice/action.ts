@@ -719,6 +719,16 @@ export async function updateOrderStatus({
   }
 }
 
+export async function setNotiRead(id: number) {
+  if (!id) return;
+  try {
+    await prisma.notification.update({ where: { id }, data: { isRead: true } });
+    revalidatePath("/backoffice");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function uploadImage(formData: FormData) {
   const imageFile = formData.get("image") as File;
   if (!imageFile) {

@@ -52,7 +52,7 @@ export default function App({ params }: { params: { id: string } }) {
 
   const menuIds = data?.map((item) => item.menuId) as number[];
   const { data: menus } = useSWR(
-    menuIds.length > 0 ? [menuIds] : null,
+    menuIds.length > 0 ? [data] : null,
     () => fetchMenuWithIds(menuIds).then((res) => res),
     { refreshInterval: 10000 }
   );
@@ -68,7 +68,7 @@ export default function App({ params }: { params: { id: string } }) {
   const addonCatIds =
     addons.length > 0 ? addons.map((item) => item.addonCategoryId) : [];
   const { data: addonCategory = [] } = useSWR(
-    addonCatIds.length > 0 ? [addonCatIds] : null,
+    addonCatIds.length > 0 ? [addons] : null,
     () => fetchAddonCategoryWithIds(addonCatIds).then((res) => res)
   );
 

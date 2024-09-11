@@ -26,7 +26,7 @@ export const FullScreenButton = () => {
         >
           <button>
             <GoScreenNormal
-              className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
+              className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
               onClick={() => {
                 screenfull.isEnabled && screenfull.exit();
                 setIsFullScreen(false);
@@ -44,7 +44,7 @@ export const FullScreenButton = () => {
         >
           <button>
             <GoScreenFull
-              className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
+              className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
               onClick={() => {
                 screenfull.isEnabled && screenfull.request();
                 setIsFullScreen(true);
@@ -71,7 +71,7 @@ export function ModeButton() {
         >
           <button>
             <MdDarkMode
-              className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
+              className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
               onClick={() => setTheme("light")}
             />
           </button>
@@ -86,7 +86,7 @@ export function ModeButton() {
         >
           <button>
             <MdLightMode
-              className="w-8 h-8 hover:shadow-md cursor-pointer m-1 text-primary p-1"
+              className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
               onClick={() => setTheme("dark")}
             />
           </button>

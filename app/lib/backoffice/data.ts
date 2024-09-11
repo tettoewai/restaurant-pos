@@ -216,7 +216,8 @@ export async function fetchAddonCategoryWithId(id: number) {
 
 export async function fetchAddonCategoryWithIds(ids: number[]) {
   noStore();
-  if (ids.length! > 0) return;
+  if (ids.length === 0) return;
+
   try {
     const addonCategory = await prisma.addonCategory.findMany({
       where: { id: { in: ids } },
@@ -418,6 +419,7 @@ export async function fetchNotification() {
     const table = await fetchTable();
     const notification = await prisma.notification.findMany({
       where: { tableId: { in: table.map((item) => item.id) } },
+      orderBy: { createdAt: "desc" },
     });
     return notification;
   } catch (error) {
