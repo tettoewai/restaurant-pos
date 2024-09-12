@@ -171,7 +171,7 @@ export default function App({ params }: { params: { id: string } }) {
                                       endContent={<IoIosArrowDropdown />}
                                       size="sm"
                                       variant="light"
-                                      className="[p-1]"
+                                      className="p-0"
                                     >
                                       {item.status &&
                                         item.status.charAt(0).toUpperCase() +

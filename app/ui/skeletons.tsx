@@ -8,7 +8,7 @@ import { MdAttachMoney } from "react-icons/md";
 export function MenuLoading() {
   return (
     <Card
-      className="bg-background w-40 h-48 m-1 md:w-48 md:h-56 md:m-2 rounded-lg shadow-sm flex flex-col items-center relative"
+      className="bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative"
       radius="lg"
     >
       <Skeleton className="h-3/5 w-full">
@@ -42,7 +42,7 @@ export function UserProfileSkeleton() {
 
 export function ItemCardSkeleton() {
   return (
-    <Card className="bg-background w-60 h-48 p-1 mr-2 mb-2 md:w-48 flex flex-col items-center relative overflow-hidden justify-center">
+    <Card className="bg-background  w-44 h-48 p-1 mr-2 mb-2 md:w-52 flex flex-col items-center relative overflow-hidden justify-center">
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <Skeleton className="bg-background rounded-md w-6 h-full"></Skeleton>
       </div>

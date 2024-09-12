@@ -83,7 +83,7 @@ const Order = async ({
             validMenu?.map((item) => (
               <Suspense key={item.id} fallback={<MenuLoading />}>
                 <Link href={`/order/${item.id}?tableId=${tableId}`}>
-                  <Card className="bg-background w-44 h-56 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden mr-2 mt-2">
+                  <Card className="bg-background w-[170px] h-56 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden mr-2 mt-2">
                     <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
                       <Image
                         src={item.assetUrl || "/default-menu.png"}
