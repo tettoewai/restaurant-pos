@@ -30,15 +30,15 @@ export default function NotificationFeed() {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
     let interval = seconds / 31536000;
     if (interval > 1) {
-      return Math.floor(interval) + "years ago";
+      return Math.floor(interval) + " years ago";
     }
     interval = seconds / 2592000;
     if (interval > 1) {
-      return Math.floor(interval) + "months ago";
+      return Math.floor(interval) + " months ago";
     }
     interval = seconds / 86400;
     if (interval > 1) {
-      return Math.floor(interval) + "days ago";
+      return Math.floor(interval) + " days ago";
     }
     interval = seconds / 3600;
     if (interval > 1) {
@@ -77,6 +77,7 @@ export default function NotificationFeed() {
         <DropdownMenu
           variant="faded"
           aria-label="Dropdown menu with notification"
+          className="max-h-72 overflow-x-scroll"
         >
           {notification && notification?.length > 0 ? (
             notification.map((item) => {
@@ -94,7 +95,7 @@ export default function NotificationFeed() {
                   }}
                   className={clsx({ "opacity-50": item.isRead })}
                 >
-                  <div className="max-w-60">
+                  <div className="max-w-60 w-52">
                     <div className="flex justify-between items-center">
                       <span>{item.message}</span>
                       <span className="text-xs">{validTable?.name}</span>
