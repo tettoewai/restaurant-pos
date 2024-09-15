@@ -47,7 +47,7 @@ const LocationButton = ({ prevData }: Props) => {
         <div>
           {!location?.latitude || !location?.longitude ? (
             <span className="text-warning text-xs">
-              If you don't set coordinates, customers outside the restaurant
+              If you do not set coordinates, customers outside the restaurant
               will still be able to place orders.
             </span>
           ) : (
