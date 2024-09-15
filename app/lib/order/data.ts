@@ -75,6 +75,7 @@ export async function fetchMenuCategoryMenuOrder(tableId: number) {
 
 export async function fetchMenuOrder(tableId: number) {
   noStore();
+  if (!tableId) return [];
   try {
     const locationId = (await fetchTableWithId(tableId))?.locationId;
     if (!locationId) return [];

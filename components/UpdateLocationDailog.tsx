@@ -1,12 +1,6 @@
 "use client";
-import {
-  updateLocation,
-  updateMenuCategory,
-} from "@/app/lib/backoffice/action";
-import {
-  fetchLocationWithId,
-  fetchMenuCategoryWithId,
-} from "@/app/lib/backoffice/data";
+import { updateLocation } from "@/app/lib/backoffice/action";
+import { fetchLocationWithId } from "@/app/lib/backoffice/data";
 import {
   Button,
   Input,
@@ -17,9 +11,10 @@ import {
   ModalHeader,
   Spinner,
 } from "@nextui-org/react";
-import { Location, MenuCategory } from "@prisma/client";
+import { Location } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import LocationButton from "./LocationButton";
 
 interface Props {
   id: number;
@@ -118,6 +113,7 @@ export default function UpdateLocationDialog({
                     required
                     defaultValue={prevData?.city}
                   />
+                  <LocationButton prevData={prevData} />
                 </>
               )}
             </ModalBody>
@@ -131,7 +127,7 @@ export default function UpdateLocationDialog({
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                isDisabled={isSubmitting}
+                isDisabled={isSubmitting || isLoading}
               >
                 {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
               </Button>

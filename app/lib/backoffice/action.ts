@@ -431,6 +431,8 @@ export async function createLocation(formData: FormData) {
   const street = formData.get("street") as string;
   const township = formData.get("township") as string;
   const city = formData.get("city") as string;
+  const latitude = formData.get("latitude") as string;
+  const longitude = formData.get("longitude") as string;
   const isValid = name && street && township && city;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
@@ -438,7 +440,15 @@ export async function createLocation(formData: FormData) {
     const company = await fetchCompany();
     company &&
       (await prisma.location.create({
-        data: { companyId: company.id, name, street, township, city },
+        data: {
+          companyId: company.id,
+          name,
+          street,
+          township,
+          city,
+          latitude,
+          longitude,
+        },
       }));
     revalidatePath("/backoffice");
     return { message: "Created location successfully.", isSuccess: true };
@@ -457,13 +467,15 @@ export async function updateLocation(formData: FormData) {
   const street = formData.get("street") as string;
   const township = formData.get("township") as string;
   const city = formData.get("city") as string;
+  const latitude = formData.get("latitude") as string;
+  const longitude = formData.get("longitude") as string;
   const isValid = id && name && street && township && city;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
     await prisma.location.update({
       where: { id },
-      data: { name, street, township, city },
+      data: { name, street, township, city, latitude, longitude },
     });
     revalidatePath("/backoffice");
     return { message: "Updated location successfully.", isSuccess: true };

@@ -16,6 +16,7 @@ import {
 } from "@nextui-org/react";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import LocationButton from "./LocationButton";
 
 export default function NewLocationDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -77,6 +78,7 @@ export default function NewLocationDialog() {
                 required
               />
               <Input name="city" label="City *" variant="bordered" required />
+              <LocationButton />
             </ModalBody>
             <ModalFooter>
               <Button

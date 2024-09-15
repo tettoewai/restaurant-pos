@@ -20,9 +20,13 @@ import useSWR, { mutate } from "swr";
 
 export default function NotificationFeed() {
   const router = useRouter();
+  const isUpdateLocation =
+    typeof window !== "undefined"
+      ? localStorage.getItem("isUpdateLocation")
+      : null;
 
   const { data: notification } = useSWR(
-    "notification",
+    [isUpdateLocation],
     () => fetchNotification().then((res) => res),
     { refreshInterval: 10000 }
   );

@@ -27,6 +27,8 @@ model Location {
   street                       String
   township                     String
   city                         String
+  latitude                     String?
+  longitude                    String?
   companyId                    Int
   isSelected                   Boolean                        @default(false)
   isArchived                   Boolean                        @default(false)
