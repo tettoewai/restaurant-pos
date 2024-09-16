@@ -14,7 +14,7 @@ async function fetchDisabledLocationMenuCatIds(locationId: number) {
       });
     return disabledLocationMenuCat.map((item) => item.menuCategoryId);
   } catch (error) {
-    console.error("Error in disabledLocationMenuCat:", error);
+    error("Error in disabledLocationMenuCat:", error);
     throw new Error("Failed to fetch disabledLocationMenuCat data.");
   }
 }
@@ -28,7 +28,7 @@ async function fetchDisabledLocationMenuIds(locationId: number) {
     });
     return disabledLocationMenu.map((item) => item.menuId);
   } catch (error) {
-    console.error("Error in disabledLocationMenu:", error);
+    error("Error in disabledLocationMenu:", error);
     throw new Error("Failed to fetch disabledLocationMenu data.");
   }
 }
@@ -52,7 +52,7 @@ export async function fetchMenuCategoryOrder(tableId: number) {
       (item) => !disabledMenuCatIds.includes(item.id)
     );
   } catch (error) {
-    console.error("Error in fetchMenuCategoryOrder:", error);
+    error("Error in fetchMenuCategoryOrder:", error);
     throw new Error("Failed to fetch menu category data.");
   }
 }
@@ -68,7 +68,7 @@ export async function fetchMenuCategoryMenuOrder(tableId: number) {
       where: { menuCategoryId: { in: menuCategoryIds } },
     });
   } catch (error) {
-    console.error("Error in fetchMenuCategoryMenuOrder:", error);
+    error("Error in fetchMenuCategoryMenuOrder:", error);
     throw new Error("Failed to fetch menuCategoryMenu data.");
   }
 }
@@ -93,7 +93,7 @@ export async function fetchMenuOrder(tableId: number) {
 
     return menus.filter((item) => !disabledMenuIds.includes(item.id));
   } catch (error) {
-    console.error("Error in fetchMenuOrder:", error);
+    error("Error in fetchMenuOrder:", error);
     throw new Error("Failed to fetch Menu data.");
   }
 }
@@ -107,7 +107,7 @@ export async function fetchOrder(tableId: number) {
     });
     return order;
   } catch (error) {
-    console.error("Error in fetchOrder:", error);
+    error("Error in fetchOrder:", error);
     throw new Error("Failed to fetch Order data.");
   }
 }

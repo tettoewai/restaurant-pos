@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma migrate deploy && npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -26,6 +26,7 @@
     "react-dropzone": "^14.2.3",
     "react-geolocated": "^4.2.0",
     "react-icons": "^5.2.1",
+    "react-to-print": "^2.15.1",
     "react-toastify": "^10.0.5",
     "screenfull": "^6.0.2",
     "swr": "^2.2.5"

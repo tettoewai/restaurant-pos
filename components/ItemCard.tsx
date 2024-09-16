@@ -4,6 +4,7 @@ import {
   fetchLocation,
   fetchMenu,
   fetchMenuAddonCategory,
+  fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import {
   Card,
@@ -23,6 +24,7 @@ import {
 } from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
+import { Table } from "@prisma/client";
 
 interface Props {
   id: number;
@@ -51,6 +53,8 @@ export default async function ItemCard({
       ? await fetchAddonCategory()
       : undefined;
   const location = itemType === "location" ? await fetchLocation() : undefined;
+  const table =
+    itemType === "table" ? ((await fetchTableWithId(id)) as Table) : undefined;
   const disableLocationMenuCategory =
     itemType === "menuCategory"
       ? await fetchDisableLocationMenuCat()
@@ -84,6 +88,7 @@ export default async function ItemCard({
           itemType={itemType}
           addonCategory={addonCategory}
           menu={menus}
+          table={table}
           location={location}
           disableLocationMenuCat={disableLocationMenuCategory}
         />

@@ -19,6 +19,7 @@ import {
   Location,
   Menu,
   MenuCategory,
+  Table,
 } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { IoMdMore } from "react-icons/io";
@@ -35,6 +36,8 @@ import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
+import { BsQrCodeScan } from "react-icons/bs";
+import QrcodePrint from "./QrcodePrint";
 
 interface Props {
   id: number;
@@ -49,6 +52,7 @@ interface Props {
   menu?: Menu[];
   addonCategory?: AddonCategory[];
   location?: Location[];
+  table?: Table;
   disableLocationMenuCat?: DisabledLocationMenuCategory[];
   disableLocationMenu?: DisabledLocationMenu[];
 }
@@ -60,6 +64,7 @@ export default function MoreOptionButton({
   menu,
   addonCategory,
   location,
+  table,
   disableLocationMenuCat,
   disableLocationMenu,
 }: Props) {
@@ -180,6 +185,15 @@ export default function MoreOptionButton({
               }
             >
               Available
+            </DropdownItem>
+          ) : itemType === "table" ? (
+            <DropdownItem
+              closeOnSelect={false}
+              key="printQrcode"
+              textValue="printQrdcode"
+              endContent={<BsQrCodeScan className={iconClasses} />}
+            >
+              <QrcodePrint table={table} />
             </DropdownItem>
           ) : (
             <DropdownItem className="hidden">None</DropdownItem>

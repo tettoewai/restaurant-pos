@@ -20,7 +20,7 @@ const Order = async () => {
             const validTable = tables.find((item) => item.id === tableId);
             return (
               <Link key={tableId} href={`/backoffice/order/${tableId}`}>
-                <Card className="w-40 h-40">
+                <Card className="w-40 h-40 bg-background">
                   <div className="w-full flex items-center justify-center h-3/5">
                     <MdTableBar className="size-10 mb-1 text-primary" />
                   </div>

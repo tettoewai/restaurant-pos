@@ -10,11 +10,11 @@ function page() {
         <span className="text-sm text-gray-600">Manage your application</span>
       </div>
       <div className="mt-5 space-y-2">
-        <Card className="flex justify-between flex-row items-center p-2">
+        <Card className="flex justify-between flex-row items-center p-2 bg-background">
           <span>Company</span>
           <UpdateCompanyDialog />
         </Card>
-        <Card className="flex justify-between flex-row items-center p-2">
+        <Card className="flex justify-between flex-row items-center p-2 bg-background">
           <span>Account</span>
           <SignOutDialog />
         </Card>

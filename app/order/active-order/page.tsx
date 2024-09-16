@@ -66,7 +66,10 @@ function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
                   addonIds.includes(addon.id)
                 );
                 return (
-                  <Card key={item.itemId} className="w-[11em] min-h-60">
+                  <Card
+                    key={item.itemId}
+                    className="w-[11em] min-h-60 bg-background"
+                  >
                     <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
                       <Image
                         src={validMenu?.assetUrl || "/default-menu.png"}
