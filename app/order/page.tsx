@@ -84,7 +84,7 @@ const OrderPage = async ({
             validMenu?.map((item, index) => (
               <Suspense key={item.id} fallback={<MenuLoading />}>
                 <Link href={`/order/${item.id}?tableId=${tableId}`}>
-                  <Card className="bg-background w-[170px] h-56 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden mr-2 mt-2">
+                  <Card className="bg-background w-[170px] h-56 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden">
                     <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
                       <Image
                         src={item.assetUrl || "/default-menu.png"}
@@ -95,7 +95,9 @@ const OrderPage = async ({
                         priority={index < 3} // Load priority for first 3 images
                       />
                     </div>
-                    <p className="mt-5 truncate ...">{item.name}</p>
+                    <span className="mt-2 text-wrap text-center">
+                      {item.name}
+                    </span>
                     <div className="flex items-center mt-1 mb-1">
                       <MdAttachMoney className="text-xl text-primary" />
                       <p>{item.price}</p>

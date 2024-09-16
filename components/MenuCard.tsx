@@ -64,7 +64,7 @@ export default async function MenuCard({
           className="h-full w-full object-cover "
         />
       </div>
-      <p className="mt-2 truncate ...">{name}</p>
+      <span className="mt-2 text-wrap text-center">{name}</span>
       {price && (
         <div className="flex items-center mt-1 mb-1">
           <MdAttachMoney className="text-xl text-primary" />
