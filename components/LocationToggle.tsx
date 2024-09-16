@@ -56,7 +56,7 @@ export default function Locationtoggle() {
   )?.name;
 
   return (
-    <Dropdown>
+    <Dropdown className="bg-background">
       <DropdownTrigger>
         {isLoading ? (
           <Spinner size="sm" />

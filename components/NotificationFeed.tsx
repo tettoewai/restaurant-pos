@@ -10,6 +10,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Tooltip,
 } from "@nextui-org/react";
 import clsx from "clsx";
 import { time } from "console";
@@ -72,9 +73,17 @@ export default function NotificationFeed() {
               shape="circle"
               showOutline={false}
             >
-              <button>
-                <IoIosNotifications className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1" />
-              </button>
+              <Tooltip
+                placement="bottom"
+                content="Notification"
+                className="text-primary"
+                showArrow={true}
+                delay={1000}
+              >
+                <button>
+                  <IoIosNotifications className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1" />
+                </button>
+              </Tooltip>
             </Badge>
           </div>
         </DropdownTrigger>

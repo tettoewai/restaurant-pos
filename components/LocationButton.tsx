@@ -1,7 +1,9 @@
 "use client";
-import { Button, Spinner } from "@nextui-org/react";
+import { Button, Spinner, Tooltip } from "@nextui-org/react";
 import { Location } from "@prisma/client";
 import { useEffect, useState } from "react";
+import { CiLocationOn } from "react-icons/ci";
+import { MdLocationOn } from "react-icons/md";
 
 interface Props {
   prevData?: Location | null;
@@ -40,7 +42,6 @@ const LocationButton = ({ prevData }: Props) => {
       setError("Geolocation is not supported by this browser.");
     }
   };
-  console.log(location);
   return (
     <div className="flex justify-between items-center">
       {!error ? (
@@ -70,15 +71,28 @@ const LocationButton = ({ prevData }: Props) => {
       ) : (
         <p>{error}</p>
       )}
-      <Button
-        color="primary"
-        size="sm"
-        className="m-0 p-4"
-        onClick={getLocation}
-        disabled={loading}
+      <Tooltip
+        placement="right"
+        content="Get coordinates"
+        className="text-primary"
+        showArrow={true}
+        delay={1000}
       >
-        {loading ? <Spinner color="white" size="sm" /> : "Get coordinates"}
-      </Button>
+        <Button
+          color="primary"
+          isIconOnly
+          size="sm"
+          radius="full"
+          onClick={getLocation}
+          disabled={loading}
+        >
+          {loading ? (
+            <Spinner color="white" size="sm" />
+          ) : (
+            <MdLocationOn size={18} />
+          )}
+        </Button>
+      </Tooltip>
     </div>
   );
 };
