@@ -10,11 +10,22 @@ const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 const QrcodePrint = ({ table }: { table?: Table }) => {
   const componentRef = useRef<HTMLDivElement>(null);
 
+  // Print handler
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
     documentTitle: "QR Code Card",
   });
 
+  // Enhanced click handler with validation
+  const handleClick = () => {
+    // Check if the table data is valid
+    if (!table?.assetUrl || !table?.name) {
+      alert("Invalid QR code data. Cannot print.");
+      return;
+    }
+    // If valid, trigger the print
+    handlePrint();
+  };
   return (
     <div>
       <div className="hidden">
@@ -86,20 +97,22 @@ const QrcodePrint = ({ table }: { table?: Table }) => {
               </svg>
             </div>
             <div>
-              <Image
-                src={table?.assetUrl || ""}
-                alt="qr code"
-                width={240}
-                height={240}
-              />
+              {table?.assetUrl && (
+                <Image
+                  src={table?.assetUrl}
+                  alt="qr code"
+                  width={240}
+                  height={240}
+                />
+              )}
             </div>
           </div>
           <div className="mb-10">
-            <span>Table : {table?.name}</span>
+            {table?.name && <span>Table: {table?.name}</span>}
           </div>
         </Card>
       </div>
-      <button onClick={handlePrint}>Print qr</button>
+      <button onClick={handleClick}>Print qr</button>
     </div>
   );
 };
