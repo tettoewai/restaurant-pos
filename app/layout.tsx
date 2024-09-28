@@ -19,14 +19,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession();
-  const userEmail = session?.user?.email;
-  const userName = session?.user?.name;
-  const user = await fetchUser();
-  if (!user && userEmail && userName) {
-    createDefaultData({ email: userEmail, name: userName });
-  }
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={ubantu.className}>

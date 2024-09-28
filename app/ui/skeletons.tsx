@@ -52,3 +52,30 @@ export function ItemCardSkeleton() {
     </Card>
   );
 }
+
+export function DashboardCardSkeleton() {
+  return (
+    <Card className="bg-background w-full sm:w-44 h-36 flex flex-row sm:flex-col items-center mr-1 mb-1">
+      <div className=" flex justify-between items-center h-full sm:w-fit w-1/2 sm:h-2/5 pr-2  sm:bg-transparent sm:dark:bg-transparent bg-gray-200 dark:bg-gray-900 ">
+        <Skeleton className="m-3 w-11 h-4 rounded-sm"></Skeleton>
+        <Skeleton className="p-3 m-1 w-11 h-11 rounded-md"></Skeleton>
+      </div>
+      <div className="w-1/2 sm:w-full h-2/5 mt-0 sm:mt-3 flex items-center justify-center">
+        <Skeleton className="w-20 sm:w-5 h-5 sm:h-14 ml-5 rounded-md mt-0 sm:mt-2"></Skeleton>
+      </div>
+    </Card>
+  );
+}
+
+export function TableSkeleton() {
+  return (
+    <Card className="h-36 w-96 bg-background rounded-md p-2">
+      <Skeleton className="w-full h-10 rounded-md "></Skeleton>
+      <div className="space-y-1 mt-2">
+        <Skeleton className="w-full h-6 rounded-md "></Skeleton>
+        <Skeleton className="w-full h-6 rounded-md "></Skeleton>
+        <Skeleton className="w-full h-6 rounded-md "></Skeleton>
+      </div>
+    </Card>
+  );
+}

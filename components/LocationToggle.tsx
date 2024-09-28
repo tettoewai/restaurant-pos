@@ -67,7 +67,7 @@ export default function Locationtoggle() {
             startContent={<MdLocationOn className="text-primary" />}
             endContent={<IoIosArrowDown className="text-primary" />}
           >
-            {selectedLocationName}
+            <span className="truncate ...">{selectedLocationName}</span>
           </Button>
         )}
       </DropdownTrigger>

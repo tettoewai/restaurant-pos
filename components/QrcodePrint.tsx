@@ -10,15 +10,12 @@ const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 const QrcodePrint = ({ table }: { table?: Table }) => {
   const componentRef = useRef<HTMLDivElement>(null);
 
-  // Print handler
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
     documentTitle: "QR Code Card",
   });
 
-  // Enhanced click handler with validation
   const handleClick = () => {
-    // Check if the table data is valid
     if (!table?.assetUrl || !table?.name) {
       alert("Invalid QR code data. Cannot print.");
       return;

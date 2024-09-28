@@ -14,6 +14,10 @@ const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 export default async function Home() {
   const functionItem = [
     {
+      icon: <MdOutlineDevices className="text-primary size-10" />,
+      title: "Responsive in multiple devices",
+    },
+    {
       icon: <BiSolidFoodMenu className="text-primary size-10" />,
       title: "Easily manage your menus with Restaurant POS",
     },
@@ -33,10 +37,6 @@ export default async function Home() {
       icon: <RiCustomerService2Line className="text-primary size-10" />,
       title:
         "Dedicated customer support so that we are awlays here to help you.",
-    },
-    {
-      icon: <MdOutlineDevices className="text-primary size-10" />,
-      title: "Responsive in multiple devices",
     },
   ];
 

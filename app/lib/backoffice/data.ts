@@ -2,7 +2,7 @@
 import { prisma } from "@/db";
 import { ORDERSTATUS } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { unstable_noStore as noStore, revalidatePath } from "next/cache";
+import { unstable_noStore as noStore } from "next/cache";
 
 interface Props {
   email: string;
@@ -428,8 +428,42 @@ export async function fetchNotification() {
   }
 }
 
+export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
+  const table = await fetchTable();
+  const tableId = table.map((item) => item.id);
+  if (startDate.getTime() === endDate.getTime()) {
+    const startOfDay = new Date(startDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(startDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const orderCount = await prisma.order.findMany({
+      where: {
+        createdAt: { gte: startOfDay, lte: endOfDay },
+        tableId: { in: tableId },
+      },
+    });
+
+    return orderCount;
+  } else {
+    const endOfDate = new Date(endDate);
+    endOfDate.setHours(23, 59, 59, 999);
+    const orderCount = await prisma.order.findMany({
+      where: {
+        createdAt: { gte: startDate, lte: endOfDate },
+        tableId: { in: tableId },
+      },
+    });
+
+    return orderCount;
+  }
+}
+
 export async function createDefaultData({ email, name }: Props) {
   try {
+    const user = await fetchUser();
+    if (user?.email === email) return;
     const newCompany = await prisma.company.create({
       data: {
         name: "Default Company",
@@ -484,6 +518,6 @@ export async function createDefaultData({ email, name }: Props) {
     );
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch user data.");
+    throw new Error("Failed to create user data.");
   }
 }

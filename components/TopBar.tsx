@@ -14,10 +14,10 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
   return (
     <div className="top-bar z-10">
       <div className="content bg-background flex items-center">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-0 sm:space-x-2">
           <button
             type="button"
-            className="flex lg:hidden size-9 cursor-pointer ml-1 items-center p-1 text-primary"
+            className="flex lg:hidden size-9 cursor-pointer ml-0 sm:ml-1 items-center p-1 text-primary"
             onClick={() => setSideBarOpen(!sideBarOpen)}
           >
             <span className="sr-only">Open sidebar</span>

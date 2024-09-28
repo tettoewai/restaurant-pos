@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Order } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 export function useLocation() {
   const [location, setLocation] = useState<{

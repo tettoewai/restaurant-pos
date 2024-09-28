@@ -13,6 +13,8 @@ import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
 
+export const dynamic = "force-dynamic";
+
 const OrderPage = async ({
   searchParams,
 }: {

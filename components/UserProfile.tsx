@@ -1,7 +1,6 @@
 "use client";
 import { fetchUser } from "@/app/lib/backoffice/data";
 import { Avatar } from "@nextui-org/react";
-import { useState } from "react";
 import useSWR from "swr";
 
 export default function UserProfile() {

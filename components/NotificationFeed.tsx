@@ -13,14 +13,14 @@ import {
   Tooltip,
 } from "@nextui-org/react";
 import clsx from "clsx";
-import { time } from "console";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { IoIosNotifications } from "react-icons/io";
 import useSWR, { mutate } from "swr";
 
 export default function NotificationFeed() {
   const router = useRouter();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const isUpdateLocation =
     typeof window !== "undefined"
       ? localStorage.getItem("isUpdateLocation")
@@ -31,6 +31,7 @@ export default function NotificationFeed() {
     () => fetchNotification().then((res) => res),
     { refreshInterval: 10000 }
   );
+
   const timeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
     let interval = seconds / 31536000;
@@ -59,10 +60,19 @@ export default function NotificationFeed() {
   const { data: tables } = useSWR([notification], () =>
     fetchTableWithIds(tableIds).then((res) => res)
   );
-  const unreadCount = notification?.filter((item) => !item.isRead).length;
+  const unreadCount = notification?.filter((item) => !item.isRead).length || 0;
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (unreadCount > 0) {
+        audioRef.current?.play(); // Play alert sound
+      }
+    }, 10000);
+    return () => clearInterval(intervalId);
+  }, [unreadCount]);
   return (
     <>
+      <audio ref={audioRef} src="/bell_alert.mp3" preload="auto" />
       <Dropdown placement="bottom-end">
         <DropdownTrigger>
           <div className="pt-2">
@@ -81,7 +91,7 @@ export default function NotificationFeed() {
                 delay={1000}
               >
                 <button>
-                  <IoIosNotifications className="size-6 md:size-8 hover:shadow-md cursor-pointer text-primary p-1" />
+                  <IoIosNotifications className="size-7 md:size-8 hover:shadow-md cursor-pointer text-primary p-1" />
                 </button>
               </Tooltip>
             </Badge>
@@ -90,7 +100,7 @@ export default function NotificationFeed() {
         <DropdownMenu
           variant="faded"
           aria-label="Dropdown menu with notification"
-          className="max-h-72 overflow-x-scroll"
+          className="max-h-72 overflow-x-auto scrollbar-hide"
         >
           {notification && notification?.length > 0 ? (
             notification.map((item) => {
@@ -107,6 +117,7 @@ export default function NotificationFeed() {
                     router.push(`/backoffice/order/${item.tableId}`);
                   }}
                   className={clsx({ "opacity-50": item.isRead })}
+                  textValue={item.message}
                 >
                   <div className="max-w-60 w-52">
                     <div className="flex justify-between items-center">

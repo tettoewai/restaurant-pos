@@ -46,15 +46,15 @@ export default function App({ params }: { params: { id: string } }) {
     fetchTableWithId(tableId).then((res) => res)
   );
 
-  const { data = [], error } = useSWR([tableId, param, isUpdateLocation], () =>
-    fetchOrderWithStatus({ tableId, status: param }).then((res) => res)
+  const { data = [], error } = useSWR(
+    [tableId, param, isUpdateLocation],
+    () => fetchOrderWithStatus({ tableId, status: param }).then((res) => res),
+    { refreshInterval: 10000 }
   );
 
   const menuIds = data?.map((item) => item.menuId) as number[];
-  const { data: menus } = useSWR(
-    menuIds.length > 0 ? [data] : null,
-    () => fetchMenuWithIds(menuIds).then((res) => res),
-    { refreshInterval: 10000 }
+  const { data: menus } = useSWR(menuIds.length > 0 ? [data] : null, () =>
+    fetchMenuWithIds(menuIds).then((res) => res)
   );
 
   const addonIds = data

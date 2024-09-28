@@ -20,7 +20,6 @@ const TopBarOrder = () => {
   const tableId = searchParams.get("tableId") as string;
   const { carts } = useContext(OrderContext);
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
-
   const companyFetcher = () => fetchCompany().then((res) => res);
   const tableFetcher = () =>
     fetchTableWithId(Number(searchParams.get("tableId"))).then((res) => res);
