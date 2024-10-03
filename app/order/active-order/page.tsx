@@ -17,7 +17,6 @@ import useSWR from "swr";
 function ActiveOrder() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
-  if (!tableId) return null;
   const { data: orders = [], error: orderError } = useSWR<Order[]>(
     `orders`,
     () => fetchOrder(tableId).then((res) => res),
@@ -31,22 +30,23 @@ function ActiveOrder() {
     (item) => item !== 0
   );
 
-  // Fetch menus, addons, and addon categories when orders change
-  const { data: menus = [], error: menuError } = useSWR(
-    menuIds.length ? "menus" : null,
-    () => fetchMenuWithIds(menuIds)
+  // Fetch menus, addons, and addon categories
+  const { data: menus = [], error: menuError } = useSWR("menus", () =>
+    menuIds.length ? fetchMenuWithIds(menuIds) : Promise.resolve([])
   );
 
-  const { data: addons = [], error: addonError } = useSWR(
-    uniqueAddons.length ? "addons" : null,
-    () => fetchAddonWithIds(uniqueAddons)
+  const { data: addons = [], error: addonError } = useSWR("addons", () =>
+    uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
   );
 
   const addonCategoryIds = addons.map((item) => item.addonCategoryId);
 
   const { data: addonCategory = [], error: addonCategoryError } = useSWR(
-    addonCategoryIds.length ? "addonCategory" : null,
-    () => fetchAddonCategoryWithIds(addonCategoryIds)
+    "addonCategory",
+    () =>
+      addonCategoryIds.length
+        ? fetchAddonCategoryWithIds(addonCategoryIds)
+        : Promise.resolve([])
   );
 
   return (

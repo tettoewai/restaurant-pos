@@ -13,15 +13,21 @@ import MenuForCart from "../components/MenuForCart";
 import { useSearchParams } from "next/navigation";
 
 export default function Cart() {
+  // Call the context hook before any conditionals
+  const { carts, setCarts } = useContext(OrderContext);
+
   const searchParams = useSearchParams();
   const tableId = searchParams.get("tableId");
-  if (!tableId) return null;
-  const { carts, setCarts } = useContext(OrderContext);
+
+  // Ensure SWR is always called, even if carts are empty
   const validMenuIds = carts.map((item) => item.menuId);
   const validAddons = carts.map((item) => item.addons);
   const uniqueAddons = Array.from(new Set(validAddons.flat()));
-  const menuFetcher = () => fetchMenuWithIds(validMenuIds).then((res) => res);
-  const addonFetcher = () => fetchAddonWithIds(uniqueAddons).then((res) => res);
+
+  const menuFetcher = () =>
+    validMenuIds.length ? fetchMenuWithIds(validMenuIds) : Promise.resolve([]);
+  const addonFetcher = () =>
+    uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([]);
 
   const fetchAllData = () =>
     Promise.all([menuFetcher(), addonFetcher()]).then(([menus, addons]) => ({
@@ -29,10 +35,12 @@ export default function Cart() {
       addons,
     }));
 
-  const { data, error } = useSWR(
-    carts.length > 0 ? "menu-and-addon" : null,
-    fetchAllData
-  );
+  // Use SWR outside of conditionals
+  const { data, error } = useSWR("menu-and-addon", fetchAllData);
+
+  // Handle conditional rendering after hooks
+  if (!tableId) return null;
+
   return (
     <div className="px-2">
       <div className="w-full flex justify-between items-center mt-3">
@@ -48,7 +56,7 @@ export default function Cart() {
           <div>
             {carts
               .sort((a, b) => Number(a.id) - Number(b.id))
-              .map((item, index) => {
+              .map((item) => {
                 const validMenu = data?.menus?.find(
                   (menu) => menu.id === item.menuId
                 ) as Menu;
