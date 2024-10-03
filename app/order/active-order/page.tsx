@@ -17,8 +17,7 @@ import useSWR from "swr";
 function ActiveOrder() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
-  console.log(searchParams.get("tableId"));
-  console.log(tableId);
+  if (!tableId) return null;
   const { data: orders = [], error: orderError } = useSWR<Order[]>(
     `orders`,
     () => fetchOrder(tableId).then((res) => res),

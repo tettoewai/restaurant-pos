@@ -10,13 +10,12 @@ import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import ConfirmOrderBut from "../components/ConfirmOrderBut";
 import MenuForCart from "../components/MenuForCart";
+import { useSearchParams } from "next/navigation";
 
-export default function Cart({
-  searchParams,
-}: {
-  searchParams: { tableId: string };
-}) {
-  const tableId = searchParams.tableId;
+export default function Cart() {
+  const searchParams = useSearchParams();
+  const tableId = searchParams.get("tableId");
+  if (!tableId) return null;
   const { carts, setCarts } = useContext(OrderContext);
   const validMenuIds = carts.map((item) => item.menuId);
   const validAddons = carts.map((item) => item.addons);
