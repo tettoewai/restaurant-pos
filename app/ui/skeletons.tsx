@@ -69,7 +69,7 @@ export function DashboardCardSkeleton() {
 
 export function TableSkeleton() {
   return (
-    <Card className="h-36 w-96 bg-background rounded-md p-2">
+    <Card className="h-36 w-full md:w-[98%] bg-background rounded-md p-2">
       <Skeleton className="w-full h-10 rounded-md "></Skeleton>
       <div className="space-y-1 mt-2">
         <Skeleton className="w-full h-6 rounded-md "></Skeleton>
@@ -77,5 +77,24 @@ export function TableSkeleton() {
         <Skeleton className="w-full h-6 rounded-md "></Skeleton>
       </div>
     </Card>
+  );
+}
+
+export function ChartSkeleton() {
+  return (
+    <div className="flex space-x-3 w-full items-center justify-center">
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+      <Skeleton className="rounded-md w-10 h-72"></Skeleton>
+    </div>
   );
 }

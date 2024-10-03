@@ -1,20 +1,22 @@
 "use client";
 
+import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card } from "@nextui-org/react";
+import { Menu } from "@prisma/client";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useContext } from "react";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import ConfirmOrderBut from "../components/ConfirmOrderBut";
 import MenuForCart from "../components/MenuForCart";
-import { fetchMenuWithIds, fetchAddonWithIds } from "@/app/lib/backoffice/data";
-import { Menu } from "@prisma/client";
 
-export default function Cart() {
-  const searchParams = useSearchParams();
-  const tableId = searchParams.get("tableId");
+export default function Cart({
+  searchParams,
+}: {
+  searchParams: { tableId: string };
+}) {
+  const tableId = searchParams.tableId;
   const { carts, setCarts } = useContext(OrderContext);
   const validMenuIds = carts.map((item) => item.menuId);
   const validAddons = carts.map((item) => item.addons);
@@ -59,6 +61,7 @@ export default function Cart() {
                     addons={data?.addons}
                     carts={carts}
                     setCarts={setCarts}
+                    tableId={tableId}
                   />
                 );
               })}
@@ -78,7 +81,7 @@ export default function Cart() {
           </div>
         )}
       </div>
-      {carts.length > 0 ? <ConfirmOrderBut /> : null}
+      {carts.length > 0 ? <ConfirmOrderBut tableId={tableId} /> : null}
     </div>
   );
 }

@@ -134,13 +134,13 @@ function OrderForDate() {
           />
         </div>
       </div>
-      <div className="mt-2 flex flex-wrap">
+      <div className="mt-2 flex flex-wrap space-x-2">
         {countStatus.map((item, index) =>
           isLoading ? (
             <DashboardCardSkeleton key={index} />
           ) : (
             <Card
-              className="bg-background w-full sm:w-44 h-36 flex flex-row sm:flex-col items-center mr-2 mb-1"
+              className="bg-background w-full sm:w-44 h-36 flex flex-row sm:flex-col items-center mb-2"
               key={index}
             >
               <div className="flex justify-between items-center h-full sm:w-fit w-1/2 sm:h-2/5 pr-2 bg-gray-200 dark:bg-gray-900 sm:bg-transparent sm:dark:bg-transparent">
@@ -162,8 +162,8 @@ function OrderForDate() {
                 >
                   {item.name === "Gross Revenue" ||
                   item.name === "Avg. Order Value"
-                    ? `${item.count} Ks`
-                    : item.count}
+                    ? `${Math.round(item.count)} Ks`
+                    : Math.round(item.count)}
                 </h1>
               </div>
             </Card>

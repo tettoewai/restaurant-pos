@@ -22,6 +22,7 @@ interface Props {
   addons?: Addon[];
   carts: CartItem[];
   setCarts: Dispatch<SetStateAction<CartItem[]>>;
+  tableId: string;
 }
 
 export default function MenuForCart({
@@ -30,11 +31,10 @@ export default function MenuForCart({
   itemId,
   carts,
   setCarts,
+  tableId,
 }: Props) {
   const validCart = carts.find((item) => item.id === itemId) as CartItem;
   const otherCart = carts.filter((item) => item.id !== itemId);
-  const searchParams = useSearchParams();
-  const tableId = searchParams.get("tableId");
 
   const validAddons = addons?.filter((item) =>
     validCart.addons.includes(item.id)

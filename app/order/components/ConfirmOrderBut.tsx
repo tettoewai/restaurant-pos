@@ -3,14 +3,11 @@ import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
 import { Button } from "@nextui-org/react";
-import { useSearchParams } from "next/navigation";
 import { useContext } from "react";
 import useSWR from "swr";
 
-export default function ConfirmOrderBut() {
+export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
   const { carts, setCarts } = useContext(OrderContext);
-  const searchParams = useSearchParams();
-  const tableId = searchParams.get("tableId") as string;
   const validAddons = carts.map((item) => item.addons);
   const uniqueAddons = Array.from(new Set(validAddons.flat()));
 
