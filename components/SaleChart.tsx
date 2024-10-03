@@ -21,6 +21,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import { title } from "process";
 import { useState } from "react";
 import { Line } from "react-chartjs-2";
 import { IoIosArrowDown } from "react-icons/io";
@@ -82,6 +83,7 @@ const SalesChart = () => {
     labels: months,
     datasets: [
       {
+        label: "Total sale",
         data: monthlySales, // Pass the sales data here
         borderColor: "rgba(255, 0, 0, 1)",
         backgroundColor: "rgba(75, 192, 192, 0.2)",

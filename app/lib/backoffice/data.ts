@@ -525,8 +525,6 @@ export async function createDefaultData({ email, name }: Props) {
 export const getSalesData = async (year: number) => {
   const startDate = new Date(year, 0, 1); // January 1st of the given year
   const endDate = new Date(year, 11, 31, 23, 59, 59); // December 31st of the given year
-  console.log("startDate", startDate);
-  console.log("endDate", endDate);
   const sales = await prisma.order.findMany({
     where: {
       createdAt: {
