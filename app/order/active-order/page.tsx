@@ -14,7 +14,8 @@ import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 
 function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
-  const tableId = Number(searchParams.tableId);
+  const tableId = parseFloat(searchParams.tableId);
+  console.log(tableId);
   const { data: orders = [], error: orderError } = useSWR<Order[]>(
     `orders`,
     () => fetchOrder(tableId).then((res) => res),
