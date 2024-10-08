@@ -24,6 +24,7 @@ export default function DeleteMenuDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!id) return;
     const { isSuccess, message } = await deleteMenu(id);
     if (isSuccess) {
       toast.success(message);
@@ -45,7 +46,6 @@ export default function DeleteMenuDialog({
           <form onSubmit={handleSubmit}>
             <ModalBody>
               <span>Are you sure you went to delete this menu?</span>
-              <input type="hidden" name="id" value={id} />
             </ModalBody>
             <ModalFooter>
               <Button

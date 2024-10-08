@@ -102,9 +102,25 @@ export async function fetchOrder(tableId: number) {
   noStore();
   try {
     const order = await prisma.order.findMany({
-      where: { tableId, status: { notIn: [ORDERSTATUS.PAID] } },
+      where: {
+        tableId,
+        status: { notIn: [ORDERSTATUS.PAID] },
+        isArchived: false,
+      },
       orderBy: { createdAt: "asc" },
     });
+    return order;
+  } catch (error) {
+    console.error("Error in fetchOrder:", error);
+    throw new Error("Failed to fetch Order data.");
+  }
+}
+
+export async function fetchOrderWithItemId(itemId: string) {
+  noStore();
+  if (!itemId) return null;
+  try {
+    const order = await prisma.order.findMany({ where: { itemId } });
     return order;
   } catch (error) {
     console.error("Error in fetchOrder:", error);

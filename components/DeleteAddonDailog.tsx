@@ -24,6 +24,7 @@ export default function DeleteAddonDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!id) return;
     const { isSuccess, message } = await deleteAddon(id);
     if (isSuccess) {
       toast.success(message);
@@ -49,7 +50,6 @@ export default function DeleteAddonDialog({
               <form onSubmit={handleSubmit}>
                 <ModalBody>
                   <span>Are you sure you went to delete this addon?</span>
-                  <input type="hidden" name="id" value={id} />
                 </ModalBody>
                 <ModalFooter>
                   <Button

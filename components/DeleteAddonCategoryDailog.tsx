@@ -27,6 +27,7 @@ export default function DeleteAddonCategoryDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!id) return;
     const { isSuccess, message } = await deleteAddonCategory(id);
     if (isSuccess) {
       toast.success(message);
@@ -54,7 +55,6 @@ export default function DeleteAddonCategoryDialog({
                   <span>
                     Are you sure you went to delete this addon category?
                   </span>
-                  <input type="hidden" name="id" value={id} />
                 </ModalBody>
                 <ModalFooter>
                   <Button

@@ -1,7 +1,8 @@
 "use client";
+import { updateOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Checkbox, Chip, Textarea } from "@nextui-org/react";
-import { Addon, AddonCategory } from "@prisma/client";
+import { Addon, AddonCategory, Order } from "@prisma/client";
 import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
@@ -12,9 +13,15 @@ interface Props {
   menuId: number;
   addonCategory: AddonCategory[];
   addon: Addon[];
+  order?: Order[] | null;
 }
 
-export default function MenuForm({ addonCategory, addon, menuId }: Props) {
+export default function MenuForm({
+  addonCategory,
+  addon,
+  menuId,
+  order,
+}: Props) {
   interface SelectedAddon {
     categoryId: number;
     addonId: number;
@@ -28,6 +35,16 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
 
   const { carts, setCarts } = useContext(OrderContext);
   const validCarts = carts.find((item) => item.id === cartId);
+  const validAddonOrderId = order?.map((item) => item.addonId);
+  const validAddonOrder = addon.filter((item) =>
+    validAddonOrderId?.includes(item.id)
+  );
+
+  const validSelectedValueOrder: SelectedAddon[] = validAddonOrder.map(
+    (item) => {
+      return { categoryId: item.addonCategoryId, addonId: item.id };
+    }
+  );
   useEffect(() => {
     if (!validCarts) {
       const params = new URLSearchParams(searchParams);
@@ -46,9 +63,15 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
     useState<SelectedAddon[]>(validSelectedValue);
 
   const [quantity, setQuantity] = useState<number>(validCarts?.quantity || 1);
-  const [instructions, setInstructions] = useState<string>(
-    validCarts?.instructions || ""
+  const [instruction, setInstruction] = useState<string>(
+    validCarts?.instruction || ""
   );
+  useEffect(() => {
+    if (validSelectedValueOrder && order) {
+      setSelectedValue(validSelectedValueOrder);
+      setQuantity(order[0].quantity);
+    }
+  }, [order, validSelectedValueOrder]);
   const requiredCat = addonCategory.filter((item) => item.isRequired);
   const selectedCat = selectedValue.map((item) => item.categoryId);
   const isDisable =
@@ -96,11 +119,25 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
     return true;
   };
 
-  const handleAddToCart = () => {
+  if (!tableId) return null;
+
+  const handleAddToCart = async () => {
     setSelectedValue([]);
     setQuantity(1);
-    setInstructions("");
-
+    setInstruction("");
+    if (validSelectedValueOrder && order) {
+      const formData = new FormData();
+      formData.append("itemId", order[0].itemId);
+      formData.append("quantity", String(quantity));
+      const addonIds = selectedValue.map((item) => item.addonId);
+      formData.append("addonIds", JSON.stringify(addonIds));
+      formData.append("instruction", instruction);
+      const { isSuccess, message } = await updateOrder(formData);
+      if (isSuccess) {
+        replace(`/order/active-order?tableId=${tableId}`);
+      }
+      return;
+    }
     const isExist = carts.find(
       (item) =>
         item.menuId === menuId &&
@@ -118,7 +155,7 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
           ...validCarts,
           quantity: quantity,
           addons: selectedValue.map((item) => item.addonId),
-          instructions,
+          instruction,
         },
       ]);
       replace(`/order/cart?tableId=${tableId}`);
@@ -137,7 +174,7 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
             menuId,
             addons: selectedValue.map((item) => item.addonId),
             quantity,
-            instructions,
+            instruction,
           },
         ]);
       }
@@ -197,13 +234,13 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
       </div>
 
       <Card className="mt-5 bg-background p-2">
-        <span>Special instructions</span>
+        <span>Special instruction</span>
         <Textarea
           variant="faded"
           color="secondary"
           fullWidth
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
+          value={instruction}
+          onChange={(e) => setInstruction(e.target.value)}
           placeholder="e.g. No mayo"
         />
       </Card>
@@ -230,7 +267,11 @@ export default function MenuForm({ addonCategory, addon, menuId }: Props) {
           onClick={() => handleAddToCart()}
           className="text-white bg-primary w-[65%]"
         >
-          {validCarts ? "Confirm menu" : "Add to cart"}
+          {validCarts
+            ? "Confirm menu"
+            : order && order?.length > 0
+            ? "Update order"
+            : "Add to cart"}
         </Button>
       </div>
     </div>

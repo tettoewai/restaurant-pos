@@ -71,15 +71,14 @@ export default async function ItemCard({
   const isExist = disableLocationMenuCat.find(
     (item) => item.menuCategoryId === id
   );
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
   return (
     <Card
       className={clsx(
-        "bg-background w-44 h-48 p-1 mr-2 mb-2 md:w-52 flex flex-col items-center relative overflow-hidden justify-center",
-        { "opacity-70": isExist && itemType === "menuCategory" }
+        "bg-background h-48 p-1 mr-2 flex flex-col items-center relative overflow-hidden justify-center",
+        {
+          "opacity-70": isExist && itemType === "menuCategory",
+          "w-40 h-40": itemType === "menuCategory" || itemType === "location",
+        }
       )}
     >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
@@ -107,7 +106,7 @@ export default async function ItemCard({
               alt="menu"
               width={100}
               height={100}
-              className="h-full w-full object-contain "
+              className="h-full w-full object-contain rounded-md"
             />
           ) : (
             <MdTableBar className={iconClasses} />

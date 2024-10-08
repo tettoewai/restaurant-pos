@@ -373,6 +373,7 @@ export async function fetchOrder() {
       where: {
         tableId: { in: tableId },
         status: { notIn: [ORDERSTATUS.PAID] },
+        isArchived: false,
       },
     });
     return order;
@@ -402,6 +403,7 @@ export async function fetchOrderWithStatus({
       where: {
         tableId,
         status: { in: [orderStatus] },
+        isArchived: false,
       },
       orderBy: { createdAt: "asc" },
     });
@@ -442,6 +444,7 @@ export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
       where: {
         createdAt: { gte: startOfDay, lte: endOfDay },
         tableId: { in: tableId },
+        isArchived: false,
       },
     });
 
@@ -453,6 +456,7 @@ export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
       where: {
         createdAt: { gte: startDate, lte: endOfDate },
         tableId: { in: tableId },
+        isArchived: false,
       },
     });
 
@@ -485,7 +489,7 @@ export async function createDefaultData({ email, name }: Props) {
         isSelected: true,
       },
     });
-    let newTable = await prisma.table.create({
+    const newTable = await prisma.table.create({
       data: {
         name: "Default table",
         locationId: newLocation.id,
@@ -531,6 +535,7 @@ export const getSalesData = async (year: number) => {
         gte: startDate,
         lte: endDate,
       },
+      isArchived: false,
     },
   });
 

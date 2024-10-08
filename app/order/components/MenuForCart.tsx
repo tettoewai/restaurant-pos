@@ -1,18 +1,11 @@
 "use client";
-import { CartItem, OrderContext } from "@/context/OrderContext";
+import { CartItem } from "@/context/OrderContext";
 import { Card } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, SetStateAction } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { MdAttachMoney, MdEdit } from "react-icons/md";
 

@@ -24,7 +24,7 @@ const Menu = async () => {
         </div>
         <NewMenuDialog menuCategory={menuCategory} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 mt-2">
         {menus.map((item, index) => (
           <Suspense key={index} fallback={<MenuLoading />}>
             <MenuCard

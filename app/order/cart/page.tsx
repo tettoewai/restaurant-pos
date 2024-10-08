@@ -10,16 +10,16 @@ import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import ConfirmOrderBut from "../components/ConfirmOrderBut";
 import MenuForCart from "../components/MenuForCart";
-import { useSearchParams } from "next/navigation";
 
-export default function Cart() {
-  // Call the context hook before any conditionals
+export default function Cart({
+  searchParams,
+}: {
+  searchParams: { tableId: string };
+}) {
   const { carts, setCarts } = useContext(OrderContext);
 
-  const searchParams = useSearchParams();
-  const tableId = searchParams.get("tableId");
+  const tableId = searchParams.tableId;
 
-  // Ensure SWR is always called, even if carts are empty
   const validMenuIds = carts.map((item) => item.menuId);
   const validAddons = carts.map((item) => item.addons);
   const uniqueAddons = Array.from(new Set(validAddons.flat()));
@@ -35,10 +35,8 @@ export default function Cart() {
       addons,
     }));
 
-  // Use SWR outside of conditionals
   const { data, error } = useSWR("menu-and-addon", fetchAllData);
 
-  // Handle conditional rendering after hooks
   if (!tableId) return null;
 
   return (

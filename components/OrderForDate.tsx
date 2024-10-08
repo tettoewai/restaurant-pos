@@ -170,6 +170,7 @@ function OrderForDate() {
           )
         )}
         <div className="w-full sm:w-96">
+          <h4 className="mb-1">​Top 5 menus with the most sales</h4>
           {isLoading ? (
             <TableSkeleton />
           ) : (

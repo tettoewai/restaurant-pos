@@ -24,6 +24,7 @@ export default function DeleteTableDialog({
 }: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!id) return;
     const { isSuccess, message } = await deleteTable(id);
     if (isSuccess) {
       toast.success(message);
@@ -47,7 +48,6 @@ export default function DeleteTableDialog({
           <form onSubmit={handleSubmit}>
             <ModalBody>
               <span>Are you sure you went to delete this table?</span>
-              <input type="hidden" name="id" value={id} />
             </ModalBody>
             <ModalFooter>
               <Button

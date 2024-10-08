@@ -13,7 +13,7 @@ export interface CartItem {
   menuId: number;
   addons: number[];
   quantity: number;
-  instructions?: string;
+  instruction?: string;
 }
 
 // Define the shape of the context value

@@ -34,6 +34,7 @@ export default function DeleteLocationDialog({
   };
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!id) return;
     const { isSuccess, message } = await deleteLocation(id);
     if (isSuccess) {
       toast.success(message);
@@ -58,7 +59,6 @@ export default function DeleteLocationDialog({
           <form onSubmit={handleSubmit}>
             <ModalBody>
               <span>Are you sure you went to delete this location?</span>
-              <input type="hidden" name="id" value={id} />
             </ModalBody>
             <ModalFooter>
               <Button

@@ -34,7 +34,7 @@ const Layout = ({ children }: Props) => {
         <ScrollShadow
           hideScrollBar
           size={20}
-          className="pl-2 pb-3 w-full max-h-full vertical"
+          className="px-2 pb-3 w-full max-h-full vertical"
         >
           {children}
         </ScrollShadow>

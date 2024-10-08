@@ -1,8 +1,8 @@
 "use client";
-import { Order } from "@prisma/client";
+import { $Enums, Order } from "@prisma/client";
 import { useEffect, useState } from "react";
 
-export function useLocation() {
+export function useLocation(shouldFetch: boolean) {
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -11,6 +11,8 @@ export function useLocation() {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!shouldFetch) return; // Only fetch if the flag is true
+
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by this browser.");
       return;
@@ -28,12 +30,21 @@ export function useLocation() {
         setLoading(false);
       }
     );
-  }, []);
+  }, [shouldFetch]);
 
   return { location, error, loading };
 }
 
-export function formatOrder(orders: Order[]) {
+export interface OrderData {
+  itemId: string;
+  addons: string;
+  menuId: number | undefined;
+  quantity: number | undefined;
+  status: $Enums.ORDERSTATUS | undefined;
+  totalPrice: number | undefined;
+}
+
+export function formatOrder(orders: Order[]): OrderData[] {
   const uniqueItem: string[] = [];
   orders.map((item) => {
     const isExist = uniqueItem.find((orderId) => orderId === item.itemId);

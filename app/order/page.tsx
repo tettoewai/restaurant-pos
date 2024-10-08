@@ -60,21 +60,27 @@ const OrderPage = async ({
           orientation="horizontal"
           className="w-full flex space-x-1 pb-3 justify-start"
         >
-          <Link href={`?tableId=${tableId}`}>
+          <Link href={`?tableId=${tableId}`} scroll={false}>
             <Chip
               size="lg"
               color={!menuCat ? "primary" : "default"}
               variant="bordered"
+              className="bg-background"
             >
               All
             </Chip>
           </Link>
           {menuCategory.map((item) => (
-            <Link key={item.id} href={`?tableId=${tableId}&menuCat=${item.id}`}>
+            <Link
+              key={item.id}
+              href={`?tableId=${tableId}&menuCat=${item.id}`}
+              scroll={false}
+            >
               <Chip
                 size="lg"
                 color={menuCat === item.id ? "primary" : "default"}
                 variant="bordered"
+                className="bg-background"
               >
                 {item.name}
               </Chip>

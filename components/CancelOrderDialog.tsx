@@ -1,4 +1,4 @@
-import { deleteMenuCategory } from "@/app/lib/backoffice/action";
+import { candelOrder } from "@/app/lib/order/action";
 import {
   Button,
   Modal,
@@ -7,16 +7,15 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
-import { toast } from "react-toastify";
 
 interface Props {
-  id: number;
+  id?: string;
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
 }
 
-export default function DeleteMenuCategoryDialog({
+export default function CancelOrderDialog({
   id,
   isOpen,
   onOpenChange,
@@ -25,13 +24,7 @@ export default function DeleteMenuCategoryDialog({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!id) return;
-    const { isSuccess, message } = await deleteMenuCategory(id);
-    if (isSuccess) {
-      toast.success(message);
-      onClose();
-    } else {
-      toast.error(message);
-    }
+    await candelOrder(id);
   };
   return (
     <div className="relative">
@@ -43,28 +36,24 @@ export default function DeleteMenuCategoryDialog({
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            Delete Menu Category
+            Cancel Order
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <span>
-                If you delete category, menus that are connected with this will
-                disappear.
-              </span>
-              <span>Are you sure you went to delete this menu category?</span>
+              <span>Are you sure you went to cancel this order?</span>
             </ModalBody>
             <ModalFooter>
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
                 onClick={onClose}
               >
-                Cancel
+                Close
               </Button>
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
               >
-                Delete
+                Cancel order
               </Button>
             </ModalFooter>
           </form>

@@ -23,7 +23,7 @@ const MenuCateogory = async () => {
         </div>
         <NewMenuCategoryDialog />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-8 mt-2">
         {menuCategory.map((item) => (
           <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
             <ItemCard itemType="menuCategory" id={item.id} name={item.name} />

@@ -20,16 +20,21 @@ import {
   Tabs,
 } from "@nextui-org/react";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { IoIosArrowDropdown } from "react-icons/io";
 import { toast } from "react-toastify";
 import useSWR, { mutate } from "swr";
 
-export default function App({ params }: { params: { id: string } }) {
-  const searchParams = useSearchParams();
+export default function App({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { orderStatus: string };
+}) {
   const pathName = usePathname();
   const router = useRouter();
-  const param = searchParams.get("orderStatus") || "pending";
+  const param = searchParams.orderStatus || "pending";
   const tabs = ["pending", "cooking", "complete"];
   const tableId = Number(params.id);
 
@@ -128,7 +133,7 @@ export default function App({ params }: { params: { id: string } }) {
                         return (
                           <Card
                             key={item.itemId}
-                            className="w-[10em] md:w-48 min-h-60"
+                            className="w-[10em] md:w-48 h-60"
                           >
                             <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
                               <Image

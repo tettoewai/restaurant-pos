@@ -38,6 +38,9 @@ import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
 import { BsQrCodeScan } from "react-icons/bs";
 import QrcodePrint from "./QrcodePrint";
+import { TbLocationCancel } from "react-icons/tb";
+import { OrderData } from "@/Generial";
+import CancelOrderDialog from "./CancelOrderDialog";
 
 interface Props {
   id: number;
@@ -47,7 +50,8 @@ interface Props {
     | "addonCategory"
     | "addon"
     | "table"
-    | "location";
+    | "location"
+    | "activeOrder";
   categories?: MenuCategory[];
   menu?: Menu[];
   addonCategory?: AddonCategory[];
@@ -55,6 +59,8 @@ interface Props {
   table?: Table;
   disableLocationMenuCat?: DisabledLocationMenuCategory[];
   disableLocationMenu?: DisabledLocationMenu[];
+  orderData?: OrderData;
+  tableId?: number;
 }
 
 export default function MoreOptionButton({
@@ -67,6 +73,8 @@ export default function MoreOptionButton({
   table,
   disableLocationMenuCat,
   disableLocationMenu,
+  orderData,
+  tableId,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -151,6 +159,11 @@ export default function MoreOptionButton({
             key="edit"
             endContent={<MdEdit className={iconClasses} />}
             onClick={onUpdateOpen}
+            href={
+              itemType === "activeOrder"
+                ? `/order/${orderData?.menuId}?tableId=${tableId}&orderId=${orderData?.itemId}`
+                : ""
+            }
           >
             Edit
           </DropdownItem>
@@ -202,10 +215,16 @@ export default function MoreOptionButton({
             key="delete"
             className="text-danger"
             color="danger"
-            endContent={<MdDelete className={cn(iconClasses, "text-danger")} />}
+            endContent={
+              itemType === "activeOrder" ? (
+                <TbLocationCancel className={cn(iconClasses, "text-danger")} />
+              ) : (
+                <MdDelete className={cn(iconClasses, "text-danger")} />
+              )
+            }
             onClick={onDeleteOpen}
           >
-            Delete
+            {itemType === "activeOrder" ? "Cancel" : "Delete"}
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
@@ -303,6 +322,13 @@ export default function MoreOptionButton({
             isOpen={isDeleteOpen}
           />
         </>
+      ) : itemType === "activeOrder" ? (
+        <CancelOrderDialog
+          id={orderData?.itemId}
+          onClose={onDeleteClose}
+          onOpenChange={onDeleteOpenChange}
+          isOpen={isDeleteOpen}
+        />
       ) : null}
     </>
   );

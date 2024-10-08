@@ -7,15 +7,27 @@ import {
   fetchAddonCategory,
   fetchAddon,
 } from "@/app/lib/backoffice/data";
+import { fetchOrderWithItemId } from "@/app/lib/order/data";
+import { Suspense } from "react";
 
-export default async function MenuPage({ params }: { params: { id: string } }) {
+export default async function MenuPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { [orderId: string]: string | undefined };
+}) {
   const menuId = Number(params.id);
+  const orderId = searchParams.orderId;
   const [menu, menuAddonCategory, addonCategory, addon] = await Promise.all([
     fetchMenuWithId(menuId),
     fetchMenuAddonCategory(),
     fetchAddonCategory(),
     fetchAddon(),
   ]);
+
+  const order = orderId ? await fetchOrderWithItemId(orderId) : null;
+
   const validAddonCat = menuAddonCategory
     .filter((item) => item.menuId === menuId)
     .map((menuAddonCat) => menuAddonCat.addonCategoryId);
@@ -43,11 +55,14 @@ export default async function MenuPage({ params }: { params: { id: string } }) {
             <span className="text-lg mt-2">{menu?.price} Kyats</span>
           </div>
         </Card>
-        <MenuForm
-          addon={addon}
-          addonCategory={validAddonCategory}
-          menuId={menuId}
-        />
+        <Suspense>
+          <MenuForm
+            addon={addon}
+            addonCategory={validAddonCategory}
+            menuId={menuId}
+            order={order}
+          />
+        </Suspense>
       </div>
     </div>
   );

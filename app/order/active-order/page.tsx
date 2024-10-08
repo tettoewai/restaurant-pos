@@ -5,53 +5,66 @@ import {
   fetchMenuWithIds,
 } from "@/app/lib/backoffice/data";
 import { fetchOrder } from "@/app/lib/order/data";
+import { MenuLoading } from "@/app/ui/skeletons";
+import MoreOptionButton from "@/components/MoreOptionButton";
 import { formatOrder } from "@/Generial";
 import { Button, Card, Link } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 
-function ActiveOrder() {
-  const searchParams = useSearchParams();
-  const tableId = Number(searchParams.get("tableId"));
-  const { data: orders = [], error: orderError } = useSWR<Order[]>(
+function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
+  const tableId = Number(searchParams.tableId);
+  const {
+    data: orders,
+    error: orderError,
+    isLoading: orderLoading,
+  } = useSWR<Order[]>(
     `orders`,
     () => fetchOrder(tableId).then((res) => res),
     { refreshInterval: 10000 } // Fetch every 10 seconds
   );
 
-  const orderData = formatOrder(orders);
-  const menuIds = orderData.map((item) => item.menuId) as number[];
-  const itemAddon: number[] = orderData.map((item) => JSON.parse(item.addons));
-  const uniqueAddons: number[] = Array.from(new Set(itemAddon.flat())).filter(
+  const orderData = orders && formatOrder(orders);
+  const menuIds = orderData?.map((item) => item.menuId) as number[];
+  const itemAddon = orderData?.map((item) => JSON.parse(item.addons));
+  const uniqueAddons: number[] = Array.from(new Set(itemAddon?.flat())).filter(
     (item) => item !== 0
   );
 
-  // Fetch menus, addons, and addon categories
-  const { data: menus = [], error: menuError } = useSWR("menus", () =>
+  const {
+    data: menus,
+    error: menuError,
+    isLoading: menuLoading,
+  } = useSWR([menuIds], () =>
     menuIds.length ? fetchMenuWithIds(menuIds) : Promise.resolve([])
   );
 
-  const { data: addons = [], error: addonError } = useSWR("addons", () =>
+  const {
+    data: addons,
+    error: addonError,
+    isLoading: addonLoading,
+  } = useSWR([orderData], () =>
     uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
   );
 
-  const addonCategoryIds = addons.map((item) => item.addonCategoryId);
+  const addonCategoryIds = addons?.map((item) => item.addonCategoryId);
 
-  const { data: addonCategory = [], error: addonCategoryError } = useSWR(
-    "addonCategory",
-    () =>
-      addonCategoryIds.length
-        ? fetchAddonCategoryWithIds(addonCategoryIds)
-        : Promise.resolve([])
+  const {
+    data: addonCategory,
+    error: addonCategoryError,
+    isLoading: addonCatLoading,
+  } = useSWR([addons], () =>
+    addonCategoryIds?.length
+      ? fetchAddonCategoryWithIds(addonCategoryIds)
+      : Promise.resolve([])
   );
 
   return (
     <div>
-      {orderData.length > 0 ? (
+      {orderData && orderData.length > 0 ? (
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">
             <span>Your orders</span>
@@ -59,59 +72,85 @@ function ActiveOrder() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
             {orderData.map((item) => {
-              const validMenu = menus.find((mennu) => mennu.id === item.menuId);
+              const validMenu = menus?.find(
+                (mennu) => mennu.id === item.menuId
+              );
               const addonIds: number[] = JSON.parse(item.addons);
-              const validAddon = addons.filter((addon) =>
+              const validAddon = addons?.filter((addon) =>
                 addonIds.includes(addon.id)
               );
+              if (!validMenu) return null;
               return (
-                <Card
-                  key={item.itemId}
-                  className="w-[11em] min-h-60 bg-background"
-                >
-                  <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
-                    <Image
-                      src={validMenu?.assetUrl || "/default-menu.png"}
-                      alt="menu"
-                      width={500}
-                      height={500}
-                      className=" w-full h-auto object-contain"
-                    />
-                  </div>
-                  <div className="px-1 flex justify-between flex-col h-1/2 mb-2">
-                    <div className="flex justify-between mt-1">
-                      <span>{validMenu?.name}</span>
-                      <span className="size-6 text-white rounded-full bg-primary text-center">
-                        {item.quantity}
-                      </span>
-                    </div>
-                    <div className="text-xs font-thin mt-1">
-                      {validAddon.map((addon) => {
-                        const validAddonCat = addonCategory.find(
-                          (addonCat) => addonCat.id === addon.addonCategoryId
-                        );
-                        return (
-                          <div key={addon.id} className="flex justify-between">
-                            <span>{validAddonCat?.name}</span>
-                            <span>{addon.name}</span>
+                <div key={item.itemId}>
+                  {orderLoading &&
+                  menuLoading &&
+                  addonLoading &&
+                  addonCatLoading ? (
+                    <MenuLoading />
+                  ) : (
+                    <Card className="w-[11em] h-60 bg-background">
+                      <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
+                        {item.status === "PENDING" ? (
+                          <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
+                            <MoreOptionButton
+                              id={validMenu.id}
+                              itemType="activeOrder"
+                              orderData={item}
+                              tableId={tableId}
+                            />
                           </div>
-                        );
-                      })}
-                    </div>
-                    <div className="text-sm font-thin mt-1 flex justify-between ">
-                      <span>Status :</span>
-                      <span
-                        className={clsx({
-                          "text-red-500": item.status === "PENDING",
-                          "text-green-500": item.status === "COMPLETE",
-                          "text-orange-500": item.status === "COOKING",
-                        })}
-                      >
-                        {item.status}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
+                        ) : null}
+
+                        <Image
+                          src={validMenu.assetUrl || "/default-menu.png"}
+                          alt="menu"
+                          width={500}
+                          height={500}
+                          className=" w-full h-auto object-contain"
+                        />
+                      </div>
+                      <div className="px-1 flex justify-between flex-col h-1/2 mb-2">
+                        <div className="flex justify-between mt-1">
+                          <span>{validMenu.name}</span>
+                          <span className="size-6 text-white rounded-full bg-primary text-center">
+                            {item.quantity}
+                          </span>
+                        </div>
+                        <div className="text-xs font-thin mt-1">
+                          {validAddon?.map((addon) => {
+                            const validAddonCat =
+                              addonCategory &&
+                              addonCategory.find(
+                                (addonCat) =>
+                                  addonCat.id === addon.addonCategoryId
+                              );
+                            return (
+                              <div
+                                key={addon.id}
+                                className="flex justify-between"
+                              >
+                                <span>{validAddonCat?.name}</span>
+                                <span>{addon.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="text-sm font-thin mt-1 flex justify-between ">
+                          <span>Status :</span>
+                          <span
+                            className={clsx({
+                              "text-red-500": item.status === "PENDING",
+                              "text-green-500": item.status === "COMPLETE",
+                              "text-orange-500": item.status === "COOKING",
+                            })}
+                          >
+                            {item.status}
+                          </span>
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+                </div>
               );
             })}
           </div>
