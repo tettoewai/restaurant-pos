@@ -19,6 +19,7 @@ export default function Cart({
   const { carts, setCarts } = useContext(OrderContext);
 
   const tableId = searchParams.tableId;
+  console.log(tableId);
 
   const validMenuIds = carts.map((item) => item.menuId);
   const validAddons = carts.map((item) => item.addons);
@@ -35,9 +36,7 @@ export default function Cart({
       addons,
     }));
 
-  const { data, error } = useSWR("menu-and-addon", fetchAllData);
-
-  if (!tableId) return null;
+  const { data, error } = useSWR([carts], fetchAllData);
 
   return (
     <div className="px-2">

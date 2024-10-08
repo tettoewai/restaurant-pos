@@ -22,7 +22,7 @@ function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
     error: orderError,
     isLoading: orderLoading,
   } = useSWR<Order[]>(
-    `orders`,
+    [tableId],
     () => fetchOrder(tableId).then((res) => res),
     { refreshInterval: 10000 } // Fetch every 10 seconds
   );
