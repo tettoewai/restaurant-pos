@@ -26,6 +26,8 @@ export default function MenuForm({
     categoryId: number;
     addonId: number;
   }
+  const { carts, setCarts } = useContext(OrderContext);
+
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -33,7 +35,6 @@ export default function MenuForm({
   const cartId = searchParams.get("cartId");
   const tableId = searchParams.get("tableId");
 
-  const { carts, setCarts } = useContext(OrderContext);
   const validCarts = carts.find((item) => item.id === cartId);
   const validAddonOrderId = order?.map((item) => item.addonId);
   const validAddonOrder = addon.filter((item) =>
@@ -51,7 +52,7 @@ export default function MenuForm({
       params.delete("cartId");
       replace(`${pathname}?${params.toString()}`);
     }
-  }, [validCarts, pathname, replace, searchParams]);
+  }, [validCarts, searchParams, pathname, replace]);
   const validAddonCat = addon.filter((item) =>
     validCarts?.addons.includes(item.id)
   );
@@ -67,11 +68,11 @@ export default function MenuForm({
     validCarts?.instruction || ""
   );
   useEffect(() => {
-    if (validSelectedValueOrder && order) {
+    if (order) {
       setSelectedValue(validSelectedValueOrder);
       setQuantity(order[0].quantity);
     }
-  }, [order, validSelectedValueOrder]);
+  }, [order]);
   const requiredCat = addonCategory.filter((item) => item.isRequired);
   const selectedCat = selectedValue.map((item) => item.categoryId);
   const isDisable =
