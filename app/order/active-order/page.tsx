@@ -12,11 +12,13 @@ import { Button, Card, Link } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 
-function ActiveOrder({ searchParams }: { searchParams: { tableId: string } }) {
-  const tableId = Number(searchParams.tableId);
+function ActiveOrder() {
+  const searchParams = useSearchParams();
+  const tableId = Number(searchParams.get("tableId"));
   const {
     data: orders,
     error: orderError,
