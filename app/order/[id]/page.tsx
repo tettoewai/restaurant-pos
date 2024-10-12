@@ -37,8 +37,8 @@ export default async function MenuPage({
 
   return (
     <div>
-      <div className="pb-24">
-        <Card className="mb-5 max-h-80">
+      <div className="pb-24 mt-2">
+        <Card className="mb-3 max-h-80 bg-background">
           <div className="flex justify-center items-center overflow-hidden rounded-md w-full object-contain">
             <Image
               src={menu?.assetUrl || "/default-menu.png"}

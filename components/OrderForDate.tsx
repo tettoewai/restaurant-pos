@@ -38,7 +38,7 @@ function OrderForDate() {
         date.start.toDate(getLocalTimeZone()),
         date.end.toDate(getLocalTimeZone())
       ).then((res) => res),
-    { refreshInterval: 10000 }
+    { refreshInterval: 5000 }
   );
   const sameMenuOrder: Order[] = [];
   totalOrder?.map((item) => {

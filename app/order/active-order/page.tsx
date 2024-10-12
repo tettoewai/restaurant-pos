@@ -26,7 +26,7 @@ function ActiveOrder() {
   } = useSWR<Order[]>(
     [tableId],
     () => fetchOrder(tableId).then((res) => res),
-    { refreshInterval: 10000 } // Fetch every 10 seconds
+    { refreshInterval: 5000 } // Fetch every 10 seconds
   );
 
   const orderData = orders && formatOrder(orders);

@@ -65,7 +65,7 @@ export default async function Home() {
           </Button>
         </Link>
       </div>
-      <span>In usage, user must be scan qr code to order</span>
+      <span>In usage, user must be scan qr code to place order</span>
       <div className="mt-9 flex items-center justify-center flex-wrap">
         {functionItem.map((item, index) => (
           <div

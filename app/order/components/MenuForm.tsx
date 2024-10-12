@@ -71,6 +71,7 @@ export default function MenuForm({
     if (order) {
       setSelectedValue(validSelectedValueOrder);
       setQuantity(order[0].quantity);
+      order[0].instruction && setInstruction(order[0].instruction);
     }
   }, [order]);
   const requiredCat = addonCategory.filter((item) => item.isRequired);
@@ -192,7 +193,7 @@ export default function MenuForm({
           return (
             <Card
               key={item.id}
-              className={clsx("p-3 border", {
+              className={clsx("p-3 border bg-background", {
                 "border-primary": item.isRequired,
               })}
             >
@@ -234,10 +235,10 @@ export default function MenuForm({
         })}
       </div>
 
-      <Card className="mt-5 bg-background p-2">
+      <Card className="mt-3 space-y-1 bg-background p-2">
         <span>Special instruction</span>
         <Textarea
-          variant="faded"
+          variant="bordered"
           color="secondary"
           fullWidth
           value={instruction}
@@ -269,7 +270,7 @@ export default function MenuForm({
           className="text-white bg-primary w-[65%]"
         >
           {validCarts
-            ? "Confirm menu"
+            ? "Confirm cart"
             : order && order?.length > 0
             ? "Update order"
             : "Add to cart"}

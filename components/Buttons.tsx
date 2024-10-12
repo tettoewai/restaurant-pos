@@ -1,6 +1,6 @@
 "use client";
 
-import { Tooltip } from "@nextui-org/react";
+import { Button, Tooltip } from "@nextui-org/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { GoScreenFull, GoScreenNormal } from "react-icons/go";
@@ -24,15 +24,15 @@ export const FullScreenButton = () => {
           showArrow={true}
           delay={1000}
         >
-          <button>
+          <Button isIconOnly variant="light">
             <GoScreenNormal
-              className="size-7 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
+              className="size-7 md:size-8 cursor-pointer text-primary p-1"
               onClick={() => {
                 screenfull.isEnabled && screenfull.exit();
                 setIsFullScreen(false);
               }}
             />
-          </button>
+          </Button>
         </Tooltip>
       ) : (
         <Tooltip
@@ -42,15 +42,15 @@ export const FullScreenButton = () => {
           showArrow={true}
           delay={1000}
         >
-          <button>
+          <Button isIconOnly variant="light">
             <GoScreenFull
-              className="size-7 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
+              className="size-7 md:size-8 cursor-pointer text-primary p-1"
               onClick={() => {
                 screenfull.isEnabled && screenfull.request();
                 setIsFullScreen(true);
               }}
             />
-          </button>
+          </Button>
         </Tooltip>
       )}
     </>
@@ -69,12 +69,12 @@ export function ModeButton() {
           showArrow={true}
           delay={1000}
         >
-          <button>
+          <Button isIconOnly variant="light">
             <MdDarkMode
-              className="size-7 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
+              className="size-7 md:size-8 cursor-pointer text-primary p-1"
               onClick={() => setTheme("light")}
             />
-          </button>
+          </Button>
         </Tooltip>
       ) : (
         <Tooltip
@@ -84,12 +84,12 @@ export function ModeButton() {
           showArrow={true}
           delay={1000}
         >
-          <button>
+          <Button isIconOnly variant="light">
             <MdLightMode
-              className="size-7 md:size-8 hover:shadow-md cursor-pointer text-primary p-1"
+              className="size-7 md:size-8 cursor-pointer text-primary p-1"
               onClick={() => setTheme("dark")}
             />
-          </button>
+          </Button>
         </Tooltip>
       )}
     </>

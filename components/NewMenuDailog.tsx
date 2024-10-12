@@ -108,7 +108,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
               />
               {menuImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
-                  <span className="truncate ...">{menuImage.name}</span>
+                  <p className="truncate ...">{menuImage.name}</p>
                   <IoMdClose
                     className="text-primary size-7 cursor-pointer"
                     onClick={() => setMenuImage(null)}

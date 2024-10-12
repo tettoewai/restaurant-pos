@@ -42,6 +42,7 @@ export interface OrderData {
   quantity: number | undefined;
   status: $Enums.ORDERSTATUS | undefined;
   totalPrice: number | undefined;
+  instruction: string | null | undefined;
 }
 
 export function formatOrder(orders: Order[]): OrderData[] {
@@ -57,6 +58,7 @@ export function formatOrder(orders: Order[]): OrderData[] {
     const quantity = validItem?.quantity;
     const status = validItem?.status;
     const totalPrice = validItem?.totalPrice;
+    const instruction = validItem?.instruction;
     return {
       itemId: uniqueOrder,
       addons: JSON.stringify(validItems.map((item) => item.addonId ?? 0)),
@@ -64,6 +66,7 @@ export function formatOrder(orders: Order[]): OrderData[] {
       quantity,
       status,
       totalPrice,
+      instruction,
     };
   });
   return orderData;

@@ -43,6 +43,7 @@ export const createOrder = async ({
       status: {
         notIn: [ORDERSTATUS.PAID],
       },
+      isArchived: false,
     },
   });
   const orderSeq = order ? order.orderSeq : nanoid(7);
@@ -109,6 +110,10 @@ export async function updateOrder(formData: FormData) {
     const prevPrice = prevOrder[0].totalPrice / prevOrder[0].quantity;
     let newPrice = prevPrice;
     const prevAddon = prevOrder.map((item) => item.addonId);
+    await prisma.order.updateMany({
+      where: { itemId },
+      data: { instruction, quantity },
+    });
     const toRemove = prevAddon
       .filter((item) => !addons.includes(Number(item)))
       .filter((item) => item !== null);
@@ -158,7 +163,7 @@ export async function updateOrder(formData: FormData) {
     const totalPrice = newPrice * quantity;
     await prisma.order.updateMany({
       where: { tableId, status: ORDERSTATUS.PENDING },
-      data: { totalPrice, quantity },
+      data: { totalPrice },
     });
     return { message: "Updated order successfully.", isSuccess: true };
   } catch (error) {
@@ -174,10 +179,10 @@ export async function candelOrder(itemId: string) {
   if (!itemId) return { message: "Missing required fields", isSuccess: false };
   try {
     const currentOrder = await prisma.order.findMany({ where: { itemId } });
-    // await prisma.order.updateMany({
-    //   where: { itemId },
-    //   data: { isArchived: true },
-    // });
+    await prisma.order.updateMany({
+      where: { itemId },
+      data: { isArchived: true },
+    });
 
     const currentAddonPrice = (
       await fetchAddonWithIds(
@@ -189,7 +194,15 @@ export async function candelOrder(itemId: string) {
     );
 
     const totalPrice =
-      currentMenuPrice + currentAddonPrice * currentOrder[0].quantity;
+      currentOrder[0].totalPrice -
+      (currentMenuPrice + currentAddonPrice) * currentOrder[0].quantity;
+
+    const currentSeq = currentOrder[0].orderSeq;
+
+    await prisma.order.updateMany({
+      where: { orderSeq: currentSeq },
+      data: { totalPrice },
+    });
 
     revalidatePath("/order/active-order");
     return { message: "Cancel order successfully.", isSuccess: true };

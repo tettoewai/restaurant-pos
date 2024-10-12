@@ -64,7 +64,7 @@ export default function MenuForCart({
           <MdEdit className="size-6 text-primary" />
         </button>
       </Link>
-      <div className="flex flex-row items-center h-full">
+      <div className="flex justify-between items-center h-full w-full">
         <div className="w-2/6 overflow-hidden h-full flex justify-center items-center">
           <Image
             src={menu?.assetUrl || "/default-menu.png"}
@@ -74,16 +74,15 @@ export default function MenuForCart({
             className="h-full object-cover"
           />
         </div>
-        <div className="m-2 flex flex-col space-y-1 h-full items-start justify-center">
-          <div className="space-y-2 mb-4">
+        <div className="flex flex-col space-y-1 h-full  w-5/12 items-start justify-center">
+          <div className="space-y-3 mb-4 w-full">
             <span className="font-semibold">{menu.name}</span>
             <div className="flex">
-              <span className="text-xs">
+              <p className="text-xs text-wrap truncate ...">
                 {validAddons?.map((item) => item.name).join(", ")}
-              </span>
+              </p>
             </div>
           </div>
-
           <div className="flex space-x-1">
             <button
               onClick={() => handleQuantityChange(validCart.quantity - 1)}
@@ -102,7 +101,7 @@ export default function MenuForCart({
         </div>
         <div className="flex items-center justify-center mr-1">
           <MdAttachMoney className="text-xl text-primary" />
-          <span className=" text-sm">{menuPrice} Ks</span>
+          <span className="text-xs">{menuPrice} Ks</span>
         </div>
       </div>
     </Card>

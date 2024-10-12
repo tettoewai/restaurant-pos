@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import {
   Badge,
+  Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -29,7 +30,7 @@ export default function NotificationFeed() {
   const { data: notification } = useSWR(
     [isUpdateLocation],
     () => fetchNotification().then((res) => res),
-    { refreshInterval: 10000 }
+    { refreshInterval: 5000 }
   );
 
   const timeAgo = (date: Date) => {
@@ -90,9 +91,9 @@ export default function NotificationFeed() {
                 showArrow={true}
                 delay={1000}
               >
-                <button>
-                  <IoIosNotifications className="size-7 md:size-8 hover:shadow-md cursor-pointer text-primary p-1" />
-                </button>
+                <Button isIconOnly variant="light">
+                  <IoIosNotifications className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+                </Button>
               </Tooltip>
             </Badge>
           </div>

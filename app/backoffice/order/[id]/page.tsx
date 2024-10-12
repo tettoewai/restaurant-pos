@@ -11,20 +11,26 @@ import {
 import { formatOrder } from "@/Generial";
 import {
   Button,
-  Card,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
   Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
   Tabs,
+  Tooltip,
+  User,
 } from "@nextui-org/react";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { IoIosArrowDropdown } from "react-icons/io";
+import { PiHandCoinsFill } from "react-icons/pi";
 import { toast } from "react-toastify";
 import useSWR, { mutate } from "swr";
-
 export default function App({
   params,
   searchParams,
@@ -54,7 +60,7 @@ export default function App({
   const { data = [], error } = useSWR(
     [tableId, param, isUpdateLocation],
     () => fetchOrderWithStatus({ tableId, status: param }).then((res) => res),
-    { refreshInterval: 10000 }
+    { refreshInterval: 5000 }
   );
 
   const menuIds = data?.map((item) => item.menuId) as number[];
@@ -98,8 +104,24 @@ export default function App({
       {checkTable ? (
         <>
           <span className="flex md:absolute top-5 left-3">
-            Order of {table?.name}
+            Order of {table?.name},{" "}
+            {orderData.length && "Total price :" + orderData[0].totalPrice}
           </span>
+          <Tooltip
+            placement="bottom-end"
+            content="Paid"
+            className="text-primary"
+            showArrow={true}
+            delay={1000}
+          >
+            <Button
+              color="primary"
+              isIconOnly
+              className="flex md:absolute top-2.5 right-2"
+            >
+              <PiHandCoinsFill color="white" className="size-5" />
+            </Button>
+          </Tooltip>
           <Tabs
             aria-label="Options"
             color="primary"
@@ -112,7 +134,7 @@ export default function App({
                 : params.set("orderStatus", String(e));
               router.replace(`${pathName}?${params.toString()}`);
             }}
-            className="flex justify-center md:justify-end mr-5 mt-2"
+            className="flex justify-center md:justify-end mr-12 mt-2"
           >
             {tabs.map((item) => (
               <Tab
@@ -121,62 +143,72 @@ export default function App({
               >
                 {orderData.length > 0 ? (
                   <div className="p-1 w-full">
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1 md:gap-2 w-full mt-4">
-                      {orderData.map((item) => {
-                        const validMenu =
-                          menus &&
-                          menus.find((menu) => menu.id === item.menuId);
-                        const addonIds: number[] = JSON.parse(item.addons);
-                        const validAddon = addons.filter((addon) =>
-                          addonIds.includes(addon.id)
-                        );
-                        return (
-                          <Card
-                            key={item.itemId}
-                            className="w-[10em] md:w-48 h-60"
-                          >
-                            <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
-                              <Image
-                                src={validMenu?.assetUrl || "/default-menu.png"}
-                                alt="menu"
-                                width={500}
-                                height={500}
-                                className="w-full h-auto object-contain"
-                              />
-                            </div>
-                            <div className="px-1 flex justify-between flex-col h-1/2 mb-2">
-                              <div className="flex justify-between mt-1">
-                                <span>{validMenu?.name}</span>
-                                <span className="size-6 text-white rounded-full bg-primary text-center">
-                                  {item.quantity}
+                    <Table aria-label="Order list">
+                      <TableHeader>
+                        <TableColumn>No.</TableColumn>
+                        <TableColumn>Menu</TableColumn>
+                        <TableColumn>Addon</TableColumn>
+                        <TableColumn>Quantity</TableColumn>
+                        <TableColumn>Status</TableColumn>
+                      </TableHeader>
+                      <TableBody emptyContent="There is no order">
+                        {orderData.map((item, index) => {
+                          const validMenu =
+                            menus &&
+                            menus.find((menu) => menu.id === item.menuId);
+                          const addonIds: number[] = JSON.parse(item.addons);
+                          const validAddon = addons.filter((addon) =>
+                            addonIds.includes(addon.id)
+                          );
+
+                          const addonCatAddon = validAddon.map((addon) => {
+                            const validAddonCat = addonCategory.find(
+                              (addonCat) =>
+                                addonCat.id === addon.addonCategoryId
+                            );
+
+                            return validAddonCat?.name + " : " + addon.name;
+                          });
+
+                          return (
+                            <TableRow key={index + 1}>
+                              <TableCell>{index + 1}</TableCell>
+                              <TableCell>
+                                <User
+                                  avatarProps={{
+                                    radius: "sm",
+                                    src:
+                                      validMenu?.assetUrl ||
+                                      "/default-menu.png",
+                                  }}
+                                  description={item.instruction}
+                                  name={validMenu?.name}
+                                >
+                                  {item.instruction}
+                                </User>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-wrap text-center">
+                                  {addonCatAddon.length
+                                    ? addonCatAddon.join(", ")
+                                    : "--"}
                                 </span>
-                              </div>
-                              <div className="text-xs font-thin mt-1">
-                                {validAddon.map((addon) => {
-                                  const validAddonCat = addonCategory.find(
-                                    (addonCat) =>
-                                      addonCat.id === addon.addonCategoryId
-                                  );
-                                  return (
-                                    <div
-                                      key={addon.id}
-                                      className="flex justify-between"
-                                    >
-                                      <span>{validAddonCat?.name}</span>
-                                      <span>{addon.name}</span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              <div className="text-sm font-thin mt-1 flex justify-between items-center">
-                                <span className="text-sm">Status :</span>
-                                <Dropdown>
+                              </TableCell>
+                              <TableCell>{item.quantity}</TableCell>
+                              <TableCell>
+                                <Dropdown className="bg-background">
                                   <DropdownTrigger>
                                     <Button
                                       endContent={<IoIosArrowDropdown />}
                                       size="sm"
                                       variant="light"
-                                      className="p-0"
+                                      color={
+                                        item.status === "PENDING"
+                                          ? "primary"
+                                          : item.status === "COOKING"
+                                          ? "warning"
+                                          : "success"
+                                      }
                                     >
                                       {item.status &&
                                         item.status.charAt(0).toUpperCase() +
@@ -202,12 +234,12 @@ export default function App({
                                     <DropdownItem key="paid">Paid</DropdownItem>
                                   </DropdownMenu>
                                 </Dropdown>
-                              </div>
-                            </div>
-                          </Card>
-                        );
-                      })}
-                    </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 ) : (
                   <span>There is no order yet</span>

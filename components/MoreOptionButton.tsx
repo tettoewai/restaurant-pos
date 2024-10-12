@@ -51,7 +51,8 @@ interface Props {
     | "addon"
     | "table"
     | "location"
-    | "activeOrder";
+    | "activeOrder"
+    | "order";
   categories?: MenuCategory[];
   menu?: Menu[];
   addonCategory?: AddonCategory[];
