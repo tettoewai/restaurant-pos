@@ -78,7 +78,8 @@ const TopBarOrder = () => {
         >
           <Link href={`/order/cart/?tableId=${tableId}`}>
             <Badge
-              content={carts.length > 0 && carts.length}
+              content={carts.length}
+              isInvisible={carts.length === 0}
               color="primary"
               className="text-white"
               placement="top-left"

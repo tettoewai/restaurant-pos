@@ -37,62 +37,73 @@ export const createOrder = async ({
   const isValid = tableId && cartItem.length > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
-  const order = await prisma.order.findFirst({
-    where: {
-      tableId,
-      status: {
-        notIn: [ORDERSTATUS.PAID],
+  try {
+    const order = await prisma.order.findFirst({
+      where: {
+        tableId,
+        status: {
+          notIn: [ORDERSTATUS.PAID],
+        },
+        isArchived: false,
       },
-      isArchived: false,
-    },
-  });
-  const orderSeq = order ? order.orderSeq : nanoid(7);
-  const originalTotalPrice = await getTotalPrice(cartItem);
-  const totalPrice = order
-    ? order.totalPrice + originalTotalPrice
-    : originalTotalPrice;
+    });
+    const orderSeq = order ? order.orderSeq : nanoid(7);
+    const originalTotalPrice = await getTotalPrice(cartItem);
+    const totalPrice = order
+      ? order.totalPrice + originalTotalPrice
+      : originalTotalPrice;
 
-  await Promise.all(
-    cartItem.map(async (item) => {
-      const hasAddon = item.addons.length > 0;
-      if (hasAddon) {
-        item.addons.map(
-          async (addon) =>
-            await prisma.order.create({
-              data: {
-                menuId: item.menuId,
-                addonId: addon,
-                itemId: item.id,
-                quantity: item.quantity,
-                orderSeq,
-                status: ORDERSTATUS.PENDING,
-                totalPrice,
-                tableId,
-                instruction: item.instruction,
-              },
-            })
-        );
-      } else {
-        await prisma.order.create({
-          data: {
-            menuId: item.menuId,
-            itemId: item.id,
-            quantity: item.quantity,
-            orderSeq,
-            status: ORDERSTATUS.PENDING,
-            totalPrice,
-            tableId,
-            instruction: item.instruction,
-          },
-        });
-      }
-    })
-  );
-  await prisma.order.updateMany({ where: { orderSeq }, data: { totalPrice } });
-  await prisma.notification.create({
-    data: { message: "There are new orders", tableId },
-  });
-  redirect(`/order/active-order?tableId=${tableId}`);
+    await Promise.all(
+      cartItem.map(async (item) => {
+        const hasAddon = item.addons.length > 0;
+        if (hasAddon) {
+          item.addons.map(
+            async (addon) =>
+              await prisma.order.create({
+                data: {
+                  menuId: item.menuId,
+                  addonId: addon,
+                  itemId: item.id,
+                  quantity: item.quantity,
+                  orderSeq,
+                  status: ORDERSTATUS.PENDING,
+                  totalPrice,
+                  tableId,
+                  instruction: item.instruction,
+                },
+              })
+          );
+        } else {
+          await prisma.order.create({
+            data: {
+              menuId: item.menuId,
+              itemId: item.id,
+              quantity: item.quantity,
+              orderSeq,
+              status: ORDERSTATUS.PENDING,
+              totalPrice,
+              tableId,
+              instruction: item.instruction,
+            },
+          });
+        }
+      })
+    );
+    await prisma.order.updateMany({
+      where: { orderSeq },
+      data: { totalPrice },
+    });
+    await prisma.notification.create({
+      data: { message: "There are new orders", tableId },
+    });
+    return { message: "", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while creating order",
+      isSuccess: false,
+    };
+  }
 };
 
 export async function updateOrder(formData: FormData) {
@@ -118,19 +129,19 @@ export async function updateOrder(formData: FormData) {
       .filter((item) => !addons.includes(Number(item)))
       .filter((item) => item !== null);
     if (toRemove.length > 0) {
-      if (prevOrder.length > 1) {
-        const removedPrice = (await fetchAddonWithIds(toRemove)).reduce(
-          (accu, curr) => curr.price + accu,
-          0
-        );
-        newPrice -= removedPrice;
+      const removedPrice = (await fetchAddonWithIds(toRemove)).reduce(
+        (accu, curr) => curr.price + accu,
+        0
+      );
+      newPrice -= removedPrice;
+      if (prevOrder.length === 1 && !addons.length) {
+        await prisma.order.update({
+          where: { id: prevOrder[0].id },
+          data: { addonId: null },
+        });
+      } else {
         await prisma.order.deleteMany({
           where: { addonId: { in: toRemove }, itemId },
-        });
-      } else if (prevOrder.length === 1) {
-        await prisma.order.updateMany({
-          where: { itemId },
-          data: { addonId: null },
         });
       }
     }
@@ -141,6 +152,10 @@ export async function updateOrder(formData: FormData) {
         0
       );
       newPrice += addedPrice;
+      if (!prevOrder[0].addonId) {
+        await prisma.order.delete({ where: { id: prevOrder[0].id } });
+      }
+
       await prisma.$transaction(
         toAdd.map((item) =>
           prisma.order.create({

@@ -45,3 +45,9 @@ body {
   display: flex;
   justify-content: space-between;
 }
+
+@media print {
+  .hide-in-print {
+    display: none;
+  }
+}

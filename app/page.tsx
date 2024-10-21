@@ -54,7 +54,7 @@ export default async function Home() {
         </h1>
       </div>
       <div className="flex justify-center items-center mt-28">
-        <Link href={"/backoffice/dashboard"}>
+        <Link href={"/backoffice/order"}>
           <Button className="bg-primary m-2 rounded-sm p-2 text-white">
             Backoffice
           </Button>

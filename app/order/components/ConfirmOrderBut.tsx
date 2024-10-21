@@ -3,7 +3,9 @@ import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
 import { Button } from "@nextui-org/react";
-import { useContext } from "react";
+import { redirect, useRouter } from "next/navigation";
+import { useContext, useState } from "react";
+import { toast } from "react-toastify";
 import useSWR from "swr";
 
 export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
@@ -11,11 +13,13 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
   const validAddons = carts.map((item) => item.addons);
   const uniqueAddons = Array.from(new Set(validAddons.flat()));
 
+  const router = useRouter();
+
   const menuFetcher = () =>
     fetchMenuWithIds(carts.map((item) => item.menuId)).then((res) => res);
 
   const addonFetcher = () => fetchAddonWithIds(uniqueAddons).then((res) => res);
-
+  const [isCreating, setIsCreating] = useState(false);
   const fetchAllData = () =>
     Promise.all([menuFetcher(), addonFetcher()]).then(([menus, addons]) => ({
       menus,
@@ -47,10 +51,21 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
     (accumulator, current) => accumulator + current,
     0
   );
-  const handleConfirmOrder = () => {
-    createOrder({ tableId: Number(tableId), cartItem: carts }).then(() =>
-      setCarts([])
-    );
+  const handleConfirmOrder = async () => {
+    setIsCreating(true);
+    const { isSuccess, message } = await createOrder({
+      tableId: Number(tableId),
+      cartItem: carts,
+    });
+    if (isSuccess) {
+      setIsCreating(false);
+      toast.success(message);
+      setCarts([]);
+      router.push(`/order/active-order?tableId=${tableId}`);
+    } else {
+      setIsCreating(false);
+      toast.error(message);
+    }
   };
 
   return (
@@ -63,6 +78,7 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
         color="primary"
         className="text-white mt-1"
         onClick={handleConfirmOrder}
+        disabled={isCreating}
       >
         Confirm Order
       </Button>

@@ -8,6 +8,7 @@ import { ReactNode, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import useSWR from "swr";
 import { createDefaultData, fetchUser } from "../lib/backoffice/data";
+import BackOfficeContextProvider from "@/context/BackOfficeContext";
 
 interface Props {
   children: ReactNode;
@@ -24,23 +25,25 @@ const Layout = ({ children }: Props) => {
     createDefaultData({ email: userEmail, name: userName });
   }
   return (
-    <div className="bg-gray-200 dark:bg-gray-950 h-dvh select-none">
-      <div className="p-1  w-full">
-        <TopBar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
-      </div>
+    <BackOfficeContextProvider>
+      <div className="bg-gray-200 dark:bg-gray-950 h-dvh select-none">
+        <div className="p-1  w-full">
+          <TopBar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
+        </div>
 
-      <div className="flex h-[88%]">
-        <Sidebar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
-        <ScrollShadow
-          hideScrollBar
-          size={20}
-          className="px-2 pb-3 w-full max-h-full vertical"
-        >
-          {children}
-        </ScrollShadow>
+        <div className="flex h-[88%]">
+          <Sidebar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
+          <ScrollShadow
+            hideScrollBar
+            size={20}
+            className="px-2 pb-3 w-full max-h-full vertical"
+          >
+            {children}
+          </ScrollShadow>
+        </div>
+        <ToastContainer theme={resolvedTheme} position="bottom-right" />
       </div>
-      <ToastContainer theme={resolvedTheme} position="bottom-right" />
-    </div>
+    </BackOfficeContextProvider>
   );
 };
 export default Layout;

@@ -12,6 +12,8 @@ import {
   fetchMenuAddonCategory,
   fetchSelectedLocation,
 } from "./data";
+import { OrderData } from "@/Generial";
+import { fetchOrderWithItemId } from "../order/data";
 
 interface Props {
   formData: FormData;
@@ -763,4 +765,39 @@ export async function uploadImage(formData: FormData) {
 
     uploadStream.end(buffer);
   });
+}
+
+export async function setPaidWithQuantity(item: OrderData[]) {
+  if (!item)
+    return {
+      message: "Missing required fields",
+      isSuccess: false,
+    };
+  try {
+    item.map(async (item) => {
+      const currentOrder = await fetchOrderWithItemId(item.itemId);
+      if (!currentOrder || !item.quantity)
+        return {
+          message: "Missing required fields",
+          isSuccess: false,
+        };
+      const isPaid =
+        currentOrder[0].paidQuantity + item.quantity ===
+        currentOrder[0].quantity;
+      const paidQuantity = currentOrder[0].paidQuantity + item.quantity;
+      const status = isPaid ? ORDERSTATUS.PAID : ORDERSTATUS.COMPLETE;
+      await prisma.order.updateMany({
+        where: { itemId: item.itemId },
+        data: { paidQuantity: paidQuantity, status },
+      });
+    });
+    revalidatePath(`/backoffice/order`);
+    return { message: "Paided order successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while paiding order",
+      isSuccess: false,
+    };
+  }
 }

@@ -9,7 +9,11 @@ const Order = () => {
   const { data: order } = useSWR(
     "order",
     () => fetchOrder().then((res) => res),
-    { refreshInterval: 5000 }
+    {
+      refreshInterval: 5000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
   );
   const tableId = order && order.map((item) => item.tableId);
   const { data: tables } = useSWR(

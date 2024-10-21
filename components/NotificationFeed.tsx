@@ -30,7 +30,11 @@ export default function NotificationFeed() {
   const { data: notification } = useSWR(
     [isUpdateLocation],
     () => fetchNotification().then((res) => res),
-    { refreshInterval: 5000 }
+    {
+      refreshInterval: 5000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
   );
 
   const timeAgo = (date: Date) => {
@@ -75,29 +79,20 @@ export default function NotificationFeed() {
     <>
       <audio ref={audioRef} src="/bell_alert.mp3" preload="auto" />
       <Dropdown placement="bottom-end">
-        <DropdownTrigger>
-          <div className="pt-2">
-            <Badge
-              content={unreadCount}
-              isInvisible={unreadCount === 0}
-              color="primary"
-              shape="circle"
-              showOutline={false}
-            >
-              <Tooltip
-                placement="bottom"
-                content="Notification"
-                className="text-primary"
-                showArrow={true}
-                delay={1000}
-              >
-                <Button isIconOnly variant="light">
-                  <IoIosNotifications className="size-7 md:size-8 cursor-pointer text-primary p-1" />
-                </Button>
-              </Tooltip>
-            </Badge>
-          </div>
-        </DropdownTrigger>
+        <Badge
+          content={unreadCount}
+          isInvisible={unreadCount === 0}
+          color="primary"
+          shape="circle"
+          showOutline={false}
+        >
+          <DropdownTrigger>
+            <Button isIconOnly variant="light">
+              <IoIosNotifications className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+            </Button>
+          </DropdownTrigger>
+        </Badge>
+
         <DropdownMenu
           variant="faded"
           aria-label="Dropdown menu with notification"

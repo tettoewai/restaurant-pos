@@ -7,7 +7,7 @@ import {
 import { fetchOrder } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
-import { formatOrder } from "@/Generial";
+import { formatOrder, getUnpaidTotalPrice } from "@/Generial";
 import { Button, Card, Link } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import clsx from "clsx";
@@ -23,11 +23,11 @@ function ActiveOrder() {
     data: orders,
     error: orderError,
     isLoading: orderLoading,
-  } = useSWR<Order[]>(
-    [tableId],
-    () => fetchOrder(tableId).then((res) => res),
-    { refreshInterval: 5000 } // Fetch every 10 seconds
-  );
+  } = useSWR<Order[]>([tableId], () => fetchOrder(tableId).then((res) => res), {
+    refreshInterval: 5000,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  });
 
   const orderData = orders && formatOrder(orders);
   const menuIds = orderData?.map((item) => item.menuId) as number[];
@@ -63,14 +63,15 @@ function ActiveOrder() {
       ? fetchAddonCategoryWithIds(addonCategoryIds)
       : Promise.resolve([])
   );
-
+  const totalPrice =
+    addons && getUnpaidTotalPrice({ orderData, menus, addons });
   return (
     <div>
       {orderData && orderData.length > 0 ? (
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">
             <span>Your orders</span>
-            <span>Total price: {orderData[0].totalPrice} Ks</span>
+            <span>Total price: {totalPrice} Ks</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
             {orderData.map((item) => {

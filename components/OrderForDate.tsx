@@ -1,22 +1,21 @@
 "use client";
 import {
-  fetchMenuWithId,
   fetchMenuWithIds,
   getOrderCountWithDate,
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
-import { Card, DatePicker, DateRangePicker } from "@nextui-org/react";
+import { Card, DateRangePicker } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
-import { Suspense, useState } from "react";
+import clsx from "clsx";
+import { useState } from "react";
+import { BiSolidDish } from "react-icons/bi";
+import { BsCash } from "react-icons/bs";
 import { IoFastFood } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
-import { BsCash } from "react-icons/bs";
 import useSWR from "swr";
 import ListTable from "./ListTable";
-import clsx from "clsx";
-import { BiSolidDish } from "react-icons/bi";
 
 function OrderForDate() {
   const iconClass = "text-white size-6";
@@ -38,7 +37,11 @@ function OrderForDate() {
         date.start.toDate(getLocalTimeZone()),
         date.end.toDate(getLocalTimeZone())
       ).then((res) => res),
-    { refreshInterval: 5000 }
+    {
+      refreshInterval: 5000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
   );
   const sameMenuOrder: Order[] = [];
   totalOrder?.map((item) => {

@@ -150,6 +150,7 @@ model Order {
   addonId       Int?
   itemId        String
   quantity      Int
+  paidQuantity  Int         @default(0)
   orderSeq      String
   status        ORDERSTATUS
   totalPrice    Int

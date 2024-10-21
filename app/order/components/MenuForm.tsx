@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
+import { toast } from "react-toastify";
 const { customAlphabet } = require("nanoid");
 
 interface Props {
@@ -30,11 +31,10 @@ export default function MenuForm({
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { replace } = useRouter();
+  const router = useRouter();
 
   const cartId = searchParams.get("cartId");
   const tableId = searchParams.get("tableId");
-
   const validCarts = carts.find((item) => item.id === cartId);
   const validAddonOrderId = order?.map((item) => item.addonId);
   const validAddonOrder = addon.filter((item) =>
@@ -50,9 +50,9 @@ export default function MenuForm({
     if (!validCarts) {
       const params = new URLSearchParams(searchParams);
       params.delete("cartId");
-      replace(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`);
     }
-  }, [validCarts, searchParams, pathname, replace]);
+  }, [validCarts, searchParams, pathname, router]);
   const validAddonCat = addon.filter((item) =>
     validCarts?.addons.includes(item.id)
   );
@@ -67,10 +67,11 @@ export default function MenuForm({
   const [instruction, setInstruction] = useState<string>(
     validCarts?.instruction || ""
   );
+  const [isUpdating, setIsUpdating] = useState(false);
   useEffect(() => {
     if (order) {
       setSelectedValue(validSelectedValueOrder);
-      setQuantity(order[0].quantity);
+      setQuantity(order[0].quantity - order[0].paidQuantity);
       order[0].instruction && setInstruction(order[0].instruction);
     }
   }, [order]);
@@ -128,6 +129,7 @@ export default function MenuForm({
     setQuantity(1);
     setInstruction("");
     if (validSelectedValueOrder && order) {
+      setIsUpdating(true);
       const formData = new FormData();
       formData.append("itemId", order[0].itemId);
       formData.append("quantity", String(quantity));
@@ -135,8 +137,14 @@ export default function MenuForm({
       formData.append("addonIds", JSON.stringify(addonIds));
       formData.append("instruction", instruction);
       const { isSuccess, message } = await updateOrder(formData);
+
       if (isSuccess) {
-        replace(`/order/active-order?tableId=${tableId}`);
+        setIsUpdating(false);
+        toast.success(message);
+        router.replace(`/order/active-order?tableId=${tableId}`);
+      } else {
+        setIsUpdating(false);
+        toast.error(message);
       }
       return;
     }
@@ -160,7 +168,7 @@ export default function MenuForm({
           instruction,
         },
       ]);
-      replace(`/order/cart?tableId=${tableId}`);
+      router.replace(`/order/cart?tableId=${tableId}`);
     } else {
       if (isExist) {
         const otherItem = carts.filter((item) => item.id !== isExist.id);
@@ -267,6 +275,7 @@ export default function MenuForm({
         <Button
           isDisabled={isDisable}
           onClick={() => handleAddToCart()}
+          disabled={isUpdating}
           className="text-white bg-primary w-[65%]"
         >
           {validCarts

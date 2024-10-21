@@ -2,7 +2,6 @@
 import { Button, Spinner, Tooltip } from "@nextui-org/react";
 import { Location } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { CiLocationOn } from "react-icons/ci";
 import { MdLocationOn } from "react-icons/md";
 
 interface Props {
@@ -30,7 +29,7 @@ const LocationButton = ({ prevData }: Props) => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setLocation({ latitude, longitude });
+          latitude && longitude && setLocation({ latitude, longitude });
           setLoading(false);
         },
         (err) => {
@@ -60,12 +59,12 @@ const LocationButton = ({ prevData }: Props) => {
           <input
             name="latitude"
             type="hidden"
-            value={String(location?.latitude)}
+            value={location?.latitude ? String(location?.latitude) : ""}
           />
           <input
             name="longitude"
             type="hidden"
-            value={String(location?.longitude)}
+            value={location?.longitude ? String(location?.longitude) : ""}
           />
         </div>
       ) : (
