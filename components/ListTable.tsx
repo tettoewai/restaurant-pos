@@ -17,8 +17,9 @@ export default function ListTable({ rows, columns }: Props) {
   return (
     <Table
       aria-label="list table"
-      className="rounded-lg bg-background mb-1 min-h-36 w-full md:w-[98%]"
+      className="rounded-lg bg-background mb-1 min-h-36 w-full md:w-[98%] p-1"
       removeWrapper
+      fullWidth
     >
       <TableHeader>
         {columns.map((column: any) => (

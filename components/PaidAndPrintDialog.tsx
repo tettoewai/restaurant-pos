@@ -133,19 +133,18 @@ export default function PaidAndPrintDialog({
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        className="bg-background"
+        className="bg-background overflow-y-scroll"
         placement="center"
         size="full"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col">Paid and Print</ModalHeader>
-
           <ModalBody>
-            <div className="flex h-full">
-              <div className="w-2/3">
+            <div className="flex w-full h-full flex-wrap justify-center">
+              <div className="w-full md:w-2/3">
                 <ListTable columns={columns} rows={rows} />
               </div>
-              <div className="w-fit h-[450px] overflow-x-scroll p-1 border-2 border-gray-500 rounded-lg border-dashed scrollbar-hide">
+              <div className="w-fit max-w-fit md:w-1/3 h-[450px] overflow-x-scroll border-2 border-gray-500 rounded-lg border-dashed scrollbar-hide">
                 {isOpen ? (
                   <PaidPrint
                     tableId={tableId}

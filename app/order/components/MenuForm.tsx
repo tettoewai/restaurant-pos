@@ -1,11 +1,12 @@
 "use client";
 import { updateOrder } from "@/app/lib/order/action";
+import { AddonCatSkeleton } from "@/app/ui/skeletons";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Checkbox, Chip, Textarea } from "@nextui-org/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
 import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { toast } from "react-toastify";
 const { customAlphabet } = require("nanoid");
@@ -36,16 +37,19 @@ export default function MenuForm({
   const cartId = searchParams.get("cartId");
   const tableId = searchParams.get("tableId");
   const validCarts = carts.find((item) => item.id === cartId);
-  const validAddonOrderId = order?.map((item) => item.addonId);
-  const validAddonOrder = addon.filter((item) =>
-    validAddonOrderId?.includes(item.id)
-  );
+  const validAddonOrderId = useMemo(() => {
+    return order?.map((item) => item.addonId);
+  }, [order]);
+  const validAddonOrder = useMemo(() => {
+    return addon.filter((item) => validAddonOrderId?.includes(item.id));
+  }, [addon, validAddonOrderId]);
 
-  const validSelectedValueOrder: SelectedAddon[] = validAddonOrder.map(
-    (item) => {
-      return { categoryId: item.addonCategoryId, addonId: item.id };
-    }
-  );
+  const validSelectedValueOrder: SelectedAddon[] = useMemo(() => {
+    return validAddonOrder.map((item) => ({
+      categoryId: item.addonCategoryId,
+      addonId: item.id,
+    }));
+  }, [validAddonOrder]);
   useEffect(() => {
     if (!validCarts) {
       const params = new URLSearchParams(searchParams);
@@ -58,6 +62,12 @@ export default function MenuForm({
   );
   const validSelectedValue: SelectedAddon[] = validAddonCat.map((item) => {
     return { categoryId: item.addonCategoryId, addonId: item.id };
+  });
+
+  const sortedAddonCategory = [...addonCategory].sort((a, b) => {
+    if (a.isRequired && !b.isRequired) return -1;
+    if (!a.isRequired && b.isRequired) return 1;
+    return 0;
   });
 
   const [selectedValue, setSelectedValue] =
@@ -74,7 +84,7 @@ export default function MenuForm({
       setQuantity(order[0].quantity - order[0].paidQuantity);
       order[0].instruction && setInstruction(order[0].instruction);
     }
-  }, [order]);
+  }, [order, validSelectedValueOrder]);
   const requiredCat = addonCategory.filter((item) => item.isRequired);
   const selectedCat = selectedValue.map((item) => item.categoryId);
   const isDisable =
@@ -194,51 +204,52 @@ export default function MenuForm({
   return (
     <div>
       <div className="space-y-2">
-        {addonCategory.map((item) => {
+        {sortedAddonCategory.map((item) => {
           const validAddon = addon.filter(
             (addon) => addon.addonCategoryId === item.id
           );
           return (
-            <Card
-              key={item.id}
-              className={clsx("p-3 border bg-background", {
-                "border-primary": item.isRequired,
-              })}
-            >
-              <div className="flex justify-between mb-2">
-                <span className="text-lg">{item.name}</span>
-                {item.isRequired && (
-                  <Chip className="bg-primary text-white">Required</Chip>
-                )}
-              </div>
-              <div className="flex flex-col space-y-2">
-                {validAddon.map((valAddon) => (
-                  <div
-                    key={valAddon.id}
-                    className="border rounded-md w-full flex justify-between items-center p-2 cursor-pointer"
-                    onClick={() => handleCheckboxChange(item.id, valAddon.id)}
-                  >
-                    <Checkbox
-                      size="lg"
-                      isSelected={
-                        selectedValue.find(
-                          (selected) =>
-                            selected.categoryId === item.id &&
-                            selected.addonId === valAddon.id
-                        ) !== undefined
-                      }
-                      onChange={() =>
-                        handleCheckboxChange(item.id, valAddon.id)
-                      }
+            <Suspense key={item.id} fallback={<AddonCatSkeleton />}>
+              <Card
+                className={clsx("p-3 border bg-background", {
+                  "border-primary": item.isRequired,
+                })}
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="text-lg">{item.name}</span>
+                  {item.isRequired && (
+                    <Chip className="bg-primary text-white">Required</Chip>
+                  )}
+                </div>
+                <div className="flex flex-col space-y-2">
+                  {validAddon.map((valAddon) => (
+                    <div
+                      key={valAddon.id}
+                      className="border rounded-md w-full flex justify-between items-center p-2 cursor-pointer"
+                      onClick={() => handleCheckboxChange(item.id, valAddon.id)}
                     >
-                      {valAddon.name}
-                    </Checkbox>
+                      <Checkbox
+                        size="lg"
+                        isSelected={
+                          selectedValue.find(
+                            (selected) =>
+                              selected.categoryId === item.id &&
+                              selected.addonId === valAddon.id
+                          ) !== undefined
+                        }
+                        onChange={() =>
+                          handleCheckboxChange(item.id, valAddon.id)
+                        }
+                      >
+                        {valAddon.name}
+                      </Checkbox>
 
-                    <span>+ {valAddon.price} Kyats</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
+                      <span>+ {valAddon.price} Kyats</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </Suspense>
           );
         })}
       </div>

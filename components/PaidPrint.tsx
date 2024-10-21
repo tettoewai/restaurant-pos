@@ -56,7 +56,7 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
   return (
     <Card
       ref={componentRef}
-      className="w-[320px] bg-white p-4 text-sm font-mono "
+      className="w-[320px] bg-white p-4 text-sm font-mono text-black"
     >
       <div className="text-center border-b pb-4 mb-4">
         <h2 className="font-bold text-lg">{company?.name}</h2>
@@ -91,7 +91,7 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
           </tr>
         </thead>
         <tbody>
-          {paid.map((item) => {
+          {paid.map((item, index) => {
             const validMenu = menus?.find((menu) => menu.id === item.menuId);
             const paidAddons: number[] = JSON.parse(item.addons);
             const validAddon = addons?.filter((addon) =>
@@ -108,7 +108,7 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
                 ? validMenu.price * item.quantity
                 : 0;
             return (
-              <tr className="border-b" key={item.menuId}>
+              <tr className="border-b" key={index}>
                 <td>{validMenu?.name}</td>
                 <td>{item.quantity}</td>
                 <td>{currentTotalPrice} Ks</td>
@@ -128,7 +128,9 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
         <span className="flex items-center">
           Tax :
           <Input
+            variant="bordered"
             type="number"
+            color="primary"
             value={String(taxRate)}
             onChange={(e) => setTaxRate(Number(e.target.value))}
             className="w-fit ml-1 hide-in-print"

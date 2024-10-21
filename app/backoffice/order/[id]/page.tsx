@@ -213,7 +213,7 @@ export default function App({
             Order of {table?.name},{" "}
             {unpaidOrderData.length && "Total price :" + totalUnpidPrice}
           </span>
-          <div className="absolute top-2.5 right-2">
+          <div className="absolute mt-1.5 top-7 right-8 md:top-1 md:right-2">
             <PaidAndPrintDialog
               menus={menus}
               addons={addons}
@@ -241,18 +241,19 @@ export default function App({
                 title={item.charAt(0).toUpperCase() + item.slice(1)}
               >
                 {unpaidOrderData.length > 0 ? (
-                  <div className="p-1 w-full">
+                  <div className="p-1 w-full h-full overflow-auto">
                     <Table
                       aria-label="Order list"
-                      className="bg-background rounded-md p-1"
                       removeWrapper
+                      className="bg-background rounded-lg p-1 w-fit md:w-full"
+                      fullWidth
                     >
                       <TableHeader>
                         <TableColumn>No.</TableColumn>
-                        <TableColumn>Menu</TableColumn>
+                        <TableColumn align="start">Menu</TableColumn>
                         <TableColumn>Addon</TableColumn>
                         <TableColumn>Quantity</TableColumn>
-                        <TableColumn>Status</TableColumn>
+                        <TableColumn align="center">Status</TableColumn>
                       </TableHeader>
                       <TableBody emptyContent="There is no order">
                         {unpaidOrderData
@@ -277,7 +278,7 @@ export default function App({
                             return (
                               <TableRow key={index + 1}>
                                 <TableCell>{index + 1}</TableCell>
-                                <TableCell>
+                                <TableCell className="min-w-52">
                                   <User
                                     avatarProps={{
                                       radius: "sm",
@@ -291,7 +292,7 @@ export default function App({
                                     {item.instruction}
                                   </User>
                                 </TableCell>
-                                <TableCell align="left">
+                                <TableCell align="left" className="min-w-40">
                                   <span className="text-wrap">
                                     {addonCatAddon.length
                                       ? addonCatAddon.join(", ")

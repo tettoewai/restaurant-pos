@@ -87,7 +87,6 @@ const SalesChart = () => {
         data: monthlySales, // Pass the sales data here
         borderColor: "rgba(255, 0, 0, 1)",
         backgroundColor: "rgba(75, 192, 192, 0.2)",
-        fill: true,
         tension: 0.4,
       },
     ],

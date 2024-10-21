@@ -98,3 +98,28 @@ export function ChartSkeleton() {
     </div>
   );
 }
+
+export function AddonCatSkeleton() {
+  return (
+    <Card className="p-3 border bg-background">
+      <div className="flex justify-between mb-2">
+        <Skeleton className="w-32 h-6 rounded-md"></Skeleton>
+        <Skeleton className="w-36 h-6 rounded-full"></Skeleton>
+      </div>
+      <div className="flex flex-col space-y-2">
+        <div className="border rounded-md w-full flex justify-between items-center p-2 cursor-pointer">
+          <Skeleton className="w-40 h-6 rounded-md"></Skeleton>
+          <Skeleton className="w-32 h-6 rounded-md"></Skeleton>
+        </div>
+        <div className="border rounded-md w-full flex justify-between items-center p-2 cursor-pointer">
+          <Skeleton className="w-40 h-6 rounded-md"></Skeleton>
+          <Skeleton className="w-32 h-6 rounded-md"></Skeleton>
+        </div>
+        <div className="border rounded-md w-full flex justify-between items-center p-2 cursor-pointer">
+          <Skeleton className="w-40 h-6 rounded-md"></Skeleton>
+          <Skeleton className="w-32 h-6 rounded-md"></Skeleton>
+        </div>
+      </div>
+    </Card>
+  );
+}
