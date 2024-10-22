@@ -1,14 +1,22 @@
-import { Card } from "@nextui-org/react";
-import Image from "next/image";
-import MenuForm from "../components/MenuForm";
 import {
-  fetchMenuWithId,
-  fetchMenuAddonCategory,
-  fetchAddonCategory,
   fetchAddon,
+  fetchAddonCategory,
+  fetchMenuAddonCategory,
+  fetchMenuWithId,
 } from "@/app/lib/backoffice/data";
 import { fetchOrderWithItemId } from "@/app/lib/order/data";
+import { Card } from "@nextui-org/react";
+import Image from "next/image";
 import { Suspense } from "react";
+import MenuForm from "../components/MenuForm";
+
+export const formatCurrency = (value: number) => {
+  return (
+    new Intl.NumberFormat("en-MM", {
+      minimumFractionDigits: 0, // Ensures no decimals
+    }).format(value) + " Ks"
+  );
+};
 
 export default async function MenuPage({
   params,
@@ -35,6 +43,8 @@ export default async function MenuPage({
     validAddonCat.includes(item.id)
   );
 
+  const menuPrice = menu && formatCurrency(menu.price);
+
   return (
     <div>
       <div className="pb-24 mt-2">
@@ -52,7 +62,7 @@ export default async function MenuPage({
           <div className="mt-2 flex flex-col mb-2 ml-2">
             <h2 className="text-primary text-lg">{menu?.name}</h2>
             <span className="text-sm">{menu?.description}</span>
-            <span className="text-lg mt-2">{menu?.price} Kyats</span>
+            <span className="text-lg mt-2">{menuPrice}</span>
           </div>
         </Card>
         <Suspense>

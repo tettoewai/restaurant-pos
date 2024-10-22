@@ -12,6 +12,7 @@ import {
 import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
+import { formatCurrency } from "./[id]/page";
 
 export const dynamic = "force-dynamic";
 
@@ -108,7 +109,7 @@ const OrderPage = async ({
                     </span>
                     <div className="flex items-center mt-1 mb-1">
                       <MdAttachMoney className="text-xl text-primary" />
-                      <p>{item.price}</p>
+                      <p>{formatCurrency(item.price)}</p>
                     </div>
                   </Card>
                 </Link>

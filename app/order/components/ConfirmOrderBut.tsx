@@ -2,11 +2,12 @@
 import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
-import { Button } from "@nextui-org/react";
+import { Button, Spinner } from "@nextui-org/react";
 import { redirect, useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { toast } from "react-toastify";
 import useSWR from "swr";
+import { formatCurrency } from "../[id]/page";
 
 export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
   const { carts, setCarts } = useContext(OrderContext);
@@ -25,7 +26,11 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
       menus,
       addons,
     }));
-  const { data, error } = useSWR("menu-and-addon", fetchAllData);
+  const { data, error } = useSWR("menu-and-addon", fetchAllData, {
+    refreshInterval: 3000, // or any suitable interval
+    onLoadingSlow: () => setIsCreating(true),
+    onSuccess: () => setIsCreating(false),
+  });
 
   const menuPrices = carts.map((item) => {
     const validMenuPrice = data?.menus.find(
@@ -68,11 +73,15 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
     }
   };
 
+  const totalPrice = formatCurrency(
+    Math.floor(totalAddonPrice + totalMenuPrices)
+  );
+
   return (
     <div className="fixed bottom-0 right-0 left-0 m-auto bg-background p-2 rounded-t-md flex flex-col">
       <div className="flex justify-between">
         <span>Total: </span>
-        <span>{totalAddonPrice + totalMenuPrices} Ks</span>
+        <span>{totalPrice}</span>
       </div>
       <Button
         color="primary"
@@ -80,7 +89,7 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
         onClick={handleConfirmOrder}
         disabled={isCreating}
       >
-        Confirm Order
+        {isCreating ? <Spinner color="primary" size="sm" /> : "Confirm Order"}
       </Button>
     </div>
   );

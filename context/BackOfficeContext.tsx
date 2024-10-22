@@ -1,6 +1,6 @@
 "use client";
 
-import { OrderData } from "@/Generial";
+import { OrderData } from "@/general";
 import React, {
   createContext,
   useState,

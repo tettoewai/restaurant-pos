@@ -12,7 +12,7 @@ interface Props {
 }
 export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
   return (
-    <div className="top-bar z-20">
+    <div className="top-bar z-30">
       <div className="content bg-background flex items-center">
         <div className="flex items-center space-x-0 sm:space-x-2">
           <button

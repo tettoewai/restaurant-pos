@@ -8,8 +8,7 @@ import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { Card, Input } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
-import { RefObject, useContext, useRef, useState } from "react";
-import { useReactToPrint } from "react-to-print";
+import { RefObject, useContext, useState } from "react";
 import useSWR from "swr";
 
 interface Props {
@@ -36,15 +35,19 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
   );
 
   const subTotal = paid.reduce((accu, curr) => {
-    const validMenu = menus?.find((item) => item.id === curr.menuId) as Menu;
+    const validMenu = menus?.find((item) => item.id === curr.menuId);
     const paidAddons: number[] = JSON.parse(curr.addons);
     const paidAddonPrices = addons
       ?.filter((item) => paidAddons.includes(item.id))
       .reduce((accu, curr) => curr.price + accu, 0);
     if (!curr.quantity) return 0;
-    return paidAddonPrices
-      ? (validMenu.price + paidAddonPrices) * curr.quantity + accu
-      : validMenu.price * curr.quantity + accu;
+    const totalPrice =
+      paidAddonPrices && validMenu
+        ? (validMenu.price + paidAddonPrices) * curr.quantity + accu
+        : validMenu
+        ? validMenu.price * curr.quantity + accu
+        : 0;
+    return totalPrice;
   }, 0);
 
   // Tax and total calculations based on user input

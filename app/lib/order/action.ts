@@ -5,6 +5,7 @@ import { ORDERSTATUS } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import {
+  fetchAddonCategoryWithIds,
   fetchAddonWithIds,
   fetchMenuWithId,
   fetchMenuWithIds,
@@ -37,8 +38,10 @@ export const createOrder = async ({
   const isValid = tableId && cartItem.length > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
+
   try {
-    const order = await prisma.order.findFirst({
+    // Check for an existing order
+    const existingOrder = await prisma.order.findFirst({
       where: {
         tableId,
         status: {
@@ -47,55 +50,67 @@ export const createOrder = async ({
         isArchived: false,
       },
     });
-    const orderSeq = order ? order.orderSeq : nanoid(7);
-    const originalTotalPrice = await getTotalPrice(cartItem);
-    const totalPrice = order
-      ? order.totalPrice + originalTotalPrice
-      : originalTotalPrice;
 
-    await Promise.all(
-      cartItem.map(async (item) => {
-        const hasAddon = item.addons.length > 0;
-        if (hasAddon) {
-          item.addons.map(
-            async (addon) =>
-              await prisma.order.create({
-                data: {
-                  menuId: item.menuId,
-                  addonId: addon,
-                  itemId: item.id,
-                  quantity: item.quantity,
-                  orderSeq,
-                  status: ORDERSTATUS.PENDING,
-                  totalPrice,
-                  tableId,
-                  instruction: item.instruction,
-                },
-              })
-          );
-        } else {
-          await prisma.order.create({
-            data: {
-              menuId: item.menuId,
-              itemId: item.id,
-              quantity: item.quantity,
-              orderSeq,
-              status: ORDERSTATUS.PENDING,
-              totalPrice,
-              tableId,
-              instruction: item.instruction,
-            },
-          });
-        }
-      })
-    );
+    const orderSeq = existingOrder ? existingOrder.orderSeq : nanoid(7);
+    const originalTotalPrice = await getTotalPrice(cartItem);
+
+    let totalPrice = originalTotalPrice;
+    if (existingOrder) {
+      totalPrice += existingOrder.totalPrice;
+    }
+
+    // Map all the cart items and create orders
+    const orderPromises = cartItem.map(async (item) => {
+      if (item.addons.length > 0) {
+        // Handle the case where there are addons
+        return Promise.all(
+          item.addons.map(async (addon) => {
+            await prisma.order.create({
+              data: {
+                menuId: item.menuId,
+                addonId: addon,
+                itemId: item.id,
+                quantity: item.quantity,
+                orderSeq,
+                status: ORDERSTATUS.PENDING,
+                totalPrice,
+                tableId,
+                instruction: item.instruction,
+              },
+            });
+          })
+        );
+      } else {
+        // Handle case with no addons
+        await prisma.order.create({
+          data: {
+            menuId: item.menuId,
+            itemId: item.id,
+            quantity: item.quantity,
+            orderSeq,
+            status: ORDERSTATUS.PENDING,
+            totalPrice,
+            tableId,
+            instruction: item.instruction,
+          },
+        });
+      }
+    });
+
+    // Await the creation of all orders
+    await Promise.all(orderPromises);
+
+    // Update the total price for all the orders with the same orderSeq
     await prisma.order.updateMany({
       where: { orderSeq },
       data: { totalPrice },
     });
+
+    // Create a notification for new orders
     await prisma.notification.create({
       data: { message: "There are new orders", tableId },
     });
+
     return { message: "", isSuccess: true };
   } catch (error) {
     console.error(error);

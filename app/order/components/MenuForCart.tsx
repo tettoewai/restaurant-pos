@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Dispatch, SetStateAction } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { MdAttachMoney, MdEdit } from "react-icons/md";
+import { formatCurrency } from "../[id]/page";
 
 interface Props {
   itemId: string;
@@ -101,7 +102,7 @@ export default function MenuForCart({
         </div>
         <div className="flex items-center justify-center mr-1">
           <MdAttachMoney className="text-xl text-primary" />
-          <span className="text-xs">{menuPrice} Ks</span>
+          <span className="text-xs">{formatCurrency(menuPrice)}</span>
         </div>
       </div>
     </Card>

@@ -138,13 +138,15 @@ export default function PaidAndPrintDialog({
         size="full"
       >
         <ModalContent>
-          <ModalHeader className="flex flex-col">Paid and Print</ModalHeader>
+          <ModalHeader className="flex flex-col text-center">
+            Paid and Print (if you refresh page, paid list will empty)
+          </ModalHeader>
           <ModalBody>
             <div className="flex w-full h-full flex-wrap justify-center">
               <div className="w-full md:w-2/3">
                 <ListTable columns={columns} rows={rows} />
               </div>
-              <div className="w-fit max-w-fit md:w-1/3 h-[450px] overflow-x-scroll border-2 border-gray-500 rounded-lg border-dashed scrollbar-hide">
+              <div className="w-fit max-w-fit md:w-[320px] h-[450px] overflow-x-scroll border-2 border-gray-500 rounded-lg border-dashed scrollbar-hide">
                 {isOpen ? (
                   <PaidPrint
                     tableId={tableId}

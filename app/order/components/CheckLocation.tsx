@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import useSWR from "swr";
-import { useLocation } from "@/Generial";
+import { useLocation } from "@/general";
 import {
   fetchLocationWithId,
   fetchTableWithId,

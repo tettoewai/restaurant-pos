@@ -7,7 +7,7 @@ import {
 import { fetchOrder } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
-import { formatOrder, getUnpaidTotalPrice } from "@/Generial";
+import { formatOrder, getUnpaidTotalPrice } from "@/general";
 import { Button, Card, Link } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import clsx from "clsx";
@@ -15,6 +15,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
+import { formatCurrency } from "../[id]/page";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();
@@ -52,7 +53,7 @@ function ActiveOrder() {
     uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
   );
 
-  const addonCategoryIds = addons?.map((item) => item.addonCategoryId);
+  const addonCategoryIds = addons && addons.map((item) => item.addonCategoryId);
 
   const {
     data: addonCategory,
@@ -71,7 +72,9 @@ function ActiveOrder() {
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">
             <span>Your orders</span>
-            <span>Total price: {totalPrice} Ks</span>
+            {totalPrice && (
+              <span>Total price: {formatCurrency(totalPrice)}</span>
+            )}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
             {orderData.map((item) => {

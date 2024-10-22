@@ -52,7 +52,7 @@ const TopBarOrder = () => {
 
   return (
     <>
-      <div className="w-full bg-background h-16 rounded-md flex items-center justify-between fixed top-0 left-0 right-0 m-auto z-20">
+      <div className="w-full bg-background h-16 rounded-md flex items-center justify-between fixed top-0 left-0 right-0 m-auto z-30">
         <button
           type="button"
           className="w-10 h-10 cursor-pointer m-1 items-center p-1 text-primary"

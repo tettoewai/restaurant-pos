@@ -12,7 +12,7 @@ import {
   fetchMenuAddonCategory,
   fetchSelectedLocation,
 } from "./data";
-import { OrderData } from "@/Generial";
+import { OrderData } from "@/general";
 import { fetchOrderWithItemId } from "../order/data";
 
 interface Props {

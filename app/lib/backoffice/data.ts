@@ -383,26 +383,14 @@ export async function fetchOrder() {
   }
 }
 
-export async function fetchOrderWithStatus({
-  status,
-  tableId,
-}: {
-  tableId: number;
-  status: string;
-}) {
+export async function fetchOrderWithTableId({ tableId }: { tableId: number }) {
   noStore();
   try {
-    const orderStatus =
-      status === "cooking"
-        ? ORDERSTATUS.COOKING
-        : status === "complete"
-        ? ORDERSTATUS.COMPLETE
-        : ORDERSTATUS.PENDING;
-
+    const table = fetchTableWithId(tableId);
+    if (!table) return undefined;
     return await prisma.order.findMany({
       where: {
         tableId,
-        status: { in: [orderStatus] },
         isArchived: false,
       },
       orderBy: { createdAt: "asc" },

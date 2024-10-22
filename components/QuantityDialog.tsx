@@ -1,6 +1,6 @@
 "use client";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
-import { OrderData } from "@/Generial";
+import { OrderData } from "@/general";
 import {
   Button,
   Modal,

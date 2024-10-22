@@ -39,7 +39,7 @@ import UpdateTableDialog from "./UpdateTableDailog";
 import { BsQrCodeScan } from "react-icons/bs";
 import QrcodePrint from "./QrcodePrint";
 import { TbLocationCancel } from "react-icons/tb";
-import { OrderData } from "@/Generial";
+import { OrderData } from "@/general";
 import CancelOrderDialog from "./CancelOrderDialog";
 
 interface Props {

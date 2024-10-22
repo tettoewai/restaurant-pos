@@ -55,6 +55,8 @@ export default function Locationtoggle() {
     (item) => item.id === Number(Array.from(selectedKey)[0])
   )?.name;
 
+  if (location.length < 2) return null;
+
   return (
     <Dropdown className="bg-background">
       <DropdownTrigger>

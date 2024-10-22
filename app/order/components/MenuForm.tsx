@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { toast } from "react-toastify";
+import { formatCurrency } from "../[id]/page";
 const { customAlphabet } = require("nanoid");
 
 interface Props {
@@ -244,7 +245,7 @@ export default function MenuForm({
                         {valAddon.name}
                       </Checkbox>
 
-                      <span>+ {valAddon.price} Kyats</span>
+                      <span>+ {formatCurrency(valAddon.price)}</span>
                     </div>
                   ))}
                 </div>

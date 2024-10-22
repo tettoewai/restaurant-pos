@@ -7,7 +7,7 @@ interface BackdropProps {
 const Backdrop: React.FC<BackdropProps> = ({ onClick }) => {
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-35 z-10 md:hidden"
+      className="transition-opacity fixed inset-0 bg-black bg-opacity-35 z-20 md:hidden"
       onClick={onClick}
     />
   );
