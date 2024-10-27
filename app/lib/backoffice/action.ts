@@ -12,7 +12,7 @@ import {
   fetchMenuAddonCategory,
   fetchSelectedLocation,
 } from "./data";
-import { OrderData } from "@/general";
+import { OrderData, PaidData } from "@/general";
 import { fetchOrderWithItemId } from "../order/data";
 
 interface Props {
@@ -708,6 +708,8 @@ export async function updateOrderStatus({
 }) {
   try {
     const orders = await prisma.order.findMany({ where: { itemId } });
+    if (orders[0].status === orderStatus.toUpperCase())
+      return { message: "Updated order status successfully.", isSuccess: true };
     const orderIds = orders.map((item) => item.id);
     const status =
       orderStatus === "pending"
@@ -767,8 +769,61 @@ export async function uploadImage(formData: FormData) {
   });
 }
 
-export async function setPaidWithQuantity(item: OrderData[]) {
-  if (!item)
+export async function createReceipt(paidData: PaidData[]) {
+  if (!paidData.length) return;
+  try {
+    const qrCodeData =
+      paidData[0].qrCode && (await generateQRCode(paidData[0].qrCode));
+    const qrcodeImage = qrCodeData && (await qrUploadCloudinary(qrCodeData));
+
+    return Promise.all(
+      paidData.map(async (item) => {
+        const addons: number[] = item.addons ? JSON.parse(item.addons) : [];
+        if (addons.length > 0) {
+          await Promise.all(
+            addons.map(async (addon) => {
+              await prisma.receipt.create({
+                data: {
+                  itemId: item.itemId,
+                  code: item.receiptCode,
+                  tableId: item.tableId,
+                  addonId: addon,
+                  menuId: item.menuId as number,
+                  totalPrice: item.totalPrice as number,
+                  quantity: item.quantity as number,
+                  tax: item.tax as number,
+                  date: item.date as Date,
+                  qrCode: qrcodeImage as string,
+                },
+              });
+            })
+          );
+        } else {
+          await prisma.receipt.create({
+            data: {
+              itemId: item.itemId,
+              code: item.receiptCode,
+              tableId: item.tableId,
+              menuId: item.menuId as number,
+              totalPrice: item.totalPrice as number,
+              quantity: item.quantity as number,
+              tax: item.tax as number,
+              date: item.date as Date,
+              qrCode: qrcodeImage as string,
+            },
+          });
+        }
+
+        return qrcodeImage;
+      })
+    );
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function setPaidWithQuantity(item: PaidData[]) {
+  if (!item.length)
     return {
       message: "Missing required fields",
       isSuccess: false,
@@ -791,8 +846,14 @@ export async function setPaidWithQuantity(item: OrderData[]) {
         data: { paidQuantity: paidQuantity, status },
       });
     });
-    revalidatePath(`/backoffice/order`);
-    return { message: "Paided order successfully.", isSuccess: true };
+    const qrCodeImageDb = await createReceipt(item);
+    console.log(qrCodeImageDb);
+    // revalidatePath(`/backoffice/order`);
+    return {
+      message: "Paided order successfully.",
+      isSuccess: true,
+      qrCodeImageDb,
+    };
   } catch (error) {
     console.error(error);
     return {

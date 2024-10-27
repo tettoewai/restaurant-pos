@@ -52,7 +52,7 @@ export default function SidebarOrder({
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
         className={clsx(
-          "h-[89%] w-0 rounded-md bg-background fixed z-30 top-16 mt-1 overflow-hidden transition-width",
+          "h-[92%] w-0 rounded-md bg-background fixed z-30 top-16 mt-1 overflow-hidden transition-width",
           { "w-44": sideBarOpen }
         )}
       >

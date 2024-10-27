@@ -10,6 +10,7 @@ import { IoClose, IoMenu } from "react-icons/io5";
 import { MdShoppingCart } from "react-icons/md";
 import useSWR from "swr";
 import SidebarOrder from "./SidebarOrder";
+import { fetchCompanyFromOrder } from "@/app/lib/order/data";
 
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
@@ -17,20 +18,14 @@ const TopBarOrder = () => {
   const searchParams = useSearchParams();
   const { carts } = useContext(OrderContext);
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
-  const [tableId, setTableId] = useState<string>("");
+  const tableId = searchParams.get("tableId");
 
-  // Use useEffect to capture the query params after the initial render
-  useEffect(() => {
-    const idFromParams = searchParams.get("tableId");
-    if (idFromParams) {
-      setTableId(idFromParams);
-    }
-  }, [searchParams]);
+  if (!tableId) return <span>There is no table</span>;
 
   // Fetch the table and company data
   const fetchAllData = async () => {
     const [company, table] = await Promise.all([
-      fetchCompany(),
+      fetchCompanyFromOrder(Number(tableId)),
       fetchTableWithId(Number(tableId)),
     ]);
     return { company, table };
@@ -52,7 +47,7 @@ const TopBarOrder = () => {
 
   return (
     <>
-      <div className="w-full bg-background h-16 rounded-md flex items-center justify-between fixed top-0 left-0 right-0 m-auto z-30">
+      <div className="w-[99%] bg-background h-16 rounded-md flex items-center justify-between fixed mt-0.5 top-0 left-0 right-0 m-auto z-30">
         <button
           type="button"
           className="w-10 h-10 cursor-pointer m-1 items-center p-1 text-primary"

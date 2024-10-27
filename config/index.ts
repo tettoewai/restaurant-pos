@@ -6,6 +6,7 @@ interface Config {
   cloudinaryApiSecret: string;
   orderAppUrl: string;
   orderApiUrl: string;
+  digitalReceiptUrl: string;
 }
 
 export const config: Config = {
@@ -16,4 +17,5 @@ export const config: Config = {
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
   orderAppUrl: process.env.NEXT_PUBLIC_ORDER_APP_URL || "",
   orderApiUrl: process.env.NEXT_PUBLIC_ORDER_API_URL || "",
+  digitalReceiptUrl: process.env.NEXT_PUBLIC_DIGITAL_RECEIPT_URL || "",
 };

@@ -125,6 +125,20 @@ export async function fetchAddonWithIds(ids: number[]) {
   }
 }
 
+export async function fetchAddonWithAddonCat(id: number) {
+  noStore();
+  if (!id) return;
+  try {
+    const addons = await prisma.addon.findMany({
+      where: { addonCategoryId: id },
+    });
+    return addons;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch addon data.");
+  }
+}
+
 export async function fetchMenuCategoryMenu() {
   noStore();
   try {

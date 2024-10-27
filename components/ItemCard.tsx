@@ -1,5 +1,6 @@
 import {
   fetchAddonCategory,
+  fetchAddonWithAddonCat,
   fetchDisableLocationMenuCat,
   fetchLocation,
   fetchMenu,
@@ -71,6 +72,8 @@ export default async function ItemCard({
   const isExist = disableLocationMenuCat.find(
     (item) => item.menuCategoryId === id
   );
+  const addons = await fetchAddonWithAddonCat(id);
+  const hasAddon = addons && addons?.length > 0;
   return (
     <Card
       className={clsx(
@@ -117,7 +120,11 @@ export default async function ItemCard({
           <MdLocationOn className={iconClasses} />
         </div>
       ) : null}
-      <p className="mt-2 truncate ...">
+      <p
+        className={clsx("mt-2 truncate ...", {
+          "text-red-500": Boolean(!hasAddon && itemType === "addonCategory"),
+        })}
+      >
         {name}
         {required ? <span className="text-primary"> *</span> : null}
       </p>

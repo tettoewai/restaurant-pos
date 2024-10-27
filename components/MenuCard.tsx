@@ -14,6 +14,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
+import { formatCurrency } from "@/app/order/[id]/page";
 
 interface Props {
   id: number;
@@ -68,7 +69,7 @@ export default async function MenuCard({
       {price && (
         <div className="flex items-center mt-1 mb-1">
           <MdAttachMoney className="text-xl text-primary" />
-          <p>{price}</p>
+          <p>{formatCurrency(price)}</p>
         </div>
       )}
       <div className="space-x-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { OrderData } from "@/general";
+import { OrderData, PaidData } from "@/general";
 import React, {
   createContext,
   useState,
@@ -11,8 +11,8 @@ import React, {
 
 // Define the shape of the context value
 interface BackOfficeContextType {
-  paid: OrderData[];
-  setPaid: Dispatch<SetStateAction<OrderData[]>>;
+  paid: PaidData[];
+  setPaid: Dispatch<SetStateAction<PaidData[]>>;
 }
 
 // Create a Context with a default value of null or an initial state
@@ -21,7 +21,7 @@ export const BackOfficeContext = createContext<BackOfficeContextType>(
 );
 
 const BackOfficeContextProvider = ({ children }: { children: ReactNode }) => {
-  const [paid, setPaid] = useState([] as OrderData[]);
+  const [paid, setPaid] = useState([] as PaidData[]);
 
   return (
     <BackOfficeContext.Provider value={{ paid, setPaid }}>

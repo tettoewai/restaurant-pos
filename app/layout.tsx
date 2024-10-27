@@ -1,11 +1,9 @@
 import { Providers } from "@/components/Providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
-import { getServerSession } from "next-auth";
 import { Ubuntu } from "next/font/google";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
-import { fetchUser, createDefaultData } from "./lib/backoffice/data";
 
 const ubantu = Ubuntu({ subsets: ["latin"], weight: "500" });
 

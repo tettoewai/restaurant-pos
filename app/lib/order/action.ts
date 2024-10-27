@@ -199,7 +199,7 @@ export async function updateOrder(formData: FormData) {
   } catch (error) {
     console.error(error);
     return {
-      message: "Something went wrong while updating order",
+      message: "Something went wrong while updating order!",
       isSuccess: false,
     };
   }
@@ -240,6 +240,29 @@ export async function candelOrder(itemId: string) {
     console.error(error);
     return {
       message: "Something went wrong while canceling order",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function createFeedback(formData: FormData) {
+  const receiptCode = formData.get("receiptCode") as string;
+  const rate = Number(formData.get("rate"));
+  const feedback = formData.get("feedback") as string;
+  const checkExist = await prisma.rating.findFirst({ where: { receiptCode } });
+  if (checkExist)
+    return { message: "Your feedback is already posted.", isSuccess: false };
+  const isValid = receiptCode && rate;
+  if (!isValid) return { message: "Missing required fields", isSuccess: false };
+  try {
+    await prisma.rating.create({
+      data: { rating: rate, receiptCode, feedback },
+    });
+    return { message: "Post feedback successfully", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while creating feedback!",
       isSuccess: false,
     };
   }

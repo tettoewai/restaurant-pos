@@ -1,5 +1,6 @@
 "use client";
-import { $Enums, Addon, Menu, Order } from "@prisma/client";
+import { $Enums, Addon, Menu, Order, Receipt } from "@prisma/client";
+import { redirect } from "next/dist/server/api-utils";
 import { useEffect, useState } from "react";
 
 export function useLocation(shouldFetch: boolean) {
@@ -37,12 +38,20 @@ export function useLocation(shouldFetch: boolean) {
 
 export interface OrderData {
   itemId: string;
-  addons: string;
+  addons?: string;
   menuId: number | undefined;
   quantity: number | undefined;
   status: $Enums.ORDERSTATUS | undefined;
   totalPrice: number | undefined;
   instruction: string | null | undefined;
+}
+
+export interface PaidData extends OrderData {
+  receiptCode: string;
+  tableId: number;
+  tax?: number;
+  qrCode?: string;
+  date?: Date;
 }
 
 export function formatOrder(orders: Order[]): OrderData[] {
@@ -57,26 +66,36 @@ export function formatOrder(orders: Order[]): OrderData[] {
     const menuId = validItem?.menuId;
     const quantity = validItem && validItem.quantity - validItem.paidQuantity;
     const status = validItem?.status;
-    const paidPrice =
-      validItem && validItem.paidQuantity
-        ? (validItem.totalPrice / validItem.quantity) * validItem.paidQuantity
-        : 0;
     const totalPrice = validItem?.totalPrice;
     const instruction = validItem?.instruction;
-    return {
-      itemId: uniqueOrder,
-      addons: JSON.stringify(validItems.map((item) => item.addonId ?? 0)),
-      menuId,
-      quantity,
-      status,
-      totalPrice,
-      instruction,
-    };
+    const addons = validItems
+      .map((item) => item.addonId)
+      .filter((item) => item !== null);
+    if (addons.length > 0) {
+      return {
+        itemId: uniqueOrder,
+        addons: JSON.stringify(addons),
+        menuId,
+        quantity,
+        status,
+        totalPrice,
+        instruction,
+      };
+    } else {
+      return {
+        itemId: uniqueOrder,
+        menuId,
+        quantity,
+        status,
+        totalPrice,
+        instruction,
+      };
+    }
   });
   return orderData;
 }
 
-export const getUnpaidTotalPrice = ({
+export const getTotalOrderPrice = ({
   orderData,
   menus,
   addons,
@@ -89,12 +108,12 @@ export const getUnpaidTotalPrice = ({
     const currentMenuPrice = menus?.find(
       (item) => curr.menuId === item.id
     )?.price;
-    const unpaidAddon: number[] = JSON.parse(curr.addons);
+    const unpaidAddon = curr.addons ? JSON.parse(curr.addons) : [];
     const addonPrices = addons
       .filter((item) => unpaidAddon.includes(item.id))
       .reduce((accu, curr) => curr.price + accu, 0);
     const totalPrice =
-      unpaidAddon.length && currentMenuPrice && curr.quantity
+      unpaidAddon && unpaidAddon.length && currentMenuPrice && curr.quantity
         ? (currentMenuPrice + addonPrices) * curr.quantity + accu
         : currentMenuPrice && curr.quantity
         ? currentMenuPrice * curr.quantity + accu

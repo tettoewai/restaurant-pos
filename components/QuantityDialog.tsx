@@ -33,7 +33,7 @@ export default function QuantityDialog({
   onClose,
   onOpenChange,
 }: Props) {
-  const { paid, setPaid } = useContext(BackOfficeContext);
+  const { paid } = useContext(BackOfficeContext);
   const handleQuatity = (newQuantity: number) => {
     if (newQuantity > 0 && newQuantity <= prevQuantity) {
       setQuantityDialogData({ ...quantityDialogData, quantity: newQuantity });

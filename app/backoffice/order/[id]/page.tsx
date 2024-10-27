@@ -6,12 +6,11 @@ import {
   fetchAddonWithIds,
   fetchMenuWithIds,
   fetchOrderWithTableId,
-  fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import PaidAndPrintDialog from "@/components/PaidAndPrintDialog";
 import QuantityDialog from "@/components/QuantityDialog";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
-import { formatOrder, getUnpaidTotalPrice, OrderData } from "@/general";
+import { formatOrder, getTotalOrderPrice, OrderData } from "@/general";
 import {
   Badge,
   Button,
@@ -30,7 +29,7 @@ import {
   useDisclosure,
   User,
 } from "@nextui-org/react";
-import { usePathname, useRouter } from "next/navigation";
+import { nanoid } from "nanoid";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDropdown } from "react-icons/io";
 import { toast } from "react-toastify";
@@ -101,6 +100,14 @@ export default function App({ params }: { params: { id: string } }) {
 
   const { paid, setPaid } = useContext(BackOfficeContext);
 
+  const receiptCode = useMemo(
+    () =>
+      paid.length > 0 && paid[0].receiptCode ? paid[0].receiptCode : nanoid(6),
+    [paid]
+  );
+
+  const date = new Date();
+
   const [quantityDialogData, setQuantityDialogData] = useState<OrderData>({
     itemId: "",
     addons: "",
@@ -164,11 +171,15 @@ export default function App({ params }: { params: { id: string } }) {
         order.itemId === item.itemId ? updatedItem : order
       );
       unpaidOrderData = updatedUnpaidOrderData;
+
       setPaid((prev) => [
         ...prev,
         {
           ...item,
           quantity: item.quantity,
+          receiptCode,
+          date,
+          tableId,
         },
       ]);
       return;
@@ -179,6 +190,7 @@ export default function App({ params }: { params: { id: string } }) {
       const updatePaid = {
         ...validPaidItem,
         quantity: validPaidItem.quantity + item.quantity,
+        receiptCode,
       };
       setPaid([...otherPaidItem, updatePaid]);
       return;
@@ -188,16 +200,37 @@ export default function App({ params }: { params: { id: string } }) {
       {
         ...item,
         quantity: item.quantity,
+        receiptCode,
+        date,
+        tableId,
       },
     ]);
   };
 
-  const totalUnpidPrice = getUnpaidTotalPrice({
+  const addAllPaid = (items: OrderData[]) => {
+    items.map((item) => {
+      setPaid((prev) => [
+        ...prev,
+        {
+          ...item,
+          quantity: item.quantity,
+          receiptCode,
+          date,
+          tableId,
+        },
+      ]);
+    });
+  };
+
+  const totalUnpidPrice = getTotalOrderPrice({
     orderData: unpaidOrderData,
     menus: menus,
     addons: addons,
   });
   if (!table) return <span>There is no table</span>;
+  const completedOrder = unpaidOrderData.filter(
+    (item) => item.status === "COMPLETE"
+  );
   return (
     <div className="flex w-full flex-col relative">
       <span className="flex md:absolute top-5 left-3">
@@ -218,7 +251,7 @@ export default function App({ params }: { params: { id: string } }) {
         variant="bordered"
         selectedKey={selected}
         onSelectionChange={(e) => setSelected(e.toLocaleString())}
-        className="flex justify-center md:justify-end mr-9 md:mr-16 mt-2 relative"
+        className="flex justify-center md:justify-end mr-9 md:mr-14 mt-2.5 relative"
       >
         {tabs.map((item) => {
           const filteredUnpaidOrders = unpaidOrderData.filter(
@@ -240,6 +273,17 @@ export default function App({ params }: { params: { id: string } }) {
               }
             >
               <div className="p-1 w-full h-full overflow-auto">
+                <div className="w-full flex justify-end">
+                  {selected === "complete" && completedOrder.length > 0 ? (
+                    <Button
+                      color="primary"
+                      className="mb-2"
+                      onClick={() => addAllPaid(completedOrder)}
+                    >
+                      Paid all
+                    </Button>
+                  ) : null}
+                </div>
                 <Table
                   aria-label="Order list"
                   removeWrapper
@@ -257,7 +301,9 @@ export default function App({ params }: { params: { id: string } }) {
                     {filteredUnpaidOrders.map((item, index) => {
                       const validMenu =
                         menus && menus.find((menu) => menu.id === item.menuId);
-                      const addonIds: number[] = JSON.parse(item.addons);
+                      const addonIds: number[] = item.addons
+                        ? JSON.parse(item.addons)
+                        : [];
                       const validAddon = addons.filter((addon) =>
                         addonIds.includes(addon.id)
                       );
@@ -306,7 +352,6 @@ export default function App({ params }: { params: { id: string } }) {
                                       ? "warning"
                                       : "success"
                                   }
-                                  onClick={() => {}}
                                 >
                                   {item.status &&
                                     item.status.charAt(0).toUpperCase() +

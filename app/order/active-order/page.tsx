@@ -7,7 +7,7 @@ import {
 import { fetchOrder } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
-import { formatOrder, getUnpaidTotalPrice } from "@/general";
+import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card, Link } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import clsx from "clsx";
@@ -32,7 +32,9 @@ function ActiveOrder() {
 
   const orderData = orders && formatOrder(orders);
   const menuIds = orderData?.map((item) => item.menuId) as number[];
-  const itemAddon = orderData?.map((item) => JSON.parse(item.addons));
+  const itemAddon = orderData?.map((item) =>
+    item.addons ? JSON.parse(item.addons) : []
+  );
   const uniqueAddons: number[] = Array.from(new Set(itemAddon?.flat())).filter(
     (item) => item !== 0
   );
@@ -53,7 +55,9 @@ function ActiveOrder() {
     uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
   );
 
-  const addonCategoryIds = addons && addons.map((item) => item.addonCategoryId);
+  const addonCategoryIds = addons
+    ? addons.map((item) => item.addonCategoryId)
+    : [];
 
   const {
     data: addonCategory,
@@ -64,8 +68,7 @@ function ActiveOrder() {
       ? fetchAddonCategoryWithIds(addonCategoryIds)
       : Promise.resolve([])
   );
-  const totalPrice =
-    addons && getUnpaidTotalPrice({ orderData, menus, addons });
+  const totalPrice = addons && getTotalOrderPrice({ orderData, menus, addons });
   return (
     <div>
       {orderData && orderData.length > 0 ? (
@@ -81,7 +84,9 @@ function ActiveOrder() {
               const validMenu = menus?.find(
                 (mennu) => mennu.id === item.menuId
               );
-              const addonIds: number[] = JSON.parse(item.addons);
+              const addonIds: number[] = item.addons
+                ? JSON.parse(item.addons)
+                : [];
               const validAddon = addons?.filter((addon) =>
                 addonIds.includes(addon.id)
               );

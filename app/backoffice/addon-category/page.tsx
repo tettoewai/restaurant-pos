@@ -9,10 +9,9 @@ import NewAddonCategoryDialog from "@/components/NewAddonCategoryDailog";
 import { Suspense } from "react";
 
 const AddonCateogory = async () => {
-  const [addonCategory, menus, menuAddonCategory] = await Promise.all([
+  const [addonCategory, menus] = await Promise.all([
     fetchAddonCategory(),
     fetchMenu(),
-    fetchMenuAddonCategory(),
   ]);
   return (
     <div>

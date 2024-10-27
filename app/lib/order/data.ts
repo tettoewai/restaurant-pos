@@ -1,7 +1,11 @@
 "use server";
 import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/db";
-import { fetchLocationWithId, fetchTableWithId } from "../backoffice/data";
+import {
+  fetchCompany,
+  fetchLocationWithId,
+  fetchTableWithId,
+} from "../backoffice/data";
 import { ORDERSTATUS } from "@prisma/client";
 
 async function fetchDisabledLocationMenuCatIds(locationId: number) {
@@ -125,5 +129,35 @@ export async function fetchOrderWithItemId(itemId: string) {
   } catch (error) {
     console.error("Error in fetchOrder:", error);
     throw new Error("Failed to fetch Order data.");
+  }
+}
+
+export async function fetchReceiptWithCode(receitpCode: string) {
+  if (!receitpCode) return;
+  try {
+    return await prisma.receipt.findMany({
+      where: { code: receitpCode },
+    });
+  } catch (error) {
+    console.error("Error in fetchReceipt:", error);
+    throw new Error("Failed to fetch Receipt data.");
+  }
+}
+
+export async function fetchCompanyFromOrder(tableId: number) {
+  if (!tableId) {
+    console.error("Missing tableId.");
+    throw new Error("Missing tableId.");
+  }
+  try {
+    const table = await fetchTableWithId(tableId);
+    const location = table && (await fetchLocationWithId(table.locationId));
+    return (
+      location &&
+      (await prisma.company.findFirst({ where: { id: location.companyId } }))
+    );
+  } catch (error) {
+    console.error("Error in fetchCompanyFromOrder:", error);
+    throw new Error("Failed to fetch company data.");
   }
 }

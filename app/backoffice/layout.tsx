@@ -1,6 +1,7 @@
 "use client";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import BackOfficeContextProvider from "@/context/BackOfficeContext";
 import { ScrollShadow } from "@nextui-org/react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -8,8 +9,6 @@ import { ReactNode, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import useSWR from "swr";
 import { createDefaultData, fetchUser } from "../lib/backoffice/data";
-import BackOfficeContextProvider from "@/context/BackOfficeContext";
-import Backdrop from "@/components/BackDrop";
 
 interface Props {
   children: ReactNode;

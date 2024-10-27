@@ -7,22 +7,41 @@ import {
 import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { Card, Input } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";
+import { nanoid } from "nanoid";
 import Image from "next/image";
-import { RefObject, useContext, useState } from "react";
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useContext,
+  useState,
+} from "react";
 import useSWR from "swr";
 
 interface Props {
   tableId: number;
+  receiptCode?: string;
   menus: Menu[] | undefined;
   addons: Addon[] | undefined;
   componentRef: RefObject<HTMLDivElement>;
+  subTotal: number;
+  taxRate: number;
+  setTaxRate: Dispatch<SetStateAction<number>>;
+  qrCodeImage: string | null | undefined;
 }
 
-function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
-  const { paid } = useContext(BackOfficeContext);
-
-  // State to store the tax rate controlled by the user
-  const [taxRate, setTaxRate] = useState(5); // Default to 5%
+function PaidPrint({
+  tableId,
+  receiptCode,
+  menus,
+  addons,
+  componentRef,
+  subTotal,
+  taxRate,
+  setTaxRate,
+  qrCodeImage,
+}: Props) {
+  const { paid, setPaid } = useContext(BackOfficeContext);
 
   const { data: company } = useSWR("company", () =>
     fetchCompany().then((res) => res)
@@ -34,33 +53,16 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
     fetchTableWithId(tableId).then((res) => res)
   );
 
-  const subTotal = paid.reduce((accu, curr) => {
-    const validMenu = menus?.find((item) => item.id === curr.menuId);
-    const paidAddons: number[] = JSON.parse(curr.addons);
-    const paidAddonPrices = addons
-      ?.filter((item) => paidAddons.includes(item.id))
-      .reduce((accu, curr) => curr.price + accu, 0);
-    if (!curr.quantity) return 0;
-    const totalPrice =
-      paidAddonPrices && validMenu
-        ? (validMenu.price + paidAddonPrices) * curr.quantity + accu
-        : validMenu
-        ? validMenu.price * curr.quantity + accu
-        : 0;
-    return totalPrice;
-  }, 0);
-
-  // Tax and total calculations based on user input
+  const date = new Date();
   const tax = subTotal * (taxRate / 100);
   const total = subTotal + tax;
-
-  const date = new Date();
 
   return (
     <Card
       ref={componentRef}
       className="w-[320px] bg-white p-4 text-sm font-mono text-black"
     >
+      <div>#{receiptCode}</div>
       <div className="text-center border-b pb-4 mb-4">
         <h2 className="font-bold text-lg">{company?.name}</h2>
         {location && (
@@ -96,7 +98,9 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
         <tbody>
           {paid.map((item, index) => {
             const validMenu = menus?.find((menu) => menu.id === item.menuId);
-            const paidAddons: number[] = JSON.parse(item.addons);
+            const paidAddons: number[] = item.addons
+              ? JSON.parse(item.addons)
+              : [];
             const validAddon = addons?.filter((addon) =>
               paidAddons.includes(addon.id)
             );
@@ -112,7 +116,9 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
                 : 0;
             return (
               <tr className="border-b" key={index}>
-                <td>{validMenu?.name}</td>
+                <td>
+                  <span className="text-wrap">{validMenu?.name}</span>
+                </td>
                 <td>{item.quantity}</td>
                 <td>{currentTotalPrice} Ks</td>
               </tr>
@@ -135,7 +141,12 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
             type="number"
             color="primary"
             value={String(taxRate)}
-            onChange={(e) => setTaxRate(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value >= 0 && value <= 100) {
+                setTaxRate(value);
+              }
+            }}
             className="w-fit ml-1 hide-in-print"
             min={0}
             max={100}
@@ -149,7 +160,7 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
         <span>{tax.toFixed(2)} Ks</span>
       </div>
 
-      <div className="flex justify-between py-1 border-b mb-2">
+      <div className="flex justify-between py-1 border-b mb-2 font-bold">
         <span>Total:</span>
         <span>{total.toFixed(2)} Ks</span>
       </div>
@@ -157,7 +168,11 @@ function PaidPrint({ tableId, menus, addons, componentRef }: Props) {
       <div className="text-center my-4">
         <Image
           className="mx-auto mb-2"
-          src="https://via.placeholder.com/100x100.png?text=QR+Code"
+          src={
+            qrCodeImage
+              ? qrCodeImage
+              : "https://via.placeholder.com/100x100.png?text=QR+Code"
+          }
           alt="QR Code"
           width={100}
           height={100}

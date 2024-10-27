@@ -73,6 +73,7 @@ model Menu {
   menuAddonCategory    MenuAddonCategory[]
   menuCategoryMenu     MenuCategoryMenu[]
   Order                Order[]
+  Receipt              Receipt[]
 }
 
 model DisabledLocationMenu {
@@ -120,6 +121,7 @@ model Addon {
   updatedAt       DateTime      @updatedAt
   addonCategory   AddonCategory @relation(fields: [addonCategoryId], references: [id])
   Order           Order[]
+  Receipt         Receipt[]
 }
 
 model Table {
@@ -133,6 +135,7 @@ model Table {
   orders       Order[]
   location     Location       @relation(fields: [locationId], references: [id])
   Notification Notification[]
+  Receipt      Receipt[]
 }
 
 model User {
@@ -145,23 +148,23 @@ model User {
 }
 
 model Order {
-  id            Int         @id @default(autoincrement())
-  menuId        Int
-  addonId       Int?
-  itemId        String
-  quantity      Int
-  paidQuantity  Int         @default(0)
-  orderSeq      String
-  status        ORDERSTATUS
-  totalPrice    Int
-  tableId       Int
-  instruction   String?
-  isArchived    Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  addon         Addon?      @relation(fields: [addonId], references: [id])
-  menu          Menu        @relation(fields: [menuId], references: [id])
-  table         Table       @relation(fields: [tableId], references: [id])
+  id           Int         @id @default(autoincrement())
+  menuId       Int
+  addonId      Int?
+  itemId       String
+  quantity     Int
+  paidQuantity Int         @default(0)
+  orderSeq     String
+  status       ORDERSTATUS
+  totalPrice   Int
+  tableId      Int
+  instruction  String?
+  isArchived   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  addon        Addon?      @relation(fields: [addonId], references: [id])
+  menu         Menu        @relation(fields: [menuId], references: [id])
+  table        Table       @relation(fields: [tableId], references: [id])
 }
 
 enum ORDERSTATUS {
@@ -178,4 +181,31 @@ model Notification {
   createdAt DateTime @default(now())
   isRead    Boolean  @default(false)
   table     Table    @relation(fields: [tableId], references: [id])
+}
+
+model Receipt {
+  id         Int      @id @default(autoincrement())
+  code       String
+  tableId    Int
+  itemId     String
+  addonId    Int?
+  menuId     Int
+  totalPrice Int
+  quantity   Int
+  tax        Float
+  date       DateTime
+  qrCode     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  menu       Menu     @relation(fields: [menuId], references: [id])
+  table      Table    @relation(fields: [tableId], references: [id])
+  addon      Addon?   @relation(fields: [addonId], references: [id])
+}
+
+model Rating {
+  id          Int      @id @default(autoincrement())
+  receiptCode String   @unique
+  rating      Int
+  feedback    String?
+  createdAt   DateTime @default(now())
 }
