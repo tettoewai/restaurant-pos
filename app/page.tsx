@@ -8,7 +8,8 @@ import {
   RiCheckboxMultipleBlankFill,
   RiCustomerService2Line,
 } from "react-icons/ri";
-
+import { FaUserShield } from "react-icons/fa6";
+import { VscFeedback } from "react-icons/vsc";
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
 export default async function Home() {
@@ -37,6 +38,14 @@ export default async function Home() {
       icon: <RiCustomerService2Line className="text-primary size-10" />,
       title:
         "Dedicated customer support so that we are awlays here to help you.",
+    },
+    {
+      icon: <FaUserShield className="text-primary size-10" />,
+      title: "Customer can only place order when physically in restaurant.",
+    },
+    {
+      icon: <VscFeedback className="text-primary size-10" />,
+      title: "Digital receipt and rating feedback.",
     },
   ];
 

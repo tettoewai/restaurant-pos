@@ -140,7 +140,7 @@ export default function PaidAndPrintDialog({
       return { ...item, tax, totalPrice: total, qrCode: receiptUrl, tableId };
     });
     setPaid(updatedPaid);
-  }, [tax, total, tableId]);
+  }, [tax, total, tableId, receiptUrl]);
 
   const [qrCodeImage, setQrCodeImage] = useState<string | null | undefined>("");
 

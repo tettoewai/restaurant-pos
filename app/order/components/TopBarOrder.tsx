@@ -20,8 +20,6 @@ const TopBarOrder = () => {
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
   const tableId = searchParams.get("tableId");
 
-  if (!tableId) return <span>There is no table</span>;
-
   // Fetch the table and company data
   const fetchAllData = async () => {
     const [company, table] = await Promise.all([
@@ -44,6 +42,8 @@ const TopBarOrder = () => {
 
   const company = data?.company;
   const table = data?.table;
+
+  if (!tableId) return <span>There is no table</span>;
 
   return (
     <>
