@@ -7,12 +7,11 @@ import {
   fetchCompanyFromOrder,
   fetchReceiptWithCode,
 } from "@/app/lib/order/data";
-import { formatCurrency } from "@/app/order/[id]/page";
 import Feedback from "@/components/Feedback";
+import { formatCurrency } from "@/components/fromatCurrency";
 import { Card } from "@nextui-org/react";
 import { Receipt } from "@prisma/client";
 import { ToastContainer } from "react-toastify";
-import { json } from "stream/consumers";
 
 const formatReceipt = (receipts: Receipt[]) => {
   const uniqueItem = [] as string[];

@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import { fetchOrder } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
+import { formatCurrency } from "@/components/fromatCurrency";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card, Link } from "@nextui-org/react";
@@ -15,7 +16,6 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
-import { formatCurrency } from "../[id]/page";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();

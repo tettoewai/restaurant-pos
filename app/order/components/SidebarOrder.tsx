@@ -33,7 +33,7 @@ export default function SidebarOrder({
     },
     {
       name: "Change table",
-      route: "",
+      route: `/order/change-table?tableId=${tableId}`,
       icon: <TbArrowsExchange2 />,
     },
     {
@@ -42,7 +42,7 @@ export default function SidebarOrder({
       icon: <MdGroups2 />,
     },
     {
-      name: "Contace us",
+      name: "Contact us",
       route: "",
       icon: <RiCustomerService2Fill />,
     },
@@ -52,7 +52,7 @@ export default function SidebarOrder({
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
         className={clsx(
-          "h-[92%] w-0 rounded-md bg-background fixed z-30 top-16 mt-1 overflow-hidden transition-width",
+          "h-[92%] w-0 rounded-md bg-background fixed z-30 top-16 mt-1 ml-0.5 overflow-hidden transition-width",
           { "w-44": sideBarOpen }
         )}
       >

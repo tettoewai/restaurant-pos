@@ -1,4 +1,5 @@
 "use client";
+import { formatCurrency } from "@/components/fromatCurrency";
 import { CartItem } from "@/context/OrderContext";
 import { Card } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";
@@ -8,7 +9,6 @@ import Link from "next/link";
 import { Dispatch, SetStateAction } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { MdAttachMoney, MdEdit } from "react-icons/md";
-import { formatCurrency } from "../[id]/page";
 
 interface Props {
   itemId: string;

@@ -1,6 +1,5 @@
 "use client";
-import { $Enums, Addon, Menu, Order, Receipt } from "@prisma/client";
-import { redirect } from "next/dist/server/api-utils";
+import { $Enums, Addon, Menu, Order } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 export function useLocation(shouldFetch: boolean) {
@@ -12,7 +11,7 @@ export function useLocation(shouldFetch: boolean) {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!shouldFetch) return; // Only fetch if the flag is true
+    if (!shouldFetch) return;
 
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by this browser.");

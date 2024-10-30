@@ -142,7 +142,7 @@ export default function App({ params }: { params: { id: string } }) {
       })
       .filter((order) => order !== null)
       .filter((item) => Number(item.quantity) > 0);
-  }, [data, paid, isUpdateLocation, orderData]);
+  }, [paid, orderData]);
   const handleStatusChange = async (status: string, itemId: string) => {
     const { message, isSuccess } = await updateOrderStatus({
       orderStatus: status,

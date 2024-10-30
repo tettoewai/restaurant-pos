@@ -9,14 +9,7 @@ import { Card } from "@nextui-org/react";
 import Image from "next/image";
 import { Suspense } from "react";
 import MenuForm from "../components/MenuForm";
-
-export const formatCurrency = (value: number) => {
-  return (
-    new Intl.NumberFormat("en-MM", {
-      minimumFractionDigits: 0, // Ensures no decimals
-    }).format(value) + " Ks"
-  );
-};
+import { formatCurrency } from "@/components/fromatCurrency";
 
 export default async function MenuPage({
   params,

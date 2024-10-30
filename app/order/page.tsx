@@ -12,7 +12,7 @@ import {
 import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
-import { formatCurrency } from "./[id]/page";
+import { formatCurrency } from "@/components/fromatCurrency";
 
 export const dynamic = "force-dynamic";
 

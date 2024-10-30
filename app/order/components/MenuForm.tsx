@@ -1,6 +1,7 @@
 "use client";
 import { updateOrder } from "@/app/lib/order/action";
 import { AddonCatSkeleton } from "@/app/ui/skeletons";
+import { formatCurrency } from "@/components/fromatCurrency";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Checkbox, Chip, Textarea } from "@nextui-org/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
@@ -9,7 +10,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { toast } from "react-toastify";
-import { formatCurrency } from "../[id]/page";
 const { customAlphabet } = require("nanoid");
 
 interface Props {

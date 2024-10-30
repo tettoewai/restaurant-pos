@@ -68,6 +68,11 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       icon: <MdLocationOn />,
     },
     {
+      name: "Promotion",
+      route: "/backoffice/promotion",
+      icon: <MdLocationOn />,
+    },
+    {
       name: "Setting",
       route: "/backoffice/setting",
       icon: <IoSettings />,
@@ -81,7 +86,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
         className={clsx(
-          "bg-background h-[88%] lg:h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm",
+          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll scrollbar-hide",
           {
             "w-52": sideBarOpen,
             "w-0 lg:w-16": !sideBarOpen,
@@ -92,7 +97,10 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
           {sideBarItem.map((item, index) => {
             const isActive = pathName === item.route;
             return (
-              <li key={index} className="m-2 relative hover:text-primary">
+              <li
+                key={index}
+                className="m-2 relative hover:text-primary transition-colors"
+              >
                 <Tooltip
                   placement="right"
                   content={item.name}

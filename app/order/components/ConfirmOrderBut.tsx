@@ -1,13 +1,13 @@
 "use client";
 import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
+import { formatCurrency } from "@/components/fromatCurrency";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Spinner } from "@nextui-org/react";
 import { redirect, useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { toast } from "react-toastify";
 import useSWR from "swr";
-import { formatCurrency } from "../[id]/page";
 
 export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
   const { carts, setCarts } = useContext(OrderContext);
