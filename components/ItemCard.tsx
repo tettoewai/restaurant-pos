@@ -77,7 +77,7 @@ export default async function ItemCard({
   return (
     <Card
       className={clsx(
-        "bg-background h-48 p-1 flex flex-col items-center relative overflow-hidden justify-center m-1",
+        "bg-background h-48 p-1 flex flex-col items-center relative overflow-hidden justify-center m-1 w-44",
         {
           "opacity-70": isExist && itemType === "menuCategory",
           "w-40 h-40": itemType === "menuCategory" || itemType === "location",

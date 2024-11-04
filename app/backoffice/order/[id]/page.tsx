@@ -64,7 +64,7 @@ export default function App({ params }: { params: { id: string } }) {
     isLoading,
   } = useSWR(
     table && table.id ? [table.id, isUpdateLocation] : null,
-    () => fetchOrderWithTableId({ tableId }).then((res) => res),
+    () => fetchOrderWithTableId(tableId).then((res) => res),
     {
       refreshInterval: 5000,
       revalidateOnFocus: true,
@@ -84,7 +84,7 @@ export default function App({ params }: { params: { id: string } }) {
     ?.map((item) => item.addonId)
     .filter((addon) => addon !== null);
   const { data: addons = [] } = useSWR(
-    addonIds.length > 0 ? [data] : null,
+    addonIds.length > 0 ? [addonIds] : null,
     () => fetchAddonWithIds(addonIds).then((res) => res)
   );
 
@@ -287,7 +287,7 @@ export default function App({ params }: { params: { id: string } }) {
                 <Table
                   aria-label="Order list"
                   removeWrapper
-                  className="bg-background rounded-lg p-1 w-fit md:w-full"
+                  className="bg-background rounded-lg p-1 md:w-full"
                   fullWidth
                 >
                   <TableHeader>

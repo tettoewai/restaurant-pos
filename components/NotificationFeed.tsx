@@ -117,7 +117,7 @@ export default function NotificationFeed() {
                 >
                   <div className="max-w-60 w-52">
                     <div className="flex justify-between items-center">
-                      <span>{item.message}</span>
+                      <span className="text-wrap">{item.message}</span>
                       <span className="text-xs">{validTable?.name}</span>
                     </div>
                     <div>

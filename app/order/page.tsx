@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/components/fromatCurrency";
 import { Card, Chip, Divider, ScrollShadow, Spacer } from "@nextui-org/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +13,6 @@ import {
 import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
-import { formatCurrency } from "@/components/fromatCurrency";
 
 export const dynamic = "force-dynamic";
 

@@ -9,6 +9,9 @@ import {
   fetchAddonWithIds,
   fetchMenuWithId,
   fetchMenuWithIds,
+  fetchOrderWithTableId,
+  fetchTable,
+  fetchTableWithId,
 } from "../backoffice/data";
 import { revalidatePath } from "next/cache";
 import { fetchOrderWithItemId } from "./data";
@@ -263,6 +266,41 @@ export async function createFeedback(formData: FormData) {
     console.error(error);
     return {
       message: "Something went wrong while creating feedback!",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function changeTable({
+  tableId,
+  prevTableId,
+}: {
+  prevTableId: number;
+  tableId: number;
+}) {
+  if (!tableId && !prevTableId)
+    return { message: "Missing required field.", isSuccess: false };
+  try {
+    const prevTable = await fetchTableWithId(prevTableId);
+    const table = await fetchTableWithId(tableId);
+    const order = await fetchOrderWithTableId(tableId);
+    if (order && order.length > 0)
+      return { message: "This table is already taken.", isSuccess: false };
+    await prisma.order.updateMany({
+      where: { tableId: prevTableId, status: { not: ORDERSTATUS.PAID } },
+      data: { tableId: tableId },
+    });
+    await prisma.notification.create({
+      data: {
+        message: `Customer was changed ${prevTable?.name} to ${table?.name}`,
+        tableId,
+      },
+    });
+    return { message: "Changing table was successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while changing table!",
       isSuccess: false,
     };
   }

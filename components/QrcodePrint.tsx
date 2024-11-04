@@ -1,9 +1,10 @@
 "use client";
-import { Card } from "@nextui-org/react";
+import { Button, Card } from "@nextui-org/react";
 import { Table } from "@prisma/client";
 import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";
 import { useRef } from "react";
+import { BsQrCodeScan } from "react-icons/bs";
 import { useReactToPrint } from "react-to-print";
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
@@ -109,7 +110,14 @@ const QrcodePrint = ({ table }: { table?: Table }) => {
           </div>
         </Card>
       </div>
-      <button onClick={handleClick}>Print qr</button>
+
+      <button
+        className="w-full justify-between flex font-normal text-sm"
+        onClick={handleClick}
+      >
+        Print qr{" "}
+        <BsQrCodeScan className="text-xl text-default-500 pointer-events-none flex-shrink-0" />
+      </button>
     </div>
   );
 };

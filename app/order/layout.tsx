@@ -2,6 +2,7 @@ import OrderContextProvider from "@/context/OrderContext";
 import TopBarOrder from "./components/TopBarOrder";
 import CheckLocation from "./components/CheckLocation";
 import { Suspense } from "react";
+import { ToastContainer } from "react-toastify";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           </Suspense>
         </div>
       </div>
+      <ToastContainer position="bottom-right" />
     </OrderContextProvider>
   );
 }

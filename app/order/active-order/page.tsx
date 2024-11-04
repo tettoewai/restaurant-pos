@@ -30,7 +30,7 @@ function ActiveOrder() {
     revalidateOnReconnect: true,
   });
 
-  const orderData = orders && formatOrder(orders);
+  const orderData = orders && orders?.length > 0 ? formatOrder(orders) : [];
   const menuIds = orderData?.map((item) => item.menuId) as number[];
   const itemAddon = orderData?.map((item) =>
     item.addons ? JSON.parse(item.addons) : []

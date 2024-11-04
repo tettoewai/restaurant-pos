@@ -397,7 +397,7 @@ export async function fetchOrder() {
   }
 }
 
-export async function fetchOrderWithTableId({ tableId }: { tableId: number }) {
+export async function fetchOrderWithTableId(tableId: number) {
   noStore();
   try {
     const table = fetchTableWithId(tableId);
@@ -406,6 +406,7 @@ export async function fetchOrderWithTableId({ tableId }: { tableId: number }) {
       where: {
         tableId,
         isArchived: false,
+        status: { not: ORDERSTATUS.PAID },
       },
       orderBy: { createdAt: "asc" },
     });

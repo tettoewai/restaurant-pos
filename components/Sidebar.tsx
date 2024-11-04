@@ -14,6 +14,7 @@ import {
   MdSpaceDashboard,
   MdTableBar,
 } from "react-icons/md";
+import { ImBullhorn } from "react-icons/im";
 import { TbCategoryPlus } from "react-icons/tb";
 import { IoSettings } from "react-icons/io5";
 import Backdrop from "./BackDrop";
@@ -70,7 +71,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Promotion",
       route: "/backoffice/promotion",
-      icon: <MdLocationOn />,
+      icon: <ImBullhorn />,
     },
     {
       name: "Setting",

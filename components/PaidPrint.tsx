@@ -116,8 +116,13 @@ function PaidPrint({
                 : 0;
             return (
               <tr className="border-b" key={index}>
-                <td>
-                  <span className="text-wrap">{validMenu?.name}</span>
+                <td className="text-wrap">
+                  <span className="text-wrap">
+                    {validAddon && validAddon.length > 0
+                      ? validMenu?.name +
+                        `(${validAddon?.map((item) => item.name).join(", ")})`
+                      : validMenu?.name}
+                  </span>
                 </td>
                 <td>{item.quantity}</td>
                 <td>{currentTotalPrice} Ks</td>

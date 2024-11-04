@@ -205,7 +205,6 @@ export default function MoreOptionButton({
               closeOnSelect={false}
               key="printQrcode"
               textValue="printQrdcode"
-              endContent={<BsQrCodeScan className={iconClasses} />}
             >
               <QrcodePrint table={table} />
             </DropdownItem>
