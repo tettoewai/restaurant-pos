@@ -71,7 +71,8 @@ const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
     }
   }, [tableResult]);
   const handleChangeTable = async () => {
-    if (!table) return;
+    const isValid = table && prevTableId;
+    if (!isValid) return;
     setChanging(true);
     const { isSuccess, message } = await changeTable({
       tableId: table.id,

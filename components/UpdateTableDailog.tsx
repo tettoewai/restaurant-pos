@@ -31,7 +31,7 @@ export default function UpdateTableDialog({
   onOpenChange,
   onClose,
 }: Props) {
-  const [prevData, setPrevData] = useState<Table | null>(null);
+  const [prevData, setPrevData] = useState<Table | null | undefined>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {

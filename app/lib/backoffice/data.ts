@@ -302,6 +302,7 @@ export async function fetchTable() {
 }
 export async function fetchTableWithId(id: number) {
   noStore();
+  if (!id) return;
   try {
     const table = await prisma.table.findFirst({ where: { id } });
     return table;
