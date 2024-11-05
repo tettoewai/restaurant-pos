@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import QRScanner from "../components/QRScanner";
 
@@ -10,7 +11,7 @@ function ChangeTablePage({
 
   return (
     <div className="h-full items-center">
-      <QRScanner />
+      <QRScanner prevTableId={prevTableId} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { useLocation } from "@/general";
 import {
   fetchLocationWithId,
+  fetchOrderWithTableId,
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import LoadingSpiner from "./LoadingSpiner";
@@ -52,6 +53,8 @@ function CheckLocation({ children }: { children: React.ReactNode }) {
   } = useLocation(
     Boolean(restaurantLocation?.latitude && restaurantLocation?.longitude)
   );
+  const isValid = table && !table.isArchived;
+  if (!isValid) return <div>There is no table. Please rescan qr code.</div>;
 
   if (restaurantLocation?.latitude && restaurantLocation?.longitude) {
     // Show spinner while loading location data
