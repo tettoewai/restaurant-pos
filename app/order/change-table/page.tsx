@@ -10,7 +10,7 @@ function ChangeTablePage({
 
   return (
     <div className="h-full items-center">
-      <QRScanner prevTableId={prevTableId} />
+      <QRScanner />
     </div>
   );
 }
