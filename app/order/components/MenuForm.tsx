@@ -1,7 +1,7 @@
 "use client";
 import { updateOrder } from "@/app/lib/order/action";
 import { AddonCatSkeleton } from "@/app/ui/skeletons";
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Checkbox, Chip, Textarea } from "@nextui-org/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";

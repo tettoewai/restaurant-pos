@@ -14,7 +14,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
-import { formatCurrency } from "./fromatCurrency";
+import { formatCurrency } from "@/function";
 
 interface Props {
   id: number;

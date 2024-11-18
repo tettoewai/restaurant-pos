@@ -1,3 +1,4 @@
+"use client";
 import {
   Table,
   TableHeader,
@@ -26,7 +27,7 @@ export default function ListTable({ rows, columns }: Props) {
           <TableColumn key={column.key}>{column.label}</TableColumn>
         ))}
       </TableHeader>
-      <TableBody items={rows} emptyContent={"There is no menu"}>
+      <TableBody items={rows} emptyContent={"There is no item"}>
         {(item: any) => (
           <TableRow key={item.key}>
             {(columnKey) => (

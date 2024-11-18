@@ -105,21 +105,23 @@ export default function UpdateMenuDialog({
                 <>
                   <Input
                     name="name"
-                    label="Name *"
+                    label="Name"
                     variant="bordered"
                     defaultValue={prevData?.name}
                     required
+                    isRequired
                   />
                   <Input
                     type="number"
                     name="price"
-                    label="Price *"
+                    label="Price"
                     variant="bordered"
                     defaultValue={String(prevData?.price)}
                     endContent={
                       <span className="text-default-400 text-small">Kyats</span>
                     }
                     required
+                    isRequired
                   />
                   <MultipleSelector
                     selectedList={selectedCategory}

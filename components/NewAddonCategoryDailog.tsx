@@ -83,7 +83,13 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
 
           <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody>
-              <Input name="name" label="Name *" variant="bordered" required />
+              <Input
+                name="name"
+                label="Name"
+                variant="bordered"
+                isRequired
+                autoFocus
+              />
               <MultipleSelector
                 selectedList={selectedMenus}
                 setSelectedList={setSelectedMenus}

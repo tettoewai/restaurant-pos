@@ -1,46 +1,40 @@
-"use client";
-import { createMenuCategory } from "@/app/lib/backoffice/action";
+import { deletePromotion } from "@/app/lib/backoffice/action";
 import {
   Button,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Spinner,
-  useDisclosure,
 } from "@nextui-org/react";
-import { useState } from "react";
 import { toast } from "react-toastify";
 
-export default function NewMenuCategoryDialog() {
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+interface Props {
+  id: number;
+  isOpen: boolean;
+  onOpenChange: () => void;
+  onClose: () => void;
+}
 
+export default function DeletePromotionDailog({
+  id,
+  isOpen,
+  onOpenChange,
+  onClose,
+}: Props) {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setIsSubmitting(true);
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
-    const { isSuccess, message } = await createMenuCategory(formData);
-    setIsSubmitting(false);
+    if (!id) return;
+    const { isSuccess, message } = await deletePromotion(id);
     if (isSuccess) {
-      toast.success(message);
       onClose();
+      toast.success(isSuccess);
     } else {
       toast.error(message);
     }
   };
-
   return (
     <div className="relative">
-      <Button
-        onPress={onOpen}
-        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
-      >
-        New Menu Category
-      </Button>
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
@@ -49,18 +43,11 @@ export default function NewMenuCategoryDialog() {
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            Create Menu Category
+            Delete Promotion
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <Input
-                autoFocus
-                name="name"
-                label="Name"
-                variant="bordered"
-                required
-                isRequired
-              />
+              <span>Are you sure you went to delete this promotion?</span>
             </ModalBody>
             <ModalFooter>
               <Button
@@ -72,9 +59,8 @@ export default function NewMenuCategoryDialog() {
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                isDisabled={isSubmitting}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Create</span>}
+                Delete
               </Button>
             </ModalFooter>
           </form>

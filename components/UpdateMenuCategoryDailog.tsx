@@ -82,10 +82,11 @@ export default function UpdateMenuCategoryDialog({
               ) : (
                 <Input
                   name="name"
-                  label="Name *"
+                  label="Name"
                   variant="bordered"
                   defaultValue={prevData?.name}
                   required
+                  isRequired
                 />
               )}
             </ModalBody>

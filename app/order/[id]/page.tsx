@@ -9,7 +9,7 @@ import { Card } from "@nextui-org/react";
 import Image from "next/image";
 import { Suspense } from "react";
 import MenuForm from "../components/MenuForm";
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
 
 export default async function MenuPage({
   params,

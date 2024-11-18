@@ -64,20 +64,35 @@ export default function NewLocationDialog() {
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <Input name="name" label="Name *" variant="bordered" required />
               <Input
-                name="street"
-                label="Street *"
+                name="name"
+                label="Name"
                 variant="bordered"
                 required
+                isRequired
+                autoFocus
+              />
+              <Input
+                name="street"
+                label="Street"
+                variant="bordered"
+                required
+                isRequired
               />
               <Input
                 name="township"
-                label="Township *"
+                label="Township"
                 variant="bordered"
                 required
+                isRequired
               />
-              <Input name="city" label="City *" variant="bordered" required />
+              <Input
+                name="city"
+                label="City"
+                variant="bordered"
+                required
+                isRequired
+              />
               <LocationButton />
             </ModalBody>
             <ModalFooter>

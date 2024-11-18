@@ -6,7 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import { fetchOrder } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card, Link } from "@nextui-org/react";
@@ -55,9 +55,10 @@ function ActiveOrder() {
     uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
   );
 
-  const addonCategoryIds = addons
-    ? addons.map((item) => item.addonCategoryId)
-    : [];
+  const addonCategoryIds =
+    addons && addons?.length > 0
+      ? addons.map((item) => item.addonCategoryId)
+      : [];
 
   const {
     data: addonCategory,

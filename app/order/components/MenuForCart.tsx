@@ -1,5 +1,5 @@
 "use client";
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
 import { CartItem } from "@/context/OrderContext";
 import { Card } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";

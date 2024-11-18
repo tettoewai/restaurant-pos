@@ -79,10 +79,11 @@ export default function UpdateTableDialog({
               ) : (
                 <Input
                   name="name"
-                  label="Name *"
+                  label="Name"
                   variant="bordered"
                   defaultValue={prevData?.name}
                   required
+                  isRequired
                 />
               )}
             </ModalBody>

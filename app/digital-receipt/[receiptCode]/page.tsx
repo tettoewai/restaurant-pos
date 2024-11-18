@@ -8,7 +8,8 @@ import {
   fetchReceiptWithCode,
 } from "@/app/lib/order/data";
 import Feedback from "@/components/Feedback";
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
+import { dateToString } from "@/function";
 import { Card } from "@nextui-org/react";
 import { Receipt } from "@prisma/client";
 import { ToastContainer } from "react-toastify";
@@ -84,13 +85,7 @@ async function DigitalReceiptPage({
         </div>
         <div className="flex justify-between mb-2">
           <span>Date:</span>
-          <span>
-            {receipts[0].date.getDate() +
-              "-" +
-              (receipts[0].date.getMonth() + 1) +
-              "-" +
-              receipts[0].date.getFullYear()}
-          </span>
+          <span>{dateToString({ date: receipts[0].date, type: "DMY" })}</span>
         </div>
 
         <table className="w-full text-left mb-4">

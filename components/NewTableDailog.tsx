@@ -56,7 +56,14 @@ export default function NewTableDialog() {
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <Input name="name" label="Name *" variant="bordered" required />
+              <Input
+                name="name"
+                label="Name"
+                variant="bordered"
+                required
+                isRequired
+                autoFocus
+              />
             </ModalBody>
             <ModalFooter>
               <Button

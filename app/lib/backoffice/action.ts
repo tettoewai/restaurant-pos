@@ -2,7 +2,7 @@
 
 import { config } from "@/config";
 import { prisma } from "@/db";
-import { ORDERSTATUS } from "@prisma/client";
+import { DISCOUNT, ORDERSTATUS } from "@prisma/client";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
@@ -10,6 +10,7 @@ import {
   fetchCompany,
   fetchLocation,
   fetchMenuAddonCategory,
+  fetchPromotionMenuWithPromoId,
   fetchSelectedLocation,
 } from "./data";
 import { OrderData, PaidData } from "@/general";
@@ -693,7 +694,7 @@ export async function deleteImage(id: number) {
   } catch (error) {
     console.error(error);
     return {
-      message: "Something went wrong while delete image",
+      message: "Something went wrong while deleting image",
       isSuccess: false,
     };
   }
@@ -847,8 +848,6 @@ export async function setPaidWithQuantity(item: PaidData[]) {
       });
     });
     const qrCodeImageDb = await createReceipt(item);
-    console.log(qrCodeImageDb);
-    // revalidatePath(`/backoffice/order`);
     return {
       message: "Paided order successfully.",
       isSuccess: true,
@@ -858,6 +857,221 @@ export async function setPaidWithQuantity(item: PaidData[]) {
     console.error(error);
     return {
       message: "Something went wrong while paiding order",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function createPromotion(formData: FormData) {
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const discount_value = Number(formData.get("discount_amount"));
+  const discountType = formData.get("discount_type") as string;
+  const startDate = formData.get("start_date") as string;
+  const endDate = formData.get("end_date") as string;
+  const menuQty = JSON.parse(formData.get("menuQty") as string);
+  const conditions = formData.get("conditions") as string;
+  const isValid = Boolean(
+    name &&
+      description &&
+      discount_value &&
+      discountType &&
+      startDate &&
+      endDate &&
+      menuQty.length > 0
+  );
+  if (!isValid)
+    return {
+      message: "Missing required fields!",
+      isSuccess: false,
+    };
+  const discount_type =
+    discountType === "percentage" ? DISCOUNT.PERCENTAGE : DISCOUNT.FIXED_AMOUNT;
+
+  const start_date = new Date(startDate);
+  const end_date = new Date(endDate);
+  try {
+    const promotion = await prisma.promotion.create({
+      data: {
+        name,
+        description,
+        discount_value,
+        discount_type,
+        start_date,
+        end_date,
+        conditions,
+      },
+    });
+
+    await Promise.all(
+      menuQty.map(
+        async (item: any) =>
+          await prisma.promotionMenu.create({
+            data: {
+              promotionId: promotion.id,
+              menuId: item.menuId,
+              quantity_requried: item.quantity,
+            },
+          })
+      )
+    );
+    revalidatePath(`/backoffice/promotion`);
+    return { message: "Created promotion successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while creating promotion",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updatePromotion(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const discount_value = Number(formData.get("discount_amount"));
+  const discountType = formData.get("discount_type") as string;
+  const startDate = formData.get("start_date") as string;
+  const endDate = formData.get("end_date") as string;
+  const menuQty = JSON.parse(formData.get("menuQty") as string);
+  const conditions = formData.get("conditions") as string;
+  const isValid = Boolean(
+    id &&
+      name &&
+      description &&
+      discount_value &&
+      discountType &&
+      startDate &&
+      endDate &&
+      menuQty.length > 0
+  );
+  if (!isValid)
+    return {
+      message: "Missing required fields!",
+      isSuccess: false,
+    };
+
+  const discount_type =
+    discountType === "percentage" ? DISCOUNT.PERCENTAGE : DISCOUNT.FIXED_AMOUNT;
+
+  const start_date = new Date(startDate);
+  const end_date = new Date(endDate);
+
+  const prevPromoMenu = await fetchPromotionMenuWithPromoId(id);
+  const prevMenuId = prevPromoMenu.map((item) => item.menuId);
+
+  try {
+    await prisma.promotion.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        discount_type,
+        discount_value,
+        start_date,
+        end_date,
+        conditions,
+      },
+    });
+    menuQty.map(async (item: any) => {
+      const samePromotionMenu = prevPromoMenu.find(
+        (prevMenu) => prevMenu.menuId === item.menuId
+      );
+      if (
+        item.quantity !== samePromotionMenu?.quantity_requried &&
+        samePromotionMenu
+      ) {
+        await prisma.promotionMenu.update({
+          where: { id: samePromotionMenu.id, promotionId: id },
+          data: { quantity_requried: item.quantity },
+        });
+      }
+    });
+    const toAdd = menuQty.filter(
+      (item: any) => !prevMenuId.includes(item.menuId)
+    );
+
+    if (toAdd.length > 0) {
+      await Promise.all(
+        toAdd.map(
+          async (item: any) =>
+            await prisma.promotionMenu.create({
+              data: {
+                promotionId: id,
+                menuId: item.id,
+                quantity_requried: item.quantity,
+              },
+            })
+        )
+      );
+    }
+
+    const toRemove = prevPromoMenu.filter(
+      (item) => !menuQty.find((menuqty: any) => menuqty.menuId === item.menuId)
+    );
+
+    if (toRemove.length > 0) {
+      await Promise.all(
+        toRemove.map(
+          async (item) =>
+            await prisma.promotionMenu.delete({
+              where: { promotionId: id, id: item.id },
+            })
+        )
+      );
+    }
+    revalidatePath(`/backoffice/promotion`);
+    return { message: "Updated promotion successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while creating promotion",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deletePromotion(id: number) {
+  try {
+    await prisma.promotion.update({
+      where: { id: id },
+      data: { isArchived: true },
+    });
+    revalidatePath("/backoffice/promotion");
+    return { message: "Deleted promotion successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while deleting promotion",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function handleActivePromotion({
+  id,
+  e,
+}: {
+  e: boolean;
+  id: number;
+}) {
+  if (!e && !id)
+    return {
+      message: "Something went wrong while handlieng promotion status",
+      isSuccess: false,
+    };
+  try {
+    await prisma.promotion.update({ where: { id }, data: { is_active: e } });
+    revalidatePath("/backoffice/promotion");
+    return {
+      message: "Changed promotion status successfully.",
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while handlieng promotion status",
       isSuccess: false,
     };
   }

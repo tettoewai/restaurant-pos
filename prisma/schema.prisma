@@ -74,6 +74,7 @@ model Menu {
   menuCategoryMenu     MenuCategoryMenu[]
   Order                Order[]
   Receipt              Receipt[]
+  PromotionMenu        PromotionMenu[]
 }
 
 model DisabledLocationMenu {
@@ -208,4 +209,34 @@ model Rating {
   rating      Int
   feedback    String?
   createdAt   DateTime @default(now())
+}
+
+model Promotion {
+  id             Int             @id @default(autoincrement())
+  name           String
+  description    String
+  discount_type  DISCOUNT
+  discount_value Int
+  start_date     DateTime
+  end_date       DateTime
+  is_active      Boolean             @default(true)
+  conditions     Json?
+  isArchived    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  PromotionMenu  PromotionMenu[]
+}
+
+enum DISCOUNT {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+model PromotionMenu {
+  id                Int       @id @default(autoincrement())
+  promotionId       Int
+  menuId            Int
+  quantity_requried Int
+  promotion         Promotion @relation(fields: [promotionId], references: [id])
+  menu              Menu      @relation(fields: [menuId], references: [id])
 }

@@ -83,16 +83,22 @@ export default function NewMenuDialog({ menuCategory }: Props) {
 
           <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody>
-              <Input name="name" label="Name *" variant="bordered" required />
+              <Input
+                name="name"
+                label="Name"
+                variant="bordered"
+                isRequired
+                autoFocus
+              />
               <Input
                 type="number"
                 name="price"
-                label="Price *"
+                label="Price"
                 variant="bordered"
                 endContent={
                   <span className="text-default-400 text-small">Kyats</span>
                 }
-                required
+                isRequired
               />
               <MultipleSelector
                 selectedList={selectedCategory}

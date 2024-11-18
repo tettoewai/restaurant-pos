@@ -9,7 +9,9 @@ interface Props {
   menuList?: Menu[];
   addonCategoryList?: AddonCategory[];
   isRequired: boolean;
-  itemType: "menu" | "addonCategory" | "addon";
+  dayList?: { id: number; name: string }[];
+  isDisable?: boolean;
+  itemType: "menu" | "addonCategory" | "addon" | "promotion";
 }
 
 export default function MultipleSelector({
@@ -20,6 +22,8 @@ export default function MultipleSelector({
   menuList,
   addonCategoryList,
   itemType,
+  dayList,
+  isDisable,
 }: Props) {
   const handleSelectionChange = (e: any) => {
     const value = e.target.value;
@@ -36,6 +40,8 @@ export default function MultipleSelector({
       ? menuList
       : itemType === "addon"
       ? addonCategoryList
+      : itemType === "promotion"
+      ? dayList
       : null;
   if (!validList) return;
   return (
@@ -49,6 +55,8 @@ export default function MultipleSelector({
             ? "Menu"
             : itemType === "addon"
             ? "Addon Category"
+            : itemType === "promotion"
+            ? "Days"
             : null
         }
         selectionMode={itemType != "addon" ? "multiple" : "single"}
@@ -56,6 +64,7 @@ export default function MultipleSelector({
         onChange={handleSelectionChange}
         variant="bordered"
         className="outline-none"
+        isDisabled={isDisable}
       >
         {validList.map((item) => (
           <SelectItem key={item.id}>{item.name}</SelectItem>

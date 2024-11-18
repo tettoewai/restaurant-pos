@@ -105,10 +105,11 @@ export default function UpdateAddonDialog({
                 <>
                   <Input
                     name="name"
-                    label="Name *"
+                    label="Name"
                     variant="bordered"
                     defaultValue={prevData?.name}
                     required
+                    isRequired
                   />
                   <Input
                     name="price"

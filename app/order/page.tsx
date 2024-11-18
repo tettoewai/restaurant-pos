@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
 import { Card, Chip, Divider, ScrollShadow, Spacer } from "@nextui-org/react";
 import Image from "next/image";
 import Link from "next/link";

@@ -5,6 +5,7 @@ import {
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
+import { dateToString } from "@/function";
 import { Card, Input } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";
 import { nanoid } from "nanoid";
@@ -78,13 +79,7 @@ function PaidPrint({
       </div>
       <div className="flex justify-between mb-2">
         <span>Date:</span>
-        <span>
-          {date.getDate() +
-            "-" +
-            (date.getMonth() + 1) +
-            "-" +
-            date.getFullYear()}
-        </span>
+        <span>{dateToString({ date: date, type: "DMY" })}</span>
       </div>
 
       <table className="w-full text-left mb-4">

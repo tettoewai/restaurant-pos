@@ -87,30 +87,34 @@ export default function UpdateLocationDialog({
                 <>
                   <Input
                     name="name"
-                    label="Name *"
+                    label="Name"
                     variant="bordered"
                     required
+                    isRequired
                     defaultValue={prevData?.name}
                   />
                   <Input
                     name="street"
-                    label="Street *"
+                    label="Street"
                     variant="bordered"
                     defaultValue={prevData?.street}
                     required
+                    isRequired
                   />
                   <Input
                     name="township"
-                    label="Township *"
+                    label="Township"
                     variant="bordered"
                     defaultValue={prevData?.township}
                     required
+                    isRequired
                   />
                   <Input
                     name="city"
-                    label="City *"
+                    label="City"
                     variant="bordered"
                     required
+                    isRequired
                     defaultValue={prevData?.city}
                   />
                   <LocationButton prevData={prevData} />

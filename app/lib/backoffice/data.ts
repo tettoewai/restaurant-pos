@@ -157,7 +157,6 @@ export async function fetchMenuCategoryMenu() {
 
 export async function fetchMenu() {
   noStore();
-  // await new Promise((resolve) => setTimeout(resolve, 5000));
   try {
     const menuCategoryMenus = await fetchMenuCategoryMenu();
     const menuCategoryMenuIds = menuCategoryMenus.map((item) => item.menuId);
@@ -421,6 +420,7 @@ export async function fetchOrderWithTableId(tableId: number) {
 }
 
 export async function fetchNotification() {
+  noStore();
   try {
     const table = await fetchTable();
     const notification = await prisma.notification.findMany({
@@ -435,6 +435,7 @@ export async function fetchNotification() {
 }
 
 export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
+  noStore();
   const table = await fetchTable();
   const tableId = table.map((item) => item.id);
   if (startDate.getTime() === endDate.getTime()) {
@@ -467,6 +468,61 @@ export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
     return orderCount;
   }
 }
+
+export const getPromotionAndMenu = async () => {
+  noStore();
+  try {
+    const menuId = (await fetchMenu()).map((item) => item.id);
+    const promotionMenu = await prisma.promotionMenu.findMany({
+      where: { menuId: { in: menuId } },
+    });
+    const promotionId = promotionMenu.map((item) => item.promotionId);
+    const promotion = await prisma.promotion.findMany({
+      where: { id: { in: promotionId }, isArchived: false },
+    });
+    return { promotion, promotionMenu };
+  } catch (error) {
+    console.error("Database error for promotion", error);
+    throw new Error("Failed to fetch promotion data.");
+  }
+};
+
+export const fetchPromotionWithId = async (id: number) => {
+  noStore();
+  try {
+    return await prisma.promotion.findFirst({ where: { id } });
+  } catch (error) {
+    console.error("Database error for promotion", error);
+    throw new Error("Failed to fetch promotion with id.");
+  }
+};
+
+export const fetchPromotionMenuWithPromoId = async (id: number) => {
+  noStore();
+  try {
+    return await prisma.promotionMenu.findMany({ where: { promotionId: id } });
+  } catch (error) {
+    console.error("Database error for promotionMenu", error);
+    throw new Error("Failed to fetch promotionMenu with id.");
+  }
+};
+
+export const getSalesData = async (year: number) => {
+  noStore();
+  const startDate = new Date(year, 0, 1); // January 1st of the given year
+  const endDate = new Date(year, 11, 31, 23, 59, 59); // December 31st of the given year
+  const sales = await prisma.order.findMany({
+    where: {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+      isArchived: false,
+    },
+  });
+
+  return sales;
+};
 
 export async function createDefaultData({ email, name }: Props) {
   try {
@@ -529,19 +585,3 @@ export async function createDefaultData({ email, name }: Props) {
     throw new Error("Failed to create user data.");
   }
 }
-
-export const getSalesData = async (year: number) => {
-  const startDate = new Date(year, 0, 1); // January 1st of the given year
-  const endDate = new Date(year, 11, 31, 23, 59, 59); // December 31st of the given year
-  const sales = await prisma.order.findMany({
-    where: {
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-      isArchived: false,
-    },
-  });
-
-  return sales;
-};

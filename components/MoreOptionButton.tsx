@@ -1,5 +1,6 @@
 "use client";
 import {
+  handleActivePromotion,
   handleDisableLocationMenu,
   handleDisableLocationMenuCat,
 } from "@/app/lib/backoffice/action";
@@ -19,6 +20,7 @@ import {
   Location,
   Menu,
   MenuCategory,
+  Promotion,
   Table,
 } from "@prisma/client";
 import { useEffect, useState } from "react";
@@ -41,6 +43,9 @@ import QrcodePrint from "./QrcodePrint";
 import { TbLocationCancel } from "react-icons/tb";
 import { OrderData } from "@/general";
 import CancelOrderDialog from "./CancelOrderDialog";
+import UpdatePromotionDialog from "./UpdatePromotionDialog";
+import DeletePromotionDailog from "./DeletePromotionDialog";
+import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -52,7 +57,8 @@ interface Props {
     | "table"
     | "location"
     | "activeOrder"
-    | "order";
+    | "order"
+    | "promotion";
   categories?: MenuCategory[];
   menu?: Menu[];
   addonCategory?: AddonCategory[];
@@ -61,6 +67,7 @@ interface Props {
   disableLocationMenuCat?: DisabledLocationMenuCategory[];
   disableLocationMenu?: DisabledLocationMenu[];
   orderData?: OrderData;
+  promotion?: Promotion;
   tableId?: number;
 }
 
@@ -76,6 +83,7 @@ export default function MoreOptionButton({
   disableLocationMenu,
   orderData,
   tableId,
+  promotion,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -99,6 +107,9 @@ export default function MoreOptionButton({
       ? localStorage.getItem("isUpdateLocation")
       : null;
   useEffect(() => {
+    if (promotion) {
+      setAvailable(promotion.is_active);
+    }
     const getDisableLocationMenu = async () => {
       if (itemType === "menu") {
         const isExist =
@@ -127,6 +138,7 @@ export default function MoreOptionButton({
     disableLocationMenuCat,
     id,
     itemType,
+    promotion,
   ]);
   const handleSwitchChange = async (e: boolean) => {
     if (itemType === "menu") {
@@ -144,6 +156,15 @@ export default function MoreOptionButton({
       });
       if (isSuccess) {
         setAvailableMenuCat(e);
+      }
+    }
+    if (itemType === "promotion") {
+      const { isSuccess, message } = await handleActivePromotion({ e, id });
+      if (isSuccess) {
+        toast.success(message);
+        setAvailable(e);
+      } else {
+        toast.error(message);
       }
     }
   };
@@ -207,6 +228,22 @@ export default function MoreOptionButton({
               textValue="printQrdcode"
             >
               <QrcodePrint table={table} />
+            </DropdownItem>
+          ) : itemType === "promotion" ? (
+            <DropdownItem
+              closeOnSelect={false}
+              key="available"
+              endContent={
+                <Switch
+                  isSelected={available}
+                  onValueChange={handleSwitchChange}
+                  className="m-0"
+                  size="sm"
+                  aria-label="Available"
+                />
+              }
+            >
+              Active
             </DropdownItem>
           ) : (
             <DropdownItem className="hidden">None</DropdownItem>
@@ -329,6 +366,22 @@ export default function MoreOptionButton({
           onOpenChange={onDeleteOpenChange}
           isOpen={isDeleteOpen}
         />
+      ) : itemType === "promotion" ? (
+        <>
+          <UpdatePromotionDialog
+            id={id}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+            menus={menu}
+          />
+          <DeletePromotionDailog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+          />
+        </>
       ) : null}
     </>
   );

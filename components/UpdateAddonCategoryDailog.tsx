@@ -114,9 +114,10 @@ export default function UpdateAddonCategoryDialog({
                 <>
                   <Input
                     name="name"
-                    label="Name *"
+                    label="Name"
                     variant="bordered"
                     defaultValue={prevData?.name}
+                    isRequired
                     required
                   />
                   <MultipleSelector

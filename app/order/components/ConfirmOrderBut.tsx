@@ -1,7 +1,7 @@
 "use client";
 import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
-import { formatCurrency } from "@/components/fromatCurrency";
+import { formatCurrency } from "@/function";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Spinner } from "@nextui-org/react";
 import { redirect, useRouter } from "next/navigation";

@@ -63,7 +63,7 @@ export function ModeButton() {
     <>
       {resolvedTheme === "dark" ? (
         <Tooltip
-          placement="bottom"
+          placement="bottom-end"
           content="Dark mode"
           className="text-primary"
           showArrow={true}
@@ -78,7 +78,7 @@ export function ModeButton() {
         </Tooltip>
       ) : (
         <Tooltip
-          placement="bottom"
+          placement="bottom-end"
           content="Light mode"
           className="text-primary"
           showArrow={true}

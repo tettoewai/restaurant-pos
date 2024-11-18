@@ -77,31 +77,35 @@ export default function UpdateCompanyDialog() {
                 <>
                   <Input
                     name="name"
-                    label="Name *"
+                    label="Name"
                     variant="bordered"
                     defaultValue={prevData?.name}
                     required
+                    isRequired
                   />
                   <Input
                     name="street"
-                    label="Street *"
+                    label="Street"
                     variant="bordered"
                     defaultValue={prevData?.street}
                     required
+                    isRequired
                   />
                   <Input
                     name="township"
-                    label="Township *"
+                    label="Township"
                     variant="bordered"
                     defaultValue={prevData?.township}
                     required
+                    isRequired
                   />
                   <Input
                     name="city"
-                    label="City *"
+                    label="City"
                     variant="bordered"
                     defaultValue={prevData?.city}
                     required
+                    isRequired
                   />
                 </>
               )}
