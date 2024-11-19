@@ -3,7 +3,7 @@
 import { Tooltip } from "@nextui-org/react";
 import clsx from "clsx";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import { BiSolidCategoryAlt, BiSolidFoodMenu } from "react-icons/bi";
 import { IoFastFood } from "react-icons/io5";
@@ -18,6 +18,7 @@ import { ImBullhorn } from "react-icons/im";
 import { TbCategoryPlus } from "react-icons/tb";
 import { IoSettings } from "react-icons/io5";
 import Backdrop from "./BackDrop";
+import ShortcutButton from "./ShortCut";
 
 interface Props {
   sideBarOpen: boolean;
@@ -81,6 +82,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   ];
 
   const pathName = usePathname();
+  const router = useRouter();
 
   return (
     <>
@@ -136,14 +138,29 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                     >
                       {item.icon}
                     </div>
-                    <p
-                      className={clsx("transition-all", {
-                        flex: sideBarOpen,
-                        hidden: !sideBarOpen,
-                      })}
+                    <div
+                      className={clsx(
+                        "transition-all flex justify-between w-full items-center",
+                        {
+                          flex: sideBarOpen,
+                          hidden: !sideBarOpen,
+                        }
+                      )}
                     >
-                      {item.name}
-                    </p>
+                      <p>{item.name}</p>
+                      <div className="">
+                        <ShortcutButton
+                          onClick={() => {
+                            router.push(item.route);
+                            setSideBarOpen(false);
+                          }}
+                          keys={["command"]}
+                          letter={
+                            item.name === "Setting" ? "I" : String(index + 1)
+                          }
+                        />
+                      </div>
+                    </div>
                   </Link>
                 </Tooltip>
               </li>

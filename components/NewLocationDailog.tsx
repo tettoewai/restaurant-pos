@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { toast } from "react-toastify";
 import LocationButton from "./LocationButton";
+import ShortcutButton from "./ShortCut";
 
 export default function NewLocationDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -50,7 +51,7 @@ export default function NewLocationDialog() {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Location
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Location
       </Button>
       <Modal
         isOpen={isOpen}

@@ -15,6 +15,7 @@ import { AddonCategory } from "@prisma/client";
 import { useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
 import { toast } from "react-toastify";
+import ShortcutButton from "./ShortCut";
 
 interface Props {
   addonCategory: AddonCategory[];
@@ -65,7 +66,7 @@ export default function NewAddonDialog({ addonCategory }: Props) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Addon
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Addon
       </Button>
       <Modal
         isOpen={isOpen}

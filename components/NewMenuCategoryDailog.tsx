@@ -3,6 +3,7 @@ import { createMenuCategory } from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,
+  Kbd,
   Modal,
   ModalBody,
   ModalContent,
@@ -11,8 +12,9 @@ import {
   Spinner,
   useDisclosure,
 } from "@nextui-org/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import ShortcutButton from "./ShortCut";
 
 export default function NewMenuCategoryDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -33,13 +35,30 @@ export default function NewMenuCategoryDialog() {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === "n") {
+        event.preventDefault();
+        onOpen();
+      }
+      if (event.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+  
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onOpen, onClose]);
+  
+
   return (
     <div className="relative">
+      
       <Button
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Menu Category
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Menu Category
       </Button>
       <Modal
         isOpen={isOpen}

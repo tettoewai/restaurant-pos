@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
 import { Spinner } from "@nextui-org/spinner";
+import ShortcutButton from "./ShortCut";
 
 interface Props {
   menuCategory: MenuCategory[];
@@ -70,7 +71,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Menu
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Menu
       </Button>
       <Modal
         isOpen={isOpen}

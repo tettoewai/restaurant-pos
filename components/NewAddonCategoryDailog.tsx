@@ -20,6 +20,7 @@ import MultipleSelector from "./MultipleSelector";
 import { useRef, useState } from "react";
 import { Menu } from "@prisma/client";
 import { BsStar } from "react-icons/bs";
+import ShortcutButton from "./ShortCut";
 
 interface Props {
   menus: Menu[];
@@ -68,7 +69,7 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Addon Category
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Addon Category
       </Button>
       <Modal
         isOpen={isOpen}

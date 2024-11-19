@@ -25,6 +25,7 @@ import { BiPlusCircle } from "react-icons/bi";
 import { RxCross2 } from "react-icons/rx";
 import { toast } from "react-toastify";
 import MultipleSelector from "./MultipleSelector";
+import ShortcutButton from "./ShortCut";
 
 function NewPromotionDialog({ menus }: { menus: Menu[] }) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -129,7 +130,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Promotion
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Promotion
       </Button>
       <Modal
         isOpen={isOpen}

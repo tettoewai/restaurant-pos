@@ -17,6 +17,7 @@ import {
 } from "@nextui-org/react";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import ShortcutButton from "./ShortCut";
 
 export default function NewTableDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -42,7 +43,7 @@ export default function NewTableDialog() {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        New Table
+        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Table
       </Button>
       <Modal
         isOpen={isOpen}
