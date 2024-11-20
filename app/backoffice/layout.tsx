@@ -31,15 +31,20 @@ const Layout = ({ children }: Props) => {
           <TopBar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
         </div>
 
-        <div className="flex h-[88%]">
-          <Sidebar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
-          <ScrollShadow
-            hideScrollBar
-            size={20}
-            className="px-2 pb-3 w-full max-h-full vertical"
-          >
-            {children}
-          </ScrollShadow>
+        <div className="w-full h-[90%] flex justify-center">
+          <div className="flex h-full w-full lg:max-w-screen-2xl">
+            <Sidebar
+              sideBarOpen={sideBarOpen}
+              setSideBarOpen={setSideBarOpen}
+            />
+            <ScrollShadow
+              hideScrollBar
+              size={20}
+              className="px-2 pb-3 w-full max-h-full vertical"
+            >
+              {children}
+            </ScrollShadow>
+          </div>
         </div>
         <ToastContainer theme={resolvedTheme} position="bottom-right" />
       </div>

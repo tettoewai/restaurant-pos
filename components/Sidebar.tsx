@@ -89,10 +89,10 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
         className={clsx(
-          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll scrollbar-hide",
+          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll scrollbar-hide xl:w-52",
           {
             "w-52": sideBarOpen,
-            "w-0 lg:w-16": !sideBarOpen,
+            "w-0 lg:w-16 xl:w-52": !sideBarOpen,
           }
         )}
       >
@@ -143,12 +143,12 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                         "transition-all flex justify-between w-full items-center",
                         {
                           flex: sideBarOpen,
-                          hidden: !sideBarOpen,
+                          "hidden xl:flex": !sideBarOpen,
                         }
                       )}
                     >
                       <p>{item.name}</p>
-                      <div className="">
+                      <div>
                         <ShortcutButton
                           onClick={() => {
                             router.push(item.route);

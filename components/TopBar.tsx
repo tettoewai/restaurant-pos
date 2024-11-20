@@ -36,7 +36,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
           >
             <button
               type="button"
-              className="hidden lg:flex size-9 cursor-pointer items-center text-primary"
+              className="hidden lg:flex size-9 cursor-pointer items-center text-primary xl:hidden"
               onClick={() => {
                 setSideBarOpen(!sideBarOpen);
               }}

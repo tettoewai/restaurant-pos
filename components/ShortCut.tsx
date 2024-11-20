@@ -9,15 +9,12 @@ interface ShortcutButtonProps {
   letter: string;
 }
 
-const ShortcutButton: React.FC<ShortcutButtonProps> = ({
-  keys,
-  onClick,
-  letter,
-}) => {
+const ShortcutButton = ({ keys, onClick, letter }: ShortcutButtonProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const ctrlPressed = keys.includes("command") && event.ctrlKey;
-      const letterPressed = letter.toLowerCase() === event.key.toLocaleLowerCase()
+      const letterPressed =
+        event.key && letter.toLowerCase() === event.key.toLocaleLowerCase();
       if (ctrlPressed && letterPressed) {
         event.preventDefault(); // Prevent Chrome's default behavior
         onClick();
@@ -29,9 +26,14 @@ const ShortcutButton: React.FC<ShortcutButtonProps> = ({
   }, [keys, onClick]);
 
   return (
-    <Kbd keys={keys} className="bg-transparent border-0">
-        {letter}
-      </Kbd>
+    <Kbd
+      keys={keys}
+      classNames={{
+        base: "bg-transparent border-0 shadow-none hidden md:flex",
+      }}
+    >
+      {letter}
+    </Kbd>
   );
 };
 
