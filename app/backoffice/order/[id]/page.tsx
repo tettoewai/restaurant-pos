@@ -7,6 +7,7 @@ import {
   fetchMenuWithIds,
   fetchOrderWithTableId,
 } from "@/app/lib/backoffice/data";
+import CancelOrderBODialog from "@/components/CancelOrderBODialog";
 import PaidAndPrintDialog from "@/components/PaidAndPrintDialog";
 import QuantityDialog from "@/components/QuantityDialog";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
@@ -74,7 +75,16 @@ export default function App({ params }: { params: { id: string } }) {
 
   const [selected, setSelected] = useState("pending");
 
+  const [itemId, setItemId] = useState<string>();
+
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
+  const {
+    isOpen: cancelIsOpen,
+    onOpen: cancelOnOpen,
+    onOpenChange: cancelOnOpenChange,
+    onClose: cancelOnClose,
+  } = useDisclosure();
 
   const menuIds = data?.map((item) => item.menuId) as number[];
   const { data: menus } = useSWR(menuIds.length > 0 ? [menuIds] : null, () =>
@@ -144,6 +154,8 @@ export default function App({ params }: { params: { id: string } }) {
       .filter((item) => Number(item.quantity) > 0);
   }, [paid, orderData]);
   const handleStatusChange = async (status: string, itemId: string) => {
+    if (status === "cancel") cancelOnOpen();
+
     const { message, isSuccess } = await updateOrderStatus({
       orderStatus: status,
       itemId,
@@ -362,6 +374,7 @@ export default function App({ params }: { params: { id: string } }) {
                                 aria-label="Static Actions"
                                 onAction={async (e) => {
                                   const status = String(e);
+                                  setItemId(item.itemId);
                                   if (status === "paid") {
                                     if (item.status !== "COMPLETE") return;
                                     if (item.quantity && item.quantity > 1) {
@@ -386,6 +399,15 @@ export default function App({ params }: { params: { id: string } }) {
                                 <DropdownItem key="complete">
                                   Complete
                                 </DropdownItem>
+                                {selected === "pending" ? (
+                                  <DropdownItem key="cancel">
+                                    Cancel
+                                  </DropdownItem>
+                                ) : (
+                                  <DropdownItem className="hidden">
+                                    None
+                                  </DropdownItem>
+                                )}
                                 {selected === "complete" ? (
                                   <DropdownItem key="paid">Paid</DropdownItem>
                                 ) : (
@@ -416,6 +438,16 @@ export default function App({ params }: { params: { id: string } }) {
         onClose={onClose}
         onOpenChange={onOpenChange}
       />
+
+      {itemId ? (
+        <CancelOrderBODialog
+          itemId={itemId}
+          isOpen={cancelIsOpen}
+          onOpen={cancelOnOpen}
+          onClose={cancelOnClose}
+          onOpenChange={cancelOnOpenChange}
+        />
+      ) : null}
     </div>
   );
 }

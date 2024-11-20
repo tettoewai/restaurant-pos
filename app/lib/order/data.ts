@@ -161,3 +161,14 @@ export async function fetchCompanyFromOrder(tableId: number) {
     throw new Error("Failed to fetch company data.");
   }
 }
+
+export async function fetchCanceledOrders(itemId: string[]) {
+  try {
+    return await prisma.canceledOrder.findMany({
+      where: { itemId: { in: itemId } },
+    });
+  } catch (error) {
+    console.error("Error in fetchCanceledOrder:", error);
+    throw new Error("Failed to fetch canceled data.");
+  }
+}

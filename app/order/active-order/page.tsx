@@ -4,17 +4,19 @@ import {
   fetchAddonWithIds,
   fetchMenuWithIds,
 } from "@/app/lib/backoffice/data";
-import { fetchOrder } from "@/app/lib/order/data";
+import { fetchCanceledOrders, fetchOrder } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
-import { formatCurrency } from "@/function";
 import MoreOptionButton from "@/components/MoreOptionButton";
+import { formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card, Link } from "@nextui-org/react";
 import { Order } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { BsCartX } from "react-icons/bs";
+import { IoWarning } from "react-icons/io5";
 import useSWR from "swr";
 
 function ActiveOrder() {
@@ -30,7 +32,36 @@ function ActiveOrder() {
     revalidateOnReconnect: true,
   });
 
-  const orderData = orders && orders?.length > 0 ? formatOrder(orders) : [];
+  const canceledOrder = orders
+    ? orders
+        .filter((item) => item.status === "CANCELED")
+        .map((item) => item.itemId)
+    : [""];
+
+  const { data: canceledOrderData } = useSWR(
+    canceledOrder ? [canceledOrder] : null,
+    () => fetchCanceledOrders(canceledOrder)
+  );
+
+  const filteredOrders = orders?.filter((item) => {
+    const validCanceledOrder = canceledOrderData?.find(
+      (order) => order.itemId === item.itemId
+    );
+    if (
+      canceledOrderData &&
+      validCanceledOrder &&
+      validCanceledOrder.userKnow
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  });
+
+  const orderData =
+    filteredOrders && filteredOrders?.length > 0
+      ? formatOrder(filteredOrders)
+      : [];
   const menuIds = orderData?.map((item) => item.menuId) as number[];
   const itemAddon = orderData?.map((item) =>
     item.addons ? JSON.parse(item.addons) : []
@@ -69,6 +100,11 @@ function ActiveOrder() {
       ? fetchAddonCategoryWithIds(addonCategoryIds)
       : Promise.resolve([])
   );
+
+  const [unKnownCanceledItemId, setUnKnownCanceledItemId] = useState<
+    String | undefined
+  >();
+
   const totalPrice = addons && getTotalOrderPrice({ orderData, menus, addons });
   return (
     <div>
@@ -90,6 +126,9 @@ function ActiveOrder() {
                 : [];
               const validAddon = addons?.filter((addon) =>
                 addonIds.includes(addon.id)
+              );
+              const unseenCanceledOrder = canceledOrderData?.find(
+                (order) => order.itemId === item.itemId
               );
               if (!validMenu) return null;
               return (
@@ -147,16 +186,27 @@ function ActiveOrder() {
                             );
                           })}
                         </div>
-                        <div className="text-sm font-thin mt-1 flex justify-between ">
+                        <div className="text-sm font-thin mt-1 flex justify-between items-center">
                           <span>Status :</span>
                           <span
-                            className={clsx({
-                              "text-red-500": item.status === "PENDING",
-                              "text-green-500": item.status === "COMPLETE",
-                              "text-orange-500": item.status === "COOKING",
-                            })}
+                            className={clsx(
+                              "font-bold flex items-center justify-center",
+                              {
+                                "text-red-500": item.status === "PENDING",
+                                "text-green-500": item.status === "COMPLETE",
+                                "text-orange-500": item.status === "COOKING",
+                                "text-gray-500": item.status === "CANCELED",
+                              }
+                            )}
                           >
                             {item.status}
+                            {unseenCanceledOrder &&
+                            !unseenCanceledOrder.userKnow ? (
+                              <IoWarning
+                                className="size-7 text-red-500 ml-1 cursor-pointer"
+                                onClick={() => console.log(item.itemId)}
+                              />
+                            ) : null}
                           </span>
                         </div>
                       </div>

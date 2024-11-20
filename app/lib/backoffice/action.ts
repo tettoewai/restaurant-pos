@@ -719,7 +719,14 @@ export async function updateOrderStatus({
         ? ORDERSTATUS.COOKING
         : orderStatus === "complete"
         ? ORDERSTATUS.COMPLETE
-        : ORDERSTATUS.PAID;
+        : orderStatus === "paid"
+        ? ORDERSTATUS.PAID
+        : undefined;
+    if (!status)
+      return {
+        message: "Something went wrong while update status",
+        isSuccess: false,
+      };
     await prisma.order.updateMany({
       where: { id: { in: orderIds } },
       data: { status },
@@ -1072,6 +1079,32 @@ export async function handleActivePromotion({
     console.log(error);
     return {
       message: "Something went wrong while handlieng promotion status",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function cancelOrder(formData: FormData) {
+  const itemId = formData.get("itemId") as string;
+  const reason = formData.get("cancelReason") as string;
+  const isValid = itemId && reason;
+  if (!isValid)
+    return {
+      message: "Missing required field",
+      isSuccess: false,
+    };
+  try {
+    await prisma.canceledOrder.create({ data: { itemId, reason } });
+    await prisma.order.updateMany({
+      where: { itemId },
+      data: { status: ORDERSTATUS.CANCELED },
+    });
+    revalidatePath(`/backoffice/order`);
+    return { message: "Canceled order successfully.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while canceling order.",
       isSuccess: false,
     };
   }

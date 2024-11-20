@@ -149,23 +149,23 @@ model User {
 }
 
 model Order {
-  id           Int         @id @default(autoincrement())
-  menuId       Int
-  addonId      Int?
-  itemId       String
-  quantity     Int
-  paidQuantity Int         @default(0)
-  orderSeq     String
-  status       ORDERSTATUS
-  totalPrice   Int
-  tableId      Int
-  instruction  String?
-  isArchived   Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  addon        Addon?      @relation(fields: [addonId], references: [id])
-  menu         Menu        @relation(fields: [menuId], references: [id])
-  table        Table       @relation(fields: [tableId], references: [id])
+  id            Int             @id @default(autoincrement())
+  menuId        Int
+  addonId       Int?
+  itemId        String
+  quantity      Int
+  paidQuantity  Int             @default(0)
+  orderSeq      String
+  status        ORDERSTATUS
+  totalPrice    Int
+  tableId       Int
+  instruction   String?
+  isArchived    Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  addon         Addon?          @relation(fields: [addonId], references: [id])
+  menu          Menu            @relation(fields: [menuId], references: [id])
+  table         Table           @relation(fields: [tableId], references: [id])
 }
 
 enum ORDERSTATUS {
@@ -173,6 +173,7 @@ enum ORDERSTATUS {
   COOKING
   COMPLETE
   PAID
+  CANCELED
 }
 
 model Notification {
@@ -219,11 +220,11 @@ model Promotion {
   discount_value Int
   start_date     DateTime
   end_date       DateTime
-  is_active      Boolean             @default(true)
+  is_active      Boolean         @default(true)
   conditions     Json?
-  isArchived    Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  isArchived     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   PromotionMenu  PromotionMenu[]
 }
 
@@ -239,4 +240,13 @@ model PromotionMenu {
   quantity_requried Int
   promotion         Promotion @relation(fields: [promotionId], references: [id])
   menu              Menu      @relation(fields: [menuId], references: [id])
+}
+
+model CanceledOrder {
+  id        Int      @id @default(autoincrement())
+  itemId    String
+  reason    String
+  userKnow  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
