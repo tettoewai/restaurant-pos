@@ -89,16 +89,16 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
         className={clsx(
-          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll scrollbar-hide xl:w-52",
+          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll scrollbar-hide 2xl:w-52",
           {
             "w-52": sideBarOpen,
-            "w-0 lg:w-16 xl:w-52": !sideBarOpen,
+            "w-0 lg:w-16 2xl:w-52": !sideBarOpen,
           }
         )}
       >
         <ul>
           {sideBarItem.map((item, index) => {
-            const isActive = pathName === item.route;
+            const isActive = pathName.startsWith(item.route);
             return (
               <li
                 key={index}
@@ -143,7 +143,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                         "transition-all flex justify-between w-full items-center",
                         {
                           flex: sideBarOpen,
-                          "hidden xl:flex": !sideBarOpen,
+                          "hidden 2xl:flex": !sideBarOpen,
                         }
                       )}
                     >

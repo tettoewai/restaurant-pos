@@ -33,6 +33,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
   const [creating, setCreating] = useState(false);
   const [enableDay, setEnableDay] = useState(false);
   const [enabelTime, setTimeEnable] = useState(false);
+  const [promotionType, setPromotionType] = useState<"menu" | "total">("menu");
 
   const [timePeriod, setTimePeriod] = useState<{
     startTime?: TimeValue;
@@ -130,7 +131,12 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Promotion
+        <ShortcutButton
+          onClick={() => onOpen()}
+          keys={["command"]}
+          letter="O"
+        />
+        New Promotion
       </Button>
       <Modal
         isOpen={isOpen}
@@ -164,6 +170,8 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                     required
                     isRequired
                   />
+                </div>
+                <div className="space-y-1 w-1/2 p-1">
                   <Input
                     name="discount_amount"
                     label="Discount amount"
@@ -195,119 +203,157 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                     endName="end_date"
                   />
                 </div>
-                <div className="space-y-1 w-1/2 p-1">
-                  {menuQty.map((item: any) => (
-                    <div
-                      className="flex w-full items-center space-x-1"
-                      key={item.id}
-                    >
-                      <Select
-                        label="Select Menu"
-                        variant="bordered"
-                        className="w-3/4"
-                        required
-                        isRequired
-                        selectedKeys={item.menuId ? String(item.menuId) : ""}
-                        onChange={(e) => {
-                          const alreadyExist = Boolean(
-                            menuQty.find(
-                              (menuqty) =>
-                                menuqty.menuId === Number(e.target.value)
-                            )
-                          );
-                          const updatedMenuQty = menuQty.map((menuqty) => {
-                            if (menuqty.id === item.id && !alreadyExist) {
-                              return {
-                                ...menuqty,
-                                menuId: Number(e.target.value),
-                              };
-                            }
-                            return menuqty;
-                          });
-                          setMenuQty(updatedMenuQty);
-                        }}
-                      >
-                        {menus.map((menu) => {
-                          if (
-                            menuQty.find(
-                              (menuQty) => menuQty.menuId === menu.id
-                            )
-                          )
-                            return (
-                              <SelectItem
-                                className="hidden"
-                                key={String(menu.id)}
-                                value={String(menu.id)}
-                              >
-                                {menu.name}
-                              </SelectItem>
-                            );
-                          return (
-                            <SelectItem
-                              key={String(menu.id)}
-                              value={String(menu.id)}
+              </div>
+              <div>
+                <Select
+                  label="Promotion type"
+                  variant="bordered"
+                  placeholder="Select type of promotion"
+                  className="w-40 mb-2"
+                  selectedKeys={promotionType === "menu" ? "1" : "2"}
+                  onChange={(e) => {
+                    const value = e.target.value === "1" ? "menu" : "total";
+                    setPromotionType(value);
+                  }}
+                >
+                  <SelectItem key="1">Menu</SelectItem>
+                  <SelectItem key="2">Total price</SelectItem>
+                </Select>
+                <div>
+                  {promotionType === "menu" ? (
+                    <>
+                      <div className="space-y-1 w-full grid grid-cols-2">
+                        {menuQty.map((item: any) => (
+                          <div className="flex items-center" key={item.id}>
+                            <Select
+                              label="Select Menu"
+                              variant="bordered"
+                              className="w-3/4"
+                              required
+                              isRequired
+                              selectedKeys={
+                                item.menuId ? String(item.menuId) : ""
+                              }
+                              onChange={(e) => {
+                                const alreadyExist = Boolean(
+                                  menuQty.find(
+                                    (menuqty) =>
+                                      menuqty.menuId === Number(e.target.value)
+                                  )
+                                );
+                                const updatedMenuQty = menuQty.map(
+                                  (menuqty) => {
+                                    if (
+                                      menuqty.id === item.id &&
+                                      !alreadyExist
+                                    ) {
+                                      return {
+                                        ...menuqty,
+                                        menuId: Number(e.target.value),
+                                      };
+                                    }
+                                    return menuqty;
+                                  }
+                                );
+                                setMenuQty(updatedMenuQty);
+                              }}
                             >
-                              {menu.name}
-                            </SelectItem>
-                          );
-                        })}
-                      </Select>
-                      <Input
-                        type="number"
-                        variant="bordered"
-                        label="Qty"
-                        className="w-1/4"
-                        min={1}
-                        max={100}
-                        required
-                        isRequired
-                        value={String(item.quantity)}
-                        onChange={(e) => {
-                          const updatedMenuQty = menuQty.map((menuqty) => {
-                            if (menuqty.id !== item.id) {
-                              return menuqty;
-                            } else {
-                              return {
-                                ...menuqty,
-                                quantity: Number(e.target.value),
-                              };
-                            }
-                          });
-                          setMenuQty(updatedMenuQty);
-                        }}
-                      />
-                      {menuQty.length > 1 ? (
+                              {menus.map((menu) => {
+                                if (
+                                  menuQty.find(
+                                    (menuQty) => menuQty.menuId === menu.id
+                                  )
+                                )
+                                  return (
+                                    <SelectItem
+                                      className="hidden"
+                                      key={String(menu.id)}
+                                      value={String(menu.id)}
+                                    >
+                                      {menu.name}
+                                    </SelectItem>
+                                  );
+                                return (
+                                  <SelectItem
+                                    key={String(menu.id)}
+                                    value={String(menu.id)}
+                                  >
+                                    {menu.name}
+                                  </SelectItem>
+                                );
+                              })}
+                            </Select>
+                            <Input
+                              type="number"
+                              variant="bordered"
+                              label="Qty"
+                              className="w-1/4"
+                              min={1}
+                              max={100}
+                              required
+                              isRequired
+                              value={String(item.quantity)}
+                              onChange={(e) => {
+                                const updatedMenuQty = menuQty.map(
+                                  (menuqty) => {
+                                    if (menuqty.id !== item.id) {
+                                      return menuqty;
+                                    } else {
+                                      return {
+                                        ...menuqty,
+                                        quantity: Number(e.target.value),
+                                      };
+                                    }
+                                  }
+                                );
+                                setMenuQty(updatedMenuQty);
+                              }}
+                            />
+                            {menuQty.length > 1 ? (
+                              <Button
+                                isIconOnly
+                                variant="light"
+                                className="size-16"
+                                onClick={() => {
+                                  setMenuQty(
+                                    menuQty.filter((qty) => qty.id !== item.id)
+                                  );
+                                }}
+                              >
+                                <RxCross2 className="size-5 text-primary" />
+                              </Button>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="w-full flex justify-center items-center mt-2">
                         <Button
-                          isIconOnly
                           variant="light"
-                          className="size-16"
                           onClick={() => {
-                            setMenuQty(
-                              menuQty.filter((qty) => qty.id !== item.id)
-                            );
+                            const newMenuQty = {
+                              id: menuQty[menuQty.length - 1].id + 1,
+                              menuId: 0,
+                              quantity: 1,
+                            };
+                            setMenuQty([...menuQty, newMenuQty]);
                           }}
+                          isIconOnly
                         >
-                          <RxCross2 className="size-5 text-primary" />
+                          <BiPlusCircle className="size-7 text-primary" />
                         </Button>
-                      ) : null}
-                    </div>
-                  ))}
-                  <div className="w-full flex justify-center items-center mt-2">
-                    <Button
-                      variant="light"
-                      onClick={() => {
-                        const newMenuQty = {
-                          id: menuQty[menuQty.length - 1].id + 1,
-                          menuId: 0,
-                          quantity: 1,
-                        };
-                        setMenuQty([...menuQty, newMenuQty]);
-                      }}
-                      isIconOnly
-                    >
-                      <BiPlusCircle className="size-7 text-primary" />
-                    </Button>
-                  </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Input
+                      name="totalPrice"
+                      label="Tatal price"
+                      variant="bordered"
+                      required
+                      isRequired
+                      endContent="Ks"
+                      className="w-1/2"
+                    />
+                  )}
                 </div>
               </div>
               <div>
@@ -322,10 +368,10 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                     <div className="flex w-full justify-between mb-1">
                       <div className="w-11/12">
                         <Select
-                          label="Favorite Animal"
+                          label="Promotion days"
                           variant="bordered"
                           selectionMode="multiple"
-                          placeholder="Select an animal"
+                          placeholder="Select days"
                           selectedKeys={selectedDay}
                           onChange={handleSelectionChange}
                           isDisabled={!enableDay}
