@@ -305,3 +305,21 @@ export async function changeTable({
     };
   }
 }
+
+export async function setKnowCanceledOrder(id: number) {
+  if (!id) return { message: "Missing required field.", isSuccess: false };
+  try {
+    await prisma.canceledOrder.update({
+      where: { id },
+      data: { userKnow: true },
+    });
+    revalidatePath("/order/active-order");
+    return { message: "I know.", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while seeing canceled order!",
+      isSuccess: false,
+    };
+  }
+}

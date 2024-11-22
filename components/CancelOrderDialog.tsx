@@ -6,7 +6,10 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
 } from "@nextui-org/react";
+import { useState } from "react";
+import { mutate } from "swr";
 
 interface Props {
   id?: string;
@@ -21,18 +24,23 @@ export default function CancelOrderDialog({
   onOpenChange,
   onClose,
 }: Props) {
+  const [isLoading, setIsLoading] = useState(false);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!id) return;
+    setIsLoading(true);
     await candelOrder(id);
+    setIsLoading(false);
   };
   return (
     <div className="relative">
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
+        isDismissable={false}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
@@ -52,8 +60,9 @@ export default function CancelOrderDialog({
               <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isLoading}
               >
-                Cancel order
+                {isLoading ? <Spinner color="white" /> : "Cancel order"}
               </Button>
             </ModalFooter>
           </form>

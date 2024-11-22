@@ -43,6 +43,7 @@ export default function CancelOrderBODialog({
   return (
     <div className="relative">
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"

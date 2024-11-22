@@ -201,12 +201,14 @@ export default function UpdatePromotionDialog({
   return (
     <div className="relative">
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
         size="3xl"
         onClose={handleClose}
+        isDismissable={false}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

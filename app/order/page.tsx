@@ -26,7 +26,7 @@ const OrderPage = async ({
   if (!tableId) return null;
   const table = await fetchTableWithId(tableId);
   const isValid = table && !table.isArchived;
-  if (!isValid) return <div>There is no table. Please rescan qr code.</div>;
+  if (!isValid) return null;
   const [company, menuCategory, menuCategoryMenu, menuOrder, location] =
     await Promise.all([
       fetchCompany(),

@@ -139,6 +139,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
         New Promotion
       </Button>
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background scrollbar-hide overflow-x-scroll"
@@ -146,6 +147,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
         size="3xl"
         scrollBehavior="inside"
         onClose={handleClose}
+        isDismissable={false}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

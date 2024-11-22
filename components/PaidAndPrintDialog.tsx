@@ -200,11 +200,13 @@ export default function PaidAndPrintDialog({
       </Badge>
 
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background overflow-y-scroll"
         placement="center"
         size="full"
+        isDismissable={false}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col text-center">

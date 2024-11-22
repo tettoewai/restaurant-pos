@@ -41,11 +41,13 @@ export default function QuantityDialog({
   };
   return (
     <Modal
+      backdrop="blur"
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       className="bg-background"
       placement="center"
       size="xs"
+      isDismissable={false}
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Paid Quantity</ModalHeader>

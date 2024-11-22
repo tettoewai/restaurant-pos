@@ -16,8 +16,8 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { BsCartX } from "react-icons/bs";
-import { IoWarning } from "react-icons/io5";
 import useSWR from "swr";
+import NoticeCancelDialog from "../components/NoticeCancelDialog";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();
@@ -202,9 +202,11 @@ function ActiveOrder() {
                             {item.status}
                             {unseenCanceledOrder &&
                             !unseenCanceledOrder.userKnow ? (
-                              <IoWarning
-                                className="size-7 text-red-500 ml-1 cursor-pointer"
-                                onClick={() => console.log(item.itemId)}
+                              <NoticeCancelDialog
+                                id={unseenCanceledOrder.id}
+                                reason={unseenCanceledOrder.reason}
+                                tableId={tableId}
+                                canceledOrder={canceledOrder}
                               />
                             ) : null}
                           </span>

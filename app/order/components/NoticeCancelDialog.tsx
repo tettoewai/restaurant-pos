@@ -1,4 +1,4 @@
-import { candelOrder } from "@/app/lib/order/action";
+import { setKnowCanceledOrder } from "@/app/lib/order/action";
 import {
   Button,
   Modal,
@@ -6,54 +6,81 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
+  useDisclosure,
 } from "@nextui-org/react";
+import { useState } from "react";
+import { IoWarning } from "react-icons/io5";
+import { toast } from "react-toastify";
+import { mutate } from "swr";
 
 interface Props {
-  id?: string;
-  isOpen: boolean;
-  onOpenChange: () => void;
-  onClose: () => void;
+  id: number;
+  reason: string;
+  tableId: number;
+  canceledOrder: string[];
 }
 
 export default function NoticeCancelDialog({
   id,
-  isOpen,
-  onOpenChange,
-  onClose,
+  reason,
+  tableId,
+  canceledOrder,
 }: Props) {
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!id) return;
-    await candelOrder(id);
+    setIsLoading(true);
+    const { message, isSuccess } = await setKnowCanceledOrder(id);
+    setIsLoading(false);
+    if (isSuccess) {
+      toast.success(message);
+      mutate([tableId]); // Refetch orders data
+      mutate([canceledOrder]); // Refetch canceled orders data
+      onClose();
+    } else {
+      toast.error(message);
+    }
   };
+
+  if (!id && !reason) return;
+
   return (
     <div className="relative">
+      <IoWarning
+        className="size-7 text-red-500 ml-1 cursor-pointer"
+        onClick={onOpen}
+      />
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
+        isDismissable={false}
+        onClose={onClose}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
-            Cancel Order
+            Sorry, your order is canceled
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <span>Are you sure you went to cancel this order?</span>
+              <div className="flex flex-col">
+                <span>Reason</span>
+                <span className="text-xs">{reason}</span>
+              </div>
             </ModalBody>
             <ModalFooter>
               <Button
-                className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                onClick={onClose}
-              >
-                Close
-              </Button>
-              <Button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                isDisabled={isLoading}
               >
-                Cancel order
+                {isLoading ? <Spinner color="white" /> : "Got it"}
               </Button>
             </ModalFooter>
           </form>

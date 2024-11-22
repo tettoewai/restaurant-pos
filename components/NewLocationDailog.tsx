@@ -51,13 +51,20 @@ export default function NewLocationDialog() {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        <ShortcutButton onClick={()=>onOpen()} keys={["command"]} letter="O"/> New Location
+        <ShortcutButton
+          onClick={() => onOpen()}
+          keys={["command"]}
+          letter="O"
+        />{" "}
+        New Location
       </Button>
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
+        isDismissable={false}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

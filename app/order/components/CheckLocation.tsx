@@ -41,7 +41,11 @@ function CheckLocation({ children }: { children: React.ReactNode }) {
     isLoading: tableLoading,
   } = useSWR(`table-${tableId}`, () => fetchTableWithId(Number(tableId)));
 
-  const { data: restaurantLocation, error: restaurantLocationErr } = useSWR(
+  const {
+    data: restaurantLocation,
+    error: restaurantLocationErr,
+    isLoading: restaurantLacationLoading,
+  } = useSWR(
     table ? `location-${table.locationId}` : null,
     () => table && fetchLocationWithId(table.locationId)
   );
@@ -54,7 +58,8 @@ function CheckLocation({ children }: { children: React.ReactNode }) {
     Boolean(restaurantLocation?.latitude && restaurantLocation?.longitude)
   );
   const isValid = table && !table.isArchived;
-  if (!isValid) return <div>There is no table. Please rescan qr code.</div>;
+  if (!isValid && !tableLoading && !restaurantLacationLoading)
+    return <div>There is no table. Please rescan qr code.</div>;
 
   if (restaurantLocation?.latitude && restaurantLocation?.longitude) {
     // Show spinner while loading location data

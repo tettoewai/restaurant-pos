@@ -39,10 +39,12 @@ export default function DeleteAddonCategoryDialog({
   return (
     <div className="relative">
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
+        isDismissable={false}
       >
         <ModalContent>
           {(onClose) => (

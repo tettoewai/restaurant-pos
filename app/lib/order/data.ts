@@ -172,3 +172,14 @@ export async function fetchCanceledOrders(itemId: string[]) {
     throw new Error("Failed to fetch canceled data.");
   }
 }
+
+export async function fetchCanceledOrder(itemId: string) {
+  try {
+    return await prisma.canceledOrder.findFirst({
+      where: { itemId },
+    });
+  } catch (error) {
+    console.error("Error in fetchCanceledOrder:", error);
+    throw new Error("Failed to fetch canceled data.");
+  }
+}

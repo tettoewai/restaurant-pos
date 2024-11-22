@@ -79,10 +79,12 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         New Menu
       </Button>
       <Modal
+        backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
+        isDismissable={false}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Create Menu</ModalHeader>
