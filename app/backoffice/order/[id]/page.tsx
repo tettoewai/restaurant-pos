@@ -154,7 +154,7 @@ export default function App({ params }: { params: { id: string } }) {
       .filter((item) => Number(item.quantity) > 0);
   }, [paid, orderData]);
   const handleStatusChange = async (status: string, itemId: string) => {
-    if (status === "cancel") cancelOnOpen();
+    if (status === "cancel") return cancelOnOpen();
 
     const { message, isSuccess } = await updateOrderStatus({
       orderStatus: status,
