@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
 import {
   fetchCompany,
+  fetchFocCategoryAndFocMenu,
   fetchLocation,
   fetchMenuAddonCategory,
   fetchPromotionMenuWithPromoId,
@@ -15,6 +16,7 @@ import {
 } from "./data";
 import { OrderData, PaidData } from "@/general";
 import { fetchOrderWithItemId } from "../order/data";
+import { checkArraySame } from "@/function";
 
 interface Props {
   formData: FormData;
@@ -876,28 +878,37 @@ export async function createPromotion(formData: FormData) {
   const discountType = formData.get("discount_type") as string;
   const startDate = formData.get("start_date") as string;
   const endDate = formData.get("end_date") as string;
+  const totalPrice = Number(formData.get("totalPrice"));
   const menuQty = JSON.parse(formData.get("menuQty") as string);
+  const focMenu = JSON.parse(formData.get("focMenu") as string);
   const conditions = formData.get("conditions") as string;
-  const isValid = Boolean(
-    name &&
-      description &&
-      discount_value &&
-      discountType &&
-      startDate &&
-      endDate &&
-      menuQty.length > 0
-  );
+
+  const isValid = Boolean(name && description && startDate && endDate);
+  if (discountType === "foc") {
+    const focValid = focMenu && focMenu.length > 0 && !discount_value;
+    if (!focValid)
+      return {
+        message: "Missing required foc fields!",
+        isSuccess: false,
+      };
+  }
   if (!isValid)
     return {
       message: "Missing required fields!",
       isSuccess: false,
     };
   const discount_type =
-    discountType === "percentage" ? DISCOUNT.PERCENTAGE : DISCOUNT.FIXED_AMOUNT;
+    discountType === "percentage"
+      ? DISCOUNT.PERCENTAGE
+      : discountType === "fixedValue"
+      ? DISCOUNT.FIXED_AMOUNT
+      : DISCOUNT.FOCMENU;
 
   const start_date = new Date(startDate);
   const end_date = new Date(endDate);
+
   try {
+    const location = await fetchSelectedLocation();
     const promotion = await prisma.promotion.create({
       data: {
         name,
@@ -907,21 +918,40 @@ export async function createPromotion(formData: FormData) {
         start_date,
         end_date,
         conditions,
+        totalPrice,
+        locationId: location?.id,
       },
     });
 
-    await Promise.all(
-      menuQty.map(
-        async (item: any) =>
-          await prisma.promotionMenu.create({
-            data: {
-              promotionId: promotion.id,
-              menuId: item.menuId,
-              quantity_requried: item.quantity,
-            },
-          })
-      )
-    );
+    if (focMenu && focMenu.length > 0 && !discount_value) {
+      await Promise.all(
+        focMenu.map(async (item: any) => {
+          const focCategory = await prisma.focCategory.create({
+            data: { minSelection: item.quantity, promotionId: promotion.id },
+          });
+          item.menuId.map(async (item: any) => {
+            await prisma.focMenu.create({
+              data: { menuId: Number(item), focCategoryId: focCategory.id },
+            });
+          });
+        })
+      );
+    }
+    if (menuQty && menuQty.length > 0 && !totalPrice) {
+      await Promise.all(
+        menuQty.map(
+          async (item: any) =>
+            await prisma.promotionMenu.create({
+              data: {
+                promotionId: promotion.id,
+                menuId: Number(item.menuId),
+                quantity_requried: item.quantity,
+              },
+            })
+        )
+      );
+    }
+
     revalidatePath(`/backoffice/promotion`);
     return { message: "Created promotion successfully.", isSuccess: true };
   } catch (error) {
@@ -942,17 +972,18 @@ export async function updatePromotion(formData: FormData) {
   const startDate = formData.get("start_date") as string;
   const endDate = formData.get("end_date") as string;
   const menuQty = JSON.parse(formData.get("menuQty") as string);
+  const focMenu = JSON.parse(formData.get("focMenu") as string);
   const conditions = formData.get("conditions") as string;
-  const isValid = Boolean(
-    id &&
-      name &&
-      description &&
-      discount_value &&
-      discountType &&
-      startDate &&
-      endDate &&
-      menuQty.length > 0
-  );
+  const totalPrice = Number(formData.get("totalPrice"));
+  const isValid = Boolean(name && description && startDate && endDate);
+  if (discountType === "foc") {
+    const focValid = focMenu && focMenu.length > 0 && !discount_value;
+    if (!focValid)
+      return {
+        message: "Missing required foc fields!",
+        isSuccess: false,
+      };
+  }
   if (!isValid)
     return {
       message: "Missing required fields!",
@@ -960,7 +991,11 @@ export async function updatePromotion(formData: FormData) {
     };
 
   const discount_type =
-    discountType === "percentage" ? DISCOUNT.PERCENTAGE : DISCOUNT.FIXED_AMOUNT;
+    discountType === "percentage"
+      ? DISCOUNT.PERCENTAGE
+      : discountType === "fixedValue"
+      ? DISCOUNT.FIXED_AMOUNT
+      : DISCOUNT.FOCMENU;
 
   const start_date = new Date(startDate);
   const end_date = new Date(endDate);
@@ -979,34 +1014,44 @@ export async function updatePromotion(formData: FormData) {
         start_date,
         end_date,
         conditions,
+        totalPrice,
       },
     });
-    menuQty.map(async (item: any) => {
-      const samePromotionMenu = prevPromoMenu.find(
-        (prevMenu) => prevMenu.menuId === item.menuId
-      );
-      if (
-        item.quantity !== samePromotionMenu?.quantity_requried &&
-        samePromotionMenu
-      ) {
-        await prisma.promotionMenu.update({
-          where: { id: samePromotionMenu.id, promotionId: id },
-          data: { quantity_requried: item.quantity },
-        });
-      }
-    });
-    const toAdd = menuQty.filter(
-      (item: any) => !prevMenuId.includes(item.menuId)
-    );
+    const isMenuQty = Boolean(menuQty && menuQty.length && !totalPrice);
+    if (!isMenuQty) {
+      const allPromoMenuId = prevPromoMenu.map((promoMenu) => promoMenu.id);
+      await prisma.promotionMenu.deleteMany({
+        where: { id: { in: allPromoMenuId }, promotionId: id },
+      });
+    }
+    if (isMenuQty) {
+      menuQty.map(async (item: any) => {
+        const samePromotionMenu = prevPromoMenu.find(
+          (prevMenu) => prevMenu.menuId === Number(item.menuId)
+        );
+        if (
+          item.quantity !== samePromotionMenu?.quantity_requried &&
+          samePromotionMenu
+        ) {
+          await prisma.promotionMenu.update({
+            where: { id: samePromotionMenu.id, promotionId: id },
+            data: { quantity_requried: item.quantity },
+          });
+        }
+      });
+    }
+    const toAdd =
+      isMenuQty &&
+      menuQty.filter((item: any) => !prevMenuId.includes(Number(item.menuId)));
 
-    if (toAdd.length > 0) {
+    if (toAdd && toAdd.length > 0 && isMenuQty) {
       await Promise.all(
         toAdd.map(
           async (item: any) =>
             await prisma.promotionMenu.create({
               data: {
                 promotionId: id,
-                menuId: item.id,
+                menuId: Number(item.menuId),
                 quantity_requried: item.quantity,
               },
             })
@@ -1014,18 +1059,45 @@ export async function updatePromotion(formData: FormData) {
       );
     }
 
-    const toRemove = prevPromoMenu.filter(
-      (item) => !menuQty.find((menuqty: any) => menuqty.menuId === item.menuId)
-    );
-
-    if (toRemove.length > 0) {
+    const toRemove =
+      isMenuQty &&
+      prevPromoMenu.filter(
+        (item) =>
+          !menuQty.find(
+            (menuqty: any) => Number(menuqty.menuId) === item.menuId
+          )
+      );
+    if (toRemove && toRemove.length > 0 && isMenuQty) {
       await Promise.all(
         toRemove.map(
           async (item) =>
             await prisma.promotionMenu.delete({
-              where: { promotionId: id, id: item.id },
+              where: { promotionId: id, id: Number(item.id) },
             })
         )
+      );
+    }
+    const focData = await fetchFocCategoryAndFocMenu(id);
+    const focCategoryIds = focData.focCategory.map((item) => item.id);
+    const focMenuIds = focData.focMenu.map((item) => item.id);
+
+    await prisma.focMenu.deleteMany({ where: { id: { in: focMenuIds } } });
+    await prisma.focCategory.deleteMany({
+      where: { id: { in: focCategoryIds }, promotionId: id },
+    });
+    if (discount_type === DISCOUNT.FOCMENU && focMenu && focMenu.length) {
+      await Promise.all(
+        focMenu.map(async (item: any) => {
+          const focCategory = await prisma.focCategory.create({
+            data: { promotionId: id, minSelection: Number(item.quantity) },
+          });
+          item.menuId.map(
+            async (menu: any) =>
+              await prisma.focMenu.create({
+                data: { focCategoryId: focCategory.id, menuId: Number(menu) },
+              })
+          );
+        })
       );
     }
     revalidatePath(`/backoffice/promotion`);
@@ -1033,7 +1105,7 @@ export async function updatePromotion(formData: FormData) {
   } catch (error) {
     console.error(error);
     return {
-      message: "Something went wrong while creating promotion",
+      message: "Something went wrong while updating promotion",
       isSuccess: false,
     };
   }

@@ -4,6 +4,7 @@ import {
   handleDisableLocationMenu,
   handleDisableLocationMenuCat,
 } from "@/app/lib/backoffice/action";
+import { OrderData } from "@/general";
 import {
   cn,
   Dropdown,
@@ -26,26 +27,23 @@ import {
 import { useEffect, useState } from "react";
 import { IoMdMore } from "react-icons/io";
 import { MdDelete, MdEdit } from "react-icons/md";
+import { TbLocationCancel } from "react-icons/tb";
+import { toast } from "react-toastify";
+import CancelOrderDialog from "./CancelOrderDialog";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
 import DeleteAddonDialog from "./DeleteAddonDailog";
 import DeleteLocationDialog from "./DeleteLocationDailog";
 import DeleteMenuCategoryDialog from "./DeleteMenuCategoryDailog";
 import DeleteMenuDialog from "./DeleteMenuDailog";
+import DeletePromotionDailog from "./DeletePromotionDialog";
 import DeleteTableDialog from "./DeleteTableDailog";
+import QrcodePrint from "./QrcodePrint";
 import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import UpdateAddonDialog from "./UpdateAddonDailog";
 import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
-import { BsQrCodeScan } from "react-icons/bs";
-import QrcodePrint from "./QrcodePrint";
-import { TbLocationCancel } from "react-icons/tb";
-import { OrderData } from "@/general";
-import CancelOrderDialog from "./CancelOrderDialog";
-import UpdatePromotionDialog from "./UpdatePromotionDialog";
-import DeletePromotionDailog from "./DeletePromotionDialog";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -184,6 +182,8 @@ export default function MoreOptionButton({
             href={
               itemType === "activeOrder"
                 ? `/order/${orderData?.menuId}?tableId=${tableId}&orderId=${orderData?.itemId}`
+                : itemType === "promotion"
+                ? `/backoffice/promotion/${id}`
                 : ""
             }
           >
@@ -368,13 +368,6 @@ export default function MoreOptionButton({
         />
       ) : itemType === "promotion" ? (
         <>
-          <UpdatePromotionDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-            menus={menu}
-          />
           <DeletePromotionDailog
             id={id}
             onClose={onDeleteClose}

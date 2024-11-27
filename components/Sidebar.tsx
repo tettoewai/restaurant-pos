@@ -98,7 +98,8 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       >
         <ul>
           {sideBarItem.map((item, index) => {
-            const isActive = pathName.startsWith(item.route);
+            const isActive =
+              pathName.split("/")[2] === item.route.split("/")[2];
             return (
               <li
                 key={index}
@@ -130,7 +131,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                     )}
                   >
                     <div
-                      className={clsx({
+                      className={clsx("transition-size", {
                         "mr-1 text-2xl": sideBarOpen,
                         "text-3xl": !sideBarOpen,
                       })}
@@ -140,7 +141,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                     </div>
                     <div
                       className={clsx(
-                        "transition-all flex justify-between w-full items-center",
+                        "flex justify-between w-full items-center ml-1",
                         {
                           flex: sideBarOpen,
                           "hidden 2xl:flex": !sideBarOpen,

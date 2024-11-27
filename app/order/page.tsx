@@ -6,11 +6,14 @@ import { Suspense } from "react";
 import { MdAttachMoney } from "react-icons/md";
 import {
   fetchCompany,
-  fetchLocationWithId,
   fetchMenuCategoryMenu,
   fetchTableWithId,
 } from "../lib/backoffice/data";
-import { fetchMenuCategoryOrder, fetchMenuOrder } from "../lib/order/data";
+import {
+  fetchMenuCategoryOrder,
+  fetchMenuOrder,
+  fetchPromotionWithLocation,
+} from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
 
@@ -27,14 +30,15 @@ const OrderPage = async ({
   const table = await fetchTableWithId(tableId);
   const isValid = table && !table.isArchived;
   if (!isValid) return null;
-  const [company, menuCategory, menuCategoryMenu, menuOrder, location] =
+  const [company, menuCategory, menuCategoryMenu, menuOrder, promotions] =
     await Promise.all([
       fetchCompany(),
       fetchMenuCategoryOrder(tableId),
       fetchMenuCategoryMenu(),
       fetchMenuOrder(tableId),
-      fetchLocationWithId(table.locationId),
+      fetchPromotionWithLocation(table.locationId),
     ]);
+
   const getMenuWithMenuCat = (id: number) => {
     const validMenuIds = menuCategoryMenu
       .filter((item) => item.menuCategoryId === id)
@@ -49,7 +53,7 @@ const OrderPage = async ({
     <div className="mt-4 h-full">
       <span className="mt-3 text-lg">Welcome From {company?.name}!</span>
       <Spacer y={2} />
-      <PromotionCard />
+      <PromotionCard promotions={promotions} tableId={tableId} />
       <Spacer y={3} />
       <div className="flex flex-col items-center w-full">
         <span className="text-primary text-center">

@@ -38,6 +38,7 @@ model Location {
   disabledLocationMenuCategory DisabledLocationMenuCategory[]
   company                      Company                        @relation(fields: [companyId], references: [id])
   tables                       Table[]
+  Promotion                    Promotion[]
 }
 
 model MenuCategory {
@@ -75,6 +76,7 @@ model Menu {
   Order                Order[]
   Receipt              Receipt[]
   PromotionMenu        PromotionMenu[]
+  FocMenu              FocMenu[]
 }
 
 model DisabledLocationMenu {
@@ -149,23 +151,23 @@ model User {
 }
 
 model Order {
-  id            Int             @id @default(autoincrement())
-  menuId        Int
-  addonId       Int?
-  itemId        String
-  quantity      Int
-  paidQuantity  Int             @default(0)
-  orderSeq      String
-  status        ORDERSTATUS
-  totalPrice    Int
-  tableId       Int
-  instruction   String?
-  isArchived    Boolean         @default(false)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  addon         Addon?          @relation(fields: [addonId], references: [id])
-  menu          Menu            @relation(fields: [menuId], references: [id])
-  table         Table           @relation(fields: [tableId], references: [id])
+  id           Int         @id @default(autoincrement())
+  menuId       Int
+  addonId      Int?
+  itemId       String
+  quantity     Int
+  paidQuantity Int         @default(0)
+  orderSeq     String
+  status       ORDERSTATUS
+  totalPrice   Int
+  tableId      Int
+  instruction  String?
+  isArchived   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  addon        Addon?      @relation(fields: [addonId], references: [id])
+  menu         Menu        @relation(fields: [menuId], references: [id])
+  table        Table       @relation(fields: [tableId], references: [id])
 }
 
 enum ORDERSTATUS {
@@ -217,20 +219,25 @@ model Promotion {
   name           String
   description    String
   discount_type  DISCOUNT
-  discount_value Int
+  discount_value Int?
+  totalPrice     Int?
   start_date     DateTime
   end_date       DateTime
+  locationId     Int?
   is_active      Boolean         @default(true)
   conditions     Json?
   isArchived     Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  location       Location?       @relation(fields: [locationId], references: [id])
   PromotionMenu  PromotionMenu[]
+  FocCategory    FocCategory[]
 }
 
 enum DISCOUNT {
   PERCENTAGE
   FIXED_AMOUNT
+  FOCMENU
 }
 
 model PromotionMenu {
@@ -240,6 +247,22 @@ model PromotionMenu {
   quantity_requried Int
   promotion         Promotion @relation(fields: [promotionId], references: [id])
   menu              Menu      @relation(fields: [menuId], references: [id])
+}
+
+model FocCategory {
+  id           Int       @id @default(autoincrement())
+  minSelection Int
+  promotionId  Int
+  promotion    Promotion @relation(fields: [promotionId], references: [id])
+  FocMenu      FocMenu[]
+}
+
+model FocMenu {
+  id            Int         @id @default(autoincrement())
+  menuId        Int
+  focCategoryId Int
+  menu          Menu        @relation(fields: [menuId], references: [id])
+  focCategory   FocCategory @relation(fields: [focCategoryId], references: [id])
 }
 
 model CanceledOrder {

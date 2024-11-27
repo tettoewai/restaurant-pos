@@ -239,7 +239,7 @@ export default function App({ params }: { params: { id: string } }) {
     menus: menus,
     addons: addons,
   });
-  if (!table) return <span>There is no table</span>;
+  if (!table && isLoading) return <span>There is no table ordered!</span>;
   const completedOrder = unpaidOrderData.filter(
     (item) => item.status === "COMPLETE"
   );
@@ -249,7 +249,7 @@ export default function App({ params }: { params: { id: string } }) {
         Order of {table?.name},{" "}
         {unpaidOrderData.length && "Total price :" + totalUnpidPrice}
       </span>
-      <div className="absolute mt-1.5 top-7 right-6 md:top-1 md:right-2">
+      <div className="absolute mt-1.5 top-8 right-2.5 md:top-1 md:right-2">
         <PaidAndPrintDialog
           menus={menus}
           addons={addons}
@@ -299,7 +299,7 @@ export default function App({ params }: { params: { id: string } }) {
                 <Table
                   aria-label="Order list"
                   removeWrapper
-                  className="bg-background rounded-lg p-1 md:w-full"
+                  className="bg-background rounded-lg p-1 md:w-full overflow-x-auto"
                   fullWidth
                 >
                   <TableHeader>

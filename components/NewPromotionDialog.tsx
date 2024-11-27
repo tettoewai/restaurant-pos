@@ -29,11 +29,12 @@ import ShortcutButton from "./ShortCut";
 
 function NewPromotionDialog({ menus }: { menus: Menu[] }) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [menuQty, setMenuQty] = useState([{ id: 1, menuId: 0, quantity: 1 }]);
+  const [menuQty, setMenuQty] = useState([{ id: 1, menuId: "", quantity: 1 }]);
   const [creating, setCreating] = useState(false);
   const [enableDay, setEnableDay] = useState(false);
   const [enabelTime, setTimeEnable] = useState(false);
-  const [promotionType, setPromotionType] = useState<"menu" | "total">("menu");
+  const [promotionType, setPromotionType] = useState<"menu" | "total">("total");
+  const [discountType, setDiscountType] = useState<"normal" | "foc">("normal");
 
   const [timePeriod, setTimePeriod] = useState<{
     startTime?: TimeValue;
@@ -63,7 +64,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
 
   const handleClose = () => {
     onClose();
-    setMenuQty([{ id: 1, menuId: 0, quantity: 1 }]);
+    setMenuQty([{ id: 1, menuId: "", quantity: 1 }]);
     setSelectedDay(new Set([]));
     setTimePeriod({});
     setEnableDay(false);
@@ -74,13 +75,18 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    formData.set("menuQty", JSON.stringify(menuQty));
+    const totalPrice = formData.get("totalPrice");
+    menuQty &&
+      menuQty.length > 0 &&
+      !totalPrice &&
+      formData.set("menuQty", JSON.stringify(menuQty));
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const discountAmount = Number(formData.get("discount_amount"));
     const discountType = formData.get("discount_type") as string;
     const startDate = formData.get("start_date") as string;
     const endDate = formData.get("end_date") as string;
+
     const conditions = [];
     const isValid = Boolean(
       name &&
@@ -88,8 +94,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
         discountAmount &&
         discountType &&
         startDate &&
-        endDate &&
-        menuQty.length > 0
+        endDate
     );
     if (!isValid) return toast.error("Missing required field!");
     if (enabelTime) {
@@ -129,7 +134,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
     <div>
       <Button
         onPress={onOpen}
-        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
+        className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
       >
         <ShortcutButton
           onClick={() => onOpen()}
@@ -150,60 +155,81 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
         isDismissable={false}
       >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
-            Create Promotion
-          </ModalHeader>
+          <ModalHeader>Create Promotion</ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody>
-              <div className="flex flex-row">
-                <div className="space-y-1 w-1/2 p-1">
-                  <Input
-                    name="name"
-                    label="Name"
+              <div>
+                <div>
+                  <Select
+                    size="sm"
+                    label="Discount type"
                     variant="bordered"
-                    required
-                    isRequired
-                    autoFocus
-                  />
-                  <Input
-                    name="description"
-                    label="Description"
-                    variant="bordered"
-                    required
-                    isRequired
-                  />
+                    placeholder="Select type of discount"
+                    className="w-40"
+                    selectedKeys={discountType === "normal" ? "1" : "2"}
+                    onChange={(e) => {
+                      const value = e.target.value === "1" ? "normal" : "foc";
+                      setDiscountType(value);
+                    }}
+                  >
+                    <SelectItem key="1">Discount</SelectItem>
+                    <SelectItem key="2">FOC</SelectItem>
+                  </Select>
                 </div>
-                <div className="space-y-1 w-1/2 p-1">
-                  <Input
-                    name="discount_amount"
-                    label="Discount amount"
-                    variant="bordered"
-                    type="number"
-                    endContent={
-                      <div className="flex items-center h-full">
-                        <label className="sr-only" htmlFor="discount_type">
-                          Discount type
-                        </label>
-                        <select
-                          className="outline-none border-0 bg-transparent text-default-400 text-small"
-                          id="discountType"
-                          name="discount_type"
-                        >
-                          <option value="percentage">%</option>
-                          <option value="fixedValue">Ks</option>
-                        </select>
-                      </div>
-                    }
-                    required
-                    isRequired
-                  />
-                  <DateRangePicker
-                    label="Promotion duration"
-                    variant="bordered"
-                    isRequired
-                    startName="start_date"
-                    endName="end_date"
-                  />
+                <div className="flex flex-row">
+                  <div className="space-y-1 w-1/2 p-1">
+                    <Input
+                      name="name"
+                      label="Name"
+                      variant="bordered"
+                      required
+                      isRequired
+                      autoFocus
+                      size="sm"
+                    />
+                    <Input
+                      name="description"
+                      label="Description"
+                      variant="bordered"
+                      required
+                      isRequired
+                      size="sm"
+                    />
+                  </div>
+                  <div className="space-y-1 w-1/2 p-1">
+                    <DateRangePicker
+                      label="Promotion duration"
+                      variant="bordered"
+                      isRequired
+                      startName="start_date"
+                      endName="end_date"
+                      size="sm"
+                    />
+                    <Input
+                      name="discount_amount"
+                      label="Discount amount"
+                      variant="bordered"
+                      type="number"
+                      size="sm"
+                      endContent={
+                        <div className="flex items-center h-full">
+                          <label className="sr-only" htmlFor="discount_type">
+                            Discount type
+                          </label>
+                          <select
+                            className="outline-none border-0 bg-transparent text-default-400 text-small"
+                            id="discountType"
+                            name="discount_type"
+                          >
+                            <option value="percentage">%</option>
+                            <option value="fixedValue">Ks</option>
+                          </select>
+                        </div>
+                      }
+                      required
+                      isRequired
+                    />
+                  </div>
                 </div>
               </div>
               <div>
@@ -211,7 +237,8 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                   label="Promotion type"
                   variant="bordered"
                   placeholder="Select type of promotion"
-                  className="w-40 mb-2"
+                  className="w-40 mb-1"
+                  size="sm"
                   selectedKeys={promotionType === "menu" ? "1" : "2"}
                   onChange={(e) => {
                     const value = e.target.value === "1" ? "menu" : "total";
@@ -231,16 +258,17 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                               label="Select Menu"
                               variant="bordered"
                               className="w-3/4"
+                              size="sm"
                               required
                               isRequired
                               selectedKeys={
-                                item.menuId ? String(item.menuId) : ""
+                                item.menuId !== "" ? [String(item.menuId)] : []
                               }
                               onChange={(e) => {
                                 const alreadyExist = Boolean(
                                   menuQty.find(
                                     (menuqty) =>
-                                      menuqty.menuId === Number(e.target.value)
+                                      menuqty.menuId === e.target.value
                                   )
                                 );
                                 const updatedMenuQty = menuQty.map(
@@ -251,7 +279,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                                     ) {
                                       return {
                                         ...menuqty,
-                                        menuId: Number(e.target.value),
+                                        menuId: e.target.value,
                                       };
                                     }
                                     return menuqty;
@@ -263,7 +291,8 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                               {menus.map((menu) => {
                                 if (
                                   menuQty.find(
-                                    (menuQty) => menuQty.menuId === menu.id
+                                    (menuQty) =>
+                                      menuQty.menuId === String(menu.id)
                                   )
                                 )
                                   return (
@@ -289,6 +318,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                               type="number"
                               variant="bordered"
                               label="Qty"
+                              size="sm"
                               className="w-1/4"
                               min={1}
                               max={100}
@@ -328,13 +358,13 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                           </div>
                         ))}
                       </div>
-                      <div className="w-full flex justify-center items-center mt-2">
+                      <div className="w-full flex justify-center items-center mt-1">
                         <Button
                           variant="light"
                           onClick={() => {
                             const newMenuQty = {
                               id: menuQty[menuQty.length - 1].id + 1,
-                              menuId: 0,
+                              menuId: "",
                               quantity: 1,
                             };
                             setMenuQty([...menuQty, newMenuQty]);
@@ -350,6 +380,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                       name="totalPrice"
                       label="Tatal price"
                       variant="bordered"
+                      size="sm"
                       required
                       isRequired
                       endContent="Ks"
@@ -370,6 +401,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                     <div className="flex w-full justify-between mb-1">
                       <div className="w-11/12">
                         <Select
+                          size="sm"
                           label="Promotion days"
                           variant="bordered"
                           selectionMode="multiple"
@@ -392,6 +424,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                     <div className="flex w-full justify-between">
                       <div className="flex w-11/12 space-x-1">
                         <TimeInput
+                          size="sm"
                           label="Start time"
                           variant="bordered"
                           value={timePeriod?.startTime}
@@ -402,6 +435,7 @@ function NewPromotionDialog({ menus }: { menus: Menu[] }) {
                           isRequired
                         />
                         <TimeInput
+                          size="sm"
                           label="End time"
                           variant="bordered"
                           isDisabled={!enabelTime}

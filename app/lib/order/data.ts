@@ -183,3 +183,33 @@ export async function fetchCanceledOrder(itemId: string) {
     throw new Error("Failed to fetch canceled data.");
   }
 }
+
+export async function fetchPromotionWithLocation(locationId: number) {
+  noStore();
+  try {
+    return await prisma.promotion.findMany({ where: { locationId } });
+  } catch (error) {
+    console.error("Error in fetchPromotion:", error);
+    throw new Error("Failed to fetch promotion data.");
+  }
+}
+
+export async function fetchFocMenuWithPromotiionId(promotionId: number) {
+  noStore();
+  try {
+    const focCategory = await prisma.focCategory.findMany({
+      where: { promotionId },
+    });
+
+    const focCategoryIds = focCategory.map((item) => item.id);
+
+    const focMenu = await prisma.focMenu.findMany({
+      where: { focCategoryId: { in: focCategoryIds } },
+    });
+
+    return { focCategory, focMenu };
+  } catch (error) {
+    console.error("Error in fetchFocMenu:", error);
+    throw new Error("Failed to fetch focMenu data.");
+  }
+}

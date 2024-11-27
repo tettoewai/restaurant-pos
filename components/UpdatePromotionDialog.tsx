@@ -1,16 +1,11 @@
 "use client";
+import { updatePromotion } from "@/app/lib/backoffice/action";
 import {
-  updateMenuCategory,
-  updatePromotion,
-  updateTable,
-} from "@/app/lib/backoffice/action";
-import {
-  fetchMenu,
-  fetchMenuCategoryWithId,
   fetchPromotionMenuWithPromoId,
   fetchPromotionWithId,
-  fetchTableWithId,
 } from "@/app/lib/backoffice/data";
+import { dateToString } from "@/function";
+import { parseDate, parseTime } from "@internationalized/date";
 import {
   Accordion,
   AccordionItem,
@@ -28,20 +23,13 @@ import {
   Spinner,
   TimeInput,
 } from "@nextui-org/react";
-import { Menu, MenuCategory, Promotion, Table } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { Menu } from "@prisma/client";
+import { TimeValue } from "@react-types/datepicker";
+import { useEffect, useMemo, useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
 import { RxCross2 } from "react-icons/rx";
 import { toast } from "react-toastify";
 import useSWR from "swr";
-import {
-  parseDate,
-  Time,
-  parseAbsoluteToLocal,
-  parseTime,
-} from "@internationalized/date";
-import { dateToString } from "@/function";
-import { TimeValue } from "@react-types/datepicker";
 
 interface Props {
   id: number;
@@ -67,15 +55,21 @@ export default function UpdatePromotionDialog({
     data && isOpen ? [data, isOpen] : null,
     () => data && fetchPromotionMenuWithPromoId(data.id)
   );
-  const prevMenuQty = promotionMenu?.map((item, index) => {
-    return {
-      id: index + 1,
-      menuId: item.menuId,
-      quantity: item.quantity_requried,
-    };
-  });
+  const prevMenuQty = useMemo(
+    () =>
+      promotionMenu?.map((item, index) => {
+        return {
+          id: index + 1,
+          menuId: String(item.menuId),
+          quantity: item.quantity_requried,
+        };
+      }),
+    [promotionMenu]
+  );
 
-  const [menuQty, setMenuQty] = useState([{ id: 1, menuId: 0, quantity: 1 }]);
+  const [menuQty, setMenuQty] = useState([{ id: 1, menuId: "", quantity: 1 }]);
+
+  const [promotionType, setPromotionType] = useState<"menu" | "total">("menu");
 
   const [enableDay, setEnableDay] = useState(false);
   const [enabelTime, setTimeEnable] = useState(false);
@@ -97,8 +91,10 @@ export default function UpdatePromotionDialog({
     { name: "Saturday" },
   ];
 
-  const prevCondition =
-    data?.conditions && JSON.parse(data.conditions as string);
+  const prevCondition = useMemo(
+    () => data && JSON.parse(data.conditions as string),
+    [data]
+  );
 
   const handleSelectionChange = (e: any) => {
     const value = e.target.value;
@@ -110,29 +106,32 @@ export default function UpdatePromotionDialog({
   };
 
   useEffect(() => {
-    if (prevMenuQty) {
+    if (prevMenuQty && prevMenuQty.length > 0) {
       setMenuQty(prevMenuQty);
     }
-    if (prevCondition) {
-      prevCondition &&
-        prevCondition.map((item: any) => {
-          if (item.startTime && item.endTime) {
-            setTimeEnable(true);
-            setTimePeriod({
-              startTime: parseTime(item.startTime),
-              endTime: parseTime(item.endTime),
-            });
-          }
-          if (item.days) {
-            setEnableDay(true);
-            setSelectedDay(new Set(item.days));
-          }
-        });
+    const isMenu = Boolean(
+      prevMenuQty && prevMenuQty?.length > 0 && !data?.totalPrice
+    );
+    setPromotionType(isMenu ? "menu" : "total");
+    if (prevCondition && prevCondition.length) {
+      prevCondition.map((item: any) => {
+        if (item.startTime && item.endTime) {
+          setTimeEnable(true);
+          setTimePeriod({
+            startTime: parseTime(item.startTime),
+            endTime: parseTime(item.endTime),
+          });
+        }
+        if (item.days) {
+          setEnableDay(true);
+          setSelectedDay(new Set(item.days));
+        }
+      });
     }
-  }, [promotionMenu, data, prevCondition, prevMenuQty]);
+  }, [prevMenuQty, prevCondition, data, isOpen, isLoading]);
 
   const handleClose = () => {
-    setMenuQty([{ id: 1, menuId: 0, quantity: 1 }]);
+    setMenuQty([{ id: 1, menuId: "", quantity: 1 }]);
     setSelectedDay(new Set([]));
     setTimePeriod({});
     setEnableDay(false);
@@ -145,7 +144,11 @@ export default function UpdatePromotionDialog({
     const conditions: any = [];
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    formData.set("menuQty", JSON.stringify(menuQty));
+    const totalPrice = formData.get("totalPrice");
+    menuQty &&
+      menuQty.length &&
+      !totalPrice &&
+      formData.set("menuQty", JSON.stringify(menuQty));
     formData.set("id", String(id));
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
@@ -160,10 +163,10 @@ export default function UpdatePromotionDialog({
         discountAmount &&
         discountType &&
         startDate &&
-        endDate &&
-        menuQty.length > 0
+        endDate
     );
     if (!isValid) return toast.error("Missing required field!");
+
     if (enabelTime) {
       const periodValid =
         timePeriod && timePeriod.startTime && timePeriod.endTime;
@@ -204,9 +207,10 @@ export default function UpdatePromotionDialog({
         backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        className="bg-background"
+        className="bg-background scrollbar-hide overflow-x-scroll"
         placement="center"
         size="3xl"
+        scrollBehavior="inside"
         onClose={handleClose}
         isDismissable={false}
       >
@@ -216,193 +220,248 @@ export default function UpdatePromotionDialog({
           </ModalHeader>
           <form onSubmit={handleSubmit}>
             <ModalBody className="w-full">
-              {isLoading && promotionMenuLoading ? (
+              {isLoading || promotionMenuLoading ? (
                 <Spinner size="sm" />
               ) : (
-                <div className="flex flex-wrap w-full">
-                  <div className="space-y-1 w-1/2 p-1">
-                    <Input
-                      name="name"
-                      label="Name"
-                      variant="bordered"
-                      required
-                      isRequired
-                      defaultValue={data?.name}
-                    />
-                    <Input
-                      name="description"
-                      label="Description"
-                      variant="bordered"
-                      required
-                      isRequired
-                      defaultValue={data?.description}
-                    />
-                    <Input
-                      name="discount_amount"
-                      label="Discount amount"
-                      variant="bordered"
-                      defaultValue={String(data?.discount_value)}
-                      type="number"
-                      endContent={
-                        <div className="flex items-center h-full">
-                          <label className="sr-only" htmlFor="discount_type">
-                            Discount type
-                          </label>
-                          <select
-                            className="outline-none border-0 bg-transparent text-default-400 text-small"
-                            id="discountType"
-                            name="discount_type"
-                            defaultValue={
-                              data?.discount_type === "PERCENTAGE"
-                                ? "percentage"
-                                : "fixedValue"
-                            }
-                          >
-                            <option value="percentage">%</option>
-                            <option value="fixedValue">Ks</option>
-                          </select>
-                        </div>
-                      }
-                      required
-                      isRequired
-                    />
-                    <DateRangePicker
-                      label="Promotion duration"
-                      variant="bordered"
-                      isRequired
-                      startName="start_date"
-                      endName="end_date"
-                      defaultValue={{
-                        start: parseDate(
-                          dateToString({ date: data.start_date, type: "YMD" })
-                        ),
-                        end: parseDate(
-                          dateToString({ date: data.end_date, type: "YMD" })
-                        ),
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-1 w-1/2 p-1">
-                    {menuQty.map((item: any) => (
-                      <div
-                        className="flex w-full items-center space-x-1"
-                        key={item.id}
-                      >
-                        <Select
-                          label="Select Menu"
-                          variant="bordered"
-                          className="w-3/4"
-                          required
-                          isRequired
-                          selectedKeys={item.menuId ? String(item.menuId) : ""}
-                          onChange={(e) => {
-                            const alreadyExist = Boolean(
-                              menuQty.find(
-                                (menuqty) =>
-                                  menuqty.menuId === Number(e.target.value)
-                              )
-                            );
-                            const updatedMenuQty = menuQty.map((menuqty) => {
-                              if (menuqty.id === item.id && !alreadyExist) {
-                                return {
-                                  ...menuqty,
-                                  menuId: Number(e.target.value),
-                                };
+                <div>
+                  <div className="flex flex-row">
+                    <div className="space-y-1 w-1/2 p-1">
+                      <Input
+                        name="name"
+                        label="Name"
+                        variant="bordered"
+                        required
+                        isRequired
+                        defaultValue={data?.name}
+                      />
+                      <Input
+                        name="description"
+                        label="Description"
+                        variant="bordered"
+                        required
+                        isRequired
+                        defaultValue={data?.description}
+                      />
+                    </div>
+                    <div className="space-y-1 w-1/2 p-1">
+                      <Input
+                        name="discount_amount"
+                        label="Discount amount"
+                        variant="bordered"
+                        defaultValue={String(data?.discount_value)}
+                        type="number"
+                        endContent={
+                          <div className="flex items-center h-full">
+                            <label className="sr-only" htmlFor="discount_type">
+                              Discount type
+                            </label>
+                            <select
+                              className="outline-none border-0 bg-transparent text-default-400 text-small"
+                              id="discountType"
+                              name="discount_type"
+                              defaultValue={
+                                data?.discount_type === "PERCENTAGE"
+                                  ? "percentage"
+                                  : "fixedValue"
                               }
-                              return menuqty;
-                            });
-                            setMenuQty(updatedMenuQty);
-                          }}
-                        >
-                          {menus && menus.length > 0 ? (
-                            menus.map((menu) => {
-                              if (
-                                menuQty.find(
-                                  (menuQty) => menuQty.menuId === menu.id
-                                )
-                              )
-                                return (
-                                  <SelectItem
-                                    className="hidden"
-                                    key={String(menu.id)}
-                                    value={String(menu.id)}
-                                  >
-                                    {menu.name}
-                                  </SelectItem>
-                                );
-                              return (
-                                <SelectItem
-                                  key={String(menu.id)}
-                                  value={String(menu.id)}
-                                >
-                                  {menu.name}
-                                </SelectItem>
-                              );
-                            })
-                          ) : (
-                            <SelectItem className="hidden" key="">
-                              There is no menu
-                            </SelectItem>
-                          )}
-                        </Select>
-                        <Input
-                          type="number"
-                          variant="bordered"
-                          label="Qty"
-                          className="w-1/4"
-                          min={1}
-                          max={100}
-                          required
-                          isRequired
-                          value={String(item.quantity)}
-                          onChange={(e) => {
-                            const updatedMenuQty = menuQty.map((menuqty) => {
-                              if (menuqty.id !== item.id) {
-                                return menuqty;
-                              } else {
-                                return {
-                                  ...menuqty,
-                                  quantity: Number(e.target.value),
-                                };
-                              }
-                            });
-                            setMenuQty(updatedMenuQty);
-                          }}
-                        />
-                        {menuQty.length > 1 ? (
-                          <Button
-                            isIconOnly
-                            variant="light"
-                            className="size-16"
-                            onClick={() => {
-                              setMenuQty(
-                                menuQty.filter((qty) => qty.id !== item.id)
-                              );
-                            }}
-                          >
-                            <RxCross2 className="size-5 text-primary" />
-                          </Button>
-                        ) : null}
-                      </div>
-                    ))}
-                    <div className="w-full flex justify-center items-center mt-2">
-                      <Button
-                        variant="light"
-                        onClick={() => {
-                          const newMenuQty = {
-                            id: menuQty[menuQty.length - 1].id + 1,
-                            menuId: 0,
-                            quantity: 1,
-                          };
-                          setMenuQty([...menuQty, newMenuQty]);
+                            >
+                              <option value="percentage">%</option>
+                              <option value="fixedValue">Ks</option>
+                            </select>
+                          </div>
+                        }
+                        required
+                        isRequired
+                      />
+                      <DateRangePicker
+                        label="Promotion duration"
+                        variant="bordered"
+                        isRequired
+                        startName="start_date"
+                        endName="end_date"
+                        defaultValue={{
+                          start: parseDate(
+                            dateToString({ date: data.start_date, type: "YMD" })
+                          ),
+                          end: parseDate(
+                            dateToString({ date: data.end_date, type: "YMD" })
+                          ),
                         }}
-                        isIconOnly
-                      >
-                        <BiPlusCircle className="size-7 text-primary" />
-                      </Button>
+                      />
                     </div>
                   </div>
-                  <div className="w-full">
+                  <div>
+                    <Select
+                      label="Promotion type"
+                      variant="bordered"
+                      placeholder="Select type of promotion"
+                      className="w-40 mb-2"
+                      selectedKeys={promotionType === "menu" ? "1" : "2"}
+                      onChange={(e) => {
+                        const value = e.target.value === "1" ? "menu" : "total";
+                        setPromotionType(value);
+                      }}
+                    >
+                      <SelectItem key="1">Menu</SelectItem>
+                      <SelectItem key="2">Total price</SelectItem>
+                    </Select>
+                    <div>
+                      {promotionType === "menu" ? (
+                        <>
+                          <div className="space-y-1 w-full grid grid-cols-2">
+                            {menuQty.map((item: any) => (
+                              <div
+                                className="flex items-center space-x-1"
+                                key={item.id}
+                              >
+                                <Select
+                                  label="Select Menu"
+                                  variant="bordered"
+                                  className="w-3/4"
+                                  required
+                                  isRequired
+                                  selectedKeys={
+                                    item.menuId !== ""
+                                      ? [String(item.menuId)]
+                                      : []
+                                  }
+                                  onChange={(e) => {
+                                    const alreadyExist = Boolean(
+                                      menuQty.find(
+                                        (menuqty) =>
+                                          menuqty.menuId === e.target.value
+                                      )
+                                    );
+                                    const updatedMenuQty = menuQty.map(
+                                      (menuqty) => {
+                                        if (
+                                          menuqty.id === item.id &&
+                                          !alreadyExist
+                                        ) {
+                                          return {
+                                            ...menuqty,
+                                            menuId: e.target.value,
+                                          };
+                                        }
+                                        return menuqty;
+                                      }
+                                    );
+                                    setMenuQty(updatedMenuQty);
+                                  }}
+                                >
+                                  {menus && menus.length > 0 ? (
+                                    menus.map((menu) => {
+                                      if (
+                                        menuQty.find(
+                                          (menuQty) =>
+                                            menuQty.menuId === String(menu.id)
+                                        )
+                                      )
+                                        return (
+                                          <SelectItem
+                                            className="hidden"
+                                            key={String(menu.id)}
+                                            value={String(menu.id)}
+                                          >
+                                            {menu.name}
+                                          </SelectItem>
+                                        );
+                                      return (
+                                        <SelectItem
+                                          key={String(menu.id)}
+                                          value={String(menu.id)}
+                                        >
+                                          {menu.name}
+                                        </SelectItem>
+                                      );
+                                    })
+                                  ) : (
+                                    <SelectItem className="hidden" key="">
+                                      There is no menu
+                                    </SelectItem>
+                                  )}
+                                </Select>
+                                <Input
+                                  type="number"
+                                  variant="bordered"
+                                  label="Qty"
+                                  className="w-1/4"
+                                  min={1}
+                                  max={100}
+                                  required
+                                  isRequired
+                                  value={String(item.quantity)}
+                                  onChange={(e) => {
+                                    const updatedMenuQty = menuQty.map(
+                                      (menuqty) => {
+                                        if (menuqty.id !== item.id) {
+                                          return menuqty;
+                                        } else {
+                                          return {
+                                            ...menuqty,
+                                            quantity: Number(e.target.value),
+                                          };
+                                        }
+                                      }
+                                    );
+                                    setMenuQty(updatedMenuQty);
+                                  }}
+                                />
+                                {menuQty.length > 1 ? (
+                                  <Button
+                                    isIconOnly
+                                    variant="light"
+                                    className="size-16"
+                                    onClick={() => {
+                                      setMenuQty(
+                                        menuQty.filter(
+                                          (qty) => qty.id !== item.id
+                                        )
+                                      );
+                                    }}
+                                  >
+                                    <RxCross2 className="size-5 text-primary" />
+                                  </Button>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="w-full flex justify-center items-center mt-2">
+                            <Button
+                              variant="light"
+                              onClick={() => {
+                                const newMenuQty = {
+                                  id: menuQty[menuQty.length - 1].id + 1,
+                                  menuId: "",
+                                  quantity: 1,
+                                };
+                                setMenuQty([...menuQty, newMenuQty]);
+                              }}
+                              isIconOnly
+                            >
+                              <BiPlusCircle className="size-7 text-primary" />
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <Input
+                          name="totalPrice"
+                          label="Tatal price"
+                          variant="bordered"
+                          defaultValue={
+                            data.totalPrice ? String(data.totalPrice) : ""
+                          }
+                          required
+                          isRequired
+                          endContent="Ks"
+                          className="w-1/2"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
                     <Accordion>
                       <AccordionItem
                         key="1"
@@ -414,10 +473,10 @@ export default function UpdatePromotionDialog({
                         <div className="flex w-full justify-between mb-1">
                           <div className="w-11/12">
                             <Select
-                              label="Favorite Animal"
+                              label="Promotion days"
                               variant="bordered"
                               selectionMode="multiple"
-                              placeholder="Select an animal"
+                              placeholder="Select days"
                               selectedKeys={selectedDay}
                               onChange={handleSelectionChange}
                               isDisabled={!enableDay}

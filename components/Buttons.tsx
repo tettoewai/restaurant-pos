@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { GoScreenFull, GoScreenNormal } from "react-icons/go";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
+import ShortcutButton from "./ShortCut";
+import { useRouter } from "next/navigation";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
@@ -93,5 +95,22 @@ export function ModeButton() {
         </Tooltip>
       )}
     </>
+  );
+}
+
+export function NewPromtionButton() {
+  const router = useRouter();
+  return (
+    <Button
+      className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+      onClick={() => router.push("/backoffice/promotion/new")}
+    >
+      <ShortcutButton
+        onClick={() => router.push("/backoffice/promotion/new")}
+        keys={["command"]}
+        letter="O"
+      />
+      New Promotion
+    </Button>
   );
 }

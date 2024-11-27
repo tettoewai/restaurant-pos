@@ -1,7 +1,7 @@
 "use client";
 import { updateOrder } from "@/app/lib/order/action";
 import { AddonCatSkeleton } from "@/app/ui/skeletons";
-import { formatCurrency } from "@/function";
+import { checkArraySame, formatCurrency } from "@/function";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Checkbox, Chip, Textarea } from "@nextui-org/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
@@ -118,19 +118,6 @@ export default function MenuForm({
         return [...filtered, { categoryId, addonId }];
       }
     });
-  };
-
-  const checkArraySame = (array1: number[], array2: number[]) => {
-    if (array1.length !== array2.length) {
-      return false;
-    }
-
-    for (let i = 0; i < array1.length; i++) {
-      if (array1[i] !== array2[i]) {
-        return false;
-      }
-    }
-    return true;
   };
 
   if (!tableId) return null;

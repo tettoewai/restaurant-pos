@@ -1,11 +1,20 @@
 "use client";
 import { Card, Divider, ScrollShadow } from "@nextui-org/react";
+import { Promotion } from "@prisma/client";
 import { useEffect, useRef } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { Image } from "@nextui-org/react";
+import NextImage from "next/image";
+import Link from "next/link";
 
-export default function PromotionCard() {
+export default function PromotionCard({
+  promotions,
+  tableId,
+}: {
+  promotions: Promotion[];
+  tableId: number;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const cards = [1, 2, 3, 4, 5];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -35,14 +44,30 @@ export default function PromotionCard() {
         className="w-full flex space-x-1 p-1 justify-start snap-mandatory snap-x scroll-smooth"
         ref={scrollRef}
       >
-        {cards.map((item, index) => (
-          <Card
+        {promotions.map((item, index) => (
+          <Link
+            href={`/order/promotion/${item.id}?tableId=${tableId}`}
             key={index}
-            shadow="none"
-            className="min-w-full h-48 sm:min-w-64 md:h-56 bg-background snap-center flex items-center justify-center"
+            className="min-w-full max-w-sm h-60 sm:min-w-64 md:h-56 snap-center flex items-center justify-center"
           >
-            <span className="text-primary text-6xl">{item}</span>
-          </Card>
+            <Card shadow="none" className="relative w-full bg-background">
+              <div className="w-full h-full items-center flex justify-center">
+                <Image
+                  isBlurred
+                  as={NextImage}
+                  src=""
+                  alt="promotion image"
+                  height={240}
+                  width={240}
+                  className="object-fill h-full w-auto hover:scale-110"
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 pl-3 pb-2 bg-gray-500 bg-opacity-20 w-full z-10">
+                <h1 className="text-lg font-bold">{item.name}</h1>
+                <h4 className="text-default-500">{item.description}</h4>
+              </div>
+            </Card>
+          </Link>
         ))}
       </ScrollShadow>
       <div className="hidden md:flex">

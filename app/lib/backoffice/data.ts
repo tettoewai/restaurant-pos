@@ -469,21 +469,47 @@ export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
   }
 }
 
-export const getPromotionAndMenu = async () => {
+export const fetchPromotion = async () => {
   noStore();
   try {
-    const menuId = (await fetchMenu()).map((item) => item.id);
-    const promotionMenu = await prisma.promotionMenu.findMany({
-      where: { menuId: { in: menuId } },
+    const location = await fetchSelectedLocation();
+    return await prisma.promotion.findMany({
+      where: { locationId: location?.id, isArchived: false },
+      orderBy: { id: "asc" },
     });
-    const promotionId = promotionMenu.map((item) => item.promotionId);
-    const promotion = await prisma.promotion.findMany({
-      where: { id: { in: promotionId }, isArchived: false },
-    });
-    return { promotion, promotionMenu };
   } catch (error) {
     console.error("Database error for promotion", error);
     throw new Error("Failed to fetch promotion data.");
+  }
+};
+
+export const fetchPromotionMenu = async () => {
+  noStore();
+  try {
+    const menuId = (await fetchMenu()).map((item) => item.id);
+    return await prisma.promotionMenu.findMany({
+      where: { menuId: { in: menuId } },
+    });
+  } catch (error) {
+    console.error("Database error for promotion", error);
+    throw new Error("Failed to fetch promotion data.");
+  }
+};
+
+export const fetchFocCategoryAndFocMenu = async (id: number) => {
+  noStore();
+  try {
+    const focCategory = await prisma.focCategory.findMany({
+      where: { promotionId: id },
+    });
+    const focCategoryId = focCategory.map((item) => item.id);
+    const focMenu = await prisma.focMenu.findMany({
+      where: { focCategoryId: { in: focCategoryId } },
+    });
+    return { focCategory, focMenu };
+  } catch (error) {
+    console.error("Database error for focCategory and focMenu", error);
+    throw new Error("Failed to fetch focCategory and focMenu data.");
   }
 };
 

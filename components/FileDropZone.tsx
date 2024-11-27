@@ -29,7 +29,7 @@ function FileDropZone({ onDrop, maxSize = 3000000 }: Props) {
           {fileRejections.map(({ file, errors }) => (
             <div key={file.name}>
               {errors.map((e) => (
-                <p className="truncate ..." key={e.code}>
+                <p className="truncate" key={e.code}>
                   {e.message}
                 </p>
               ))}
