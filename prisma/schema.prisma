@@ -229,7 +229,6 @@ model Promotion {
   conditions     Json?
   priority       Int             @default(1)
   group          String?
-  imageUrl       String?
   isArchived     Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
