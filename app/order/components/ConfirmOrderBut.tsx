@@ -1,48 +1,42 @@
 "use client";
 import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
-import { formatCurrency } from "@/function";
 import { OrderContext } from "@/context/OrderContext";
+import { formatCurrency } from "@/function";
 import { Button, Spinner } from "@nextui-org/react";
-import { redirect, useRouter } from "next/navigation";
+import { Addon, Menu } from "@prisma/client";
+import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { toast } from "react-toastify";
 import useSWR from "swr";
 
-export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
+export default function ConfirmOrderBut({
+  tableId,
+  menus,
+  addons,
+}: {
+  tableId: string;
+  menus: Menu[];
+  addons: Addon[];
+}) {
   const { carts, setCarts } = useContext(OrderContext);
   const validAddons = carts.map((item) => item.addons);
   const uniqueAddons = Array.from(new Set(validAddons.flat()));
 
   const router = useRouter();
 
-  const menuFetcher = () =>
-    fetchMenuWithIds(carts.map((item) => item.menuId)).then((res) => res);
-
-  const addonFetcher = () => fetchAddonWithIds(uniqueAddons).then((res) => res);
   const [isCreating, setIsCreating] = useState(false);
-  const fetchAllData = () =>
-    Promise.all([menuFetcher(), addonFetcher()]).then(([menus, addons]) => ({
-      menus,
-      addons,
-    }));
-  const { data, error } = useSWR("menu-and-addon", fetchAllData, {
-    refreshInterval: 3000, // or any suitable interval
-    onLoadingSlow: () => setIsCreating(true),
-    onSuccess: () => setIsCreating(false),
-  });
 
   const menuPrices = carts.map((item) => {
-    const validMenuPrice = data?.menus.find(
-      (menu) => menu.id === item.menuId
-    )?.price;
+    const validMenuPrice = menus.find((menu) => menu.id === item.menuId)?.price;
     if (validMenuPrice) return validMenuPrice * item.quantity;
     return 0;
   });
   const addonPrices = carts.map((item) => {
-    const validAddons = data?.addons.filter((addon) =>
+    const validAddons = addons.filter((addon) =>
       item.addons.includes(addon.id)
     );
+
     const addonPrice = validAddons?.reduce(
       (accumulator, current) => accumulator + current.price,
       0
@@ -56,6 +50,7 @@ export default function ConfirmOrderBut({ tableId }: { tableId: string }) {
     (accumulator, current) => accumulator + current,
     0
   );
+
   const handleConfirmOrder = async () => {
     setIsCreating(true);
     const { isSuccess, message } = await createOrder({

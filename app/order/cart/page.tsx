@@ -4,13 +4,12 @@ import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card } from "@nextui-org/react";
 import { Menu } from "@prisma/client";
-import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useContext } from "react";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import ConfirmOrderBut from "../components/ConfirmOrderBut";
 import MenuForCart from "../components/MenuForCart";
-import { useSearchParams } from "next/navigation";
 
 export default function Cart() {
   const { carts, setCarts } = useContext(OrderContext);
@@ -26,13 +25,15 @@ export default function Cart() {
   const addonFetcher = () =>
     uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([]);
 
-  const fetchAllData = () =>
+  const fetchMenuAddon = () =>
     Promise.all([menuFetcher(), addonFetcher()]).then(([menus, addons]) => ({
       menus,
       addons,
     }));
 
-  const { data, error } = useSWR([carts], fetchAllData);
+  const { data, error } = useSWR([carts], fetchMenuAddon);
+
+  const router = useRouter();
 
   return (
     <div className="px-2">
@@ -45,12 +46,12 @@ export default function Cart() {
         </div>
       </div>
       <div className="mt-4">
-        {carts.length > 0 ? (
+        {carts.length && data && data.menus ? (
           <div>
             {carts
               .sort((a, b) => Number(a.id) - Number(b.id))
               .map((item) => {
-                const validMenu = data?.menus?.find(
+                const validMenu = data.menus.find(
                   (menu) => menu.id === item.menuId
                 ) as Menu;
                 return (
@@ -71,17 +72,26 @@ export default function Cart() {
             <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
               <BsCartX className="size-12 text-primary mb-4" />
               <span>Hungry?</span>
-              <span className="text-sm">
+              <span className="text-sm text-center mt-3">
                 You have not added anything to your cart!
               </span>
-              <Link href={`/order?tableId=${tableId}`}>
-                <Button className="bg-primary mt-4 text-white">Browse</Button>
-              </Link>
+              <Button
+                className="bg-primary mt-4 text-white"
+                onClick={() => router.push(`/order?tableId=${tableId}`)}
+              >
+                Browse
+              </Button>
             </Card>
           </div>
         )}
       </div>
-      {carts.length > 0 ? <ConfirmOrderBut tableId={tableId} /> : null}
+      {carts.length && data ? (
+        <ConfirmOrderBut
+          tableId={tableId}
+          menus={data.menus}
+          addons={data.addons}
+        />
+      ) : null}
     </div>
   );
 }

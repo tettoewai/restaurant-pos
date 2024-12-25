@@ -38,10 +38,12 @@ export default function MenuForCart({
     (accumulator, current) => accumulator + current.price,
     0
   );
-  if (!menu) return null;
-  const menuPrice = addonPrice
-    ? (menu.price + addonPrice) * validCart.quantity
-    : menu.price * validCart.quantity;
+  const menuPrice =
+    addonPrice && menu
+      ? (menu.price + addonPrice) * validCart.quantity
+      : menu
+      ? menu.price * validCart.quantity
+      : 0;
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity === 0) {

@@ -1,6 +1,7 @@
 "use client";
 import { createPromotion } from "@/app/lib/backoffice/action";
 import { fetchMenu } from "@/app/lib/backoffice/data";
+import FileDropZone from "@/components/FileDropZone";
 import { checkArraySame } from "@/function";
 import {
   Accordion,
@@ -18,6 +19,7 @@ import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
+import { IoMdClose } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
 import { toast } from "react-toastify";
 import useSWR from "swr";
@@ -42,6 +44,8 @@ export default function App() {
   }>();
 
   const [selectedDay, setSelectedDay] = useState<Set<string>>(new Set([]));
+
+  const [promotionImage, setPromotionImage] = useState<File | null>(null);
 
   const days = [
     { name: "Sunday" },
@@ -76,14 +80,20 @@ export default function App() {
     const discountAmount = Number(formData.get("discount_amount"));
     const startDate = formData.get("start_date") as string;
     const endDate = formData.get("end_date") as string;
+    promotionImage && formData.append("image", promotionImage);
+    const priority = formData.get("priority");
+
     if (isFoc) {
       formData.set("discount_type", "foc");
       formData.set("focMenu", JSON.stringify(focMenu));
     }
-    const discountType = formData.get("discount_type");
 
+    const discountType = formData.get("discount_type");
     const conditions = [];
-    const isValid = Boolean(name && description && startDate && endDate);
+    const isValid = Boolean(
+      name && description && startDate && endDate && priority
+    );
+    if (!isValid) return toast.error("Missing required field!");
 
     if (isFoc) {
       const focValid =
@@ -94,7 +104,6 @@ export default function App() {
       if (!focValid) return toast.error("Missing required foc field!");
     }
 
-    if (!isValid) return toast.error("Missing required field!");
     if (enabelTime) {
       const periodValid =
         timePeriod && timePeriod.startTime && timePeriod.endTime;
@@ -130,12 +139,12 @@ export default function App() {
   };
   return (
     <div className="bg-background p-2 rounded-md">
-      <div className="my-1">
+      <div className="my-1 mb-3">
         <span className="font-semibold">New Promotion</span>
       </div>
       <form onSubmit={handleSubmit}>
         <div>
-          <div>
+          <div className="w-full flex justify-between">
             <Select
               size="sm"
               label="Discount type"
@@ -151,6 +160,28 @@ export default function App() {
               <SelectItem key="1">Discount</SelectItem>
               <SelectItem key="2">FOC</SelectItem>
             </Select>
+            <div className="flex space-x-1">
+              <Input
+                size="sm"
+                name="priority"
+                label="Priority"
+                variant="bordered"
+                required
+                type="number"
+                isRequired
+                defaultValue="1"
+                className="w-28"
+                min={1}
+              />
+              <Input
+                size="sm"
+                name="group"
+                label="Group (Optional)"
+                variant="bordered"
+                type="string"
+                className="min-w-60"
+              />
+            </div>
           </div>
           <div className="flex flex-row">
             <div className="space-y-1 w-1/2 p-1">
@@ -465,12 +496,25 @@ export default function App() {
             )}
           </div>
         </div>
+        <div className="mt-3">
+          {promotionImage ? (
+            <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
+              <p className="truncate ...">{promotionImage.name}</p>
+              <IoMdClose
+                className="text-primary size-7 cursor-pointer"
+                onClick={() => setPromotionImage(null)}
+              />
+            </div>
+          ) : (
+            <FileDropZone onDrop={(files) => setPromotionImage(files[0])} />
+          )}
+        </div>
         <div>
           <Accordion>
             <AccordionItem
               key="1"
               aria-label="More options"
-              title="More Conditions"
+              title="More Conditions (Optional)"
               isCompact
               className="w-full"
             >
@@ -490,6 +534,12 @@ export default function App() {
                       <SelectItem key={day.name}>{day.name}</SelectItem>
                     ))}
                   </Select>
+                  {!enableDay && (
+                    <span className="text-default-700 text-sm">
+                      * If you do not set days, promotion will effect every
+                      days!
+                    </span>
+                  )}
                 </div>
                 <Checkbox
                   size="lg"
@@ -498,30 +548,39 @@ export default function App() {
                 />
               </div>
               <div className="flex w-full justify-between">
-                <div className="flex w-11/12 space-x-1">
-                  <TimeInput
-                    size="sm"
-                    label="Start time"
-                    variant="bordered"
-                    value={timePeriod?.startTime}
-                    onChange={(e) =>
-                      setTimePeriod({ ...timePeriod, startTime: e })
-                    }
-                    isDisabled={!enabelTime}
-                    isRequired
-                  />
-                  <TimeInput
-                    size="sm"
-                    label="End time"
-                    variant="bordered"
-                    isDisabled={!enabelTime}
-                    value={timePeriod?.endTime}
-                    onChange={(e) =>
-                      setTimePeriod({ ...timePeriod, endTime: e })
-                    }
-                    isRequired
-                  />
+                <div className="flex w-11/12 space-x-1 flex-col">
+                  <div className="flex">
+                    <TimeInput
+                      size="sm"
+                      label="Start time"
+                      variant="bordered"
+                      value={timePeriod?.startTime}
+                      onChange={(e) =>
+                        setTimePeriod({ ...timePeriod, startTime: e })
+                      }
+                      isDisabled={!enabelTime}
+                      isRequired
+                    />
+                    <TimeInput
+                      size="sm"
+                      label="End time"
+                      variant="bordered"
+                      isDisabled={!enabelTime}
+                      value={timePeriod?.endTime}
+                      onChange={(e) =>
+                        setTimePeriod({ ...timePeriod, endTime: e })
+                      }
+                      isRequired
+                    />
+                  </div>
+                  {!enabelTime && (
+                    <span className="text-default-700 text-sm">
+                      * If you do not set time period, promotion will be effect
+                      the whole day!
+                    </span>
+                  )}
                 </div>
+
                 <Checkbox
                   size="lg"
                   isSelected={enabelTime}

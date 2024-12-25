@@ -1,13 +1,16 @@
 "use client";
 
+import { fetchAddonCategoryWithMenuId } from "@/app/lib/order/data";
 import { Button, Tooltip } from "@nextui-org/react";
+import { Menu, PromotionMenu } from "@prisma/client";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoScreenFull, GoScreenNormal } from "react-icons/go";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
+import useSWR from "swr";
 import ShortcutButton from "./ShortCut";
-import { useRouter } from "next/navigation";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);

@@ -162,6 +162,7 @@ model Order {
   totalPrice   Int
   tableId      Int
   instruction  String?
+  isFoc        Boolean     @default(false)
   isArchived   Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -226,6 +227,9 @@ model Promotion {
   locationId     Int?
   is_active      Boolean         @default(true)
   conditions     Json?
+  priority       Int             @default(1)
+  group          String?
+  imageUrl       String?
   isArchived     Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -244,7 +248,7 @@ model PromotionMenu {
   id                Int       @id @default(autoincrement())
   promotionId       Int
   menuId            Int
-  quantity_requried Int
+  quantity_required Int
   promotion         Promotion @relation(fields: [promotionId], references: [id])
   menu              Menu      @relation(fields: [menuId], references: [id])
 }

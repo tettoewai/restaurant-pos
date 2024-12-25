@@ -12,7 +12,7 @@ import {
 import {
   fetchMenuCategoryOrder,
   fetchMenuOrder,
-  fetchPromotionWithLocation,
+  fetchPromotionWithTableId,
 } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
@@ -36,7 +36,7 @@ const OrderPage = async ({
       fetchMenuCategoryOrder(tableId),
       fetchMenuCategoryMenu(),
       fetchMenuOrder(tableId),
-      fetchPromotionWithLocation(table.locationId),
+      fetchPromotionWithTableId(tableId),
     ]);
 
   const getMenuWithMenuCat = (id: number) => {
@@ -53,7 +53,7 @@ const OrderPage = async ({
     <div className="mt-4 h-full">
       <span className="mt-3 text-lg">Welcome From {company?.name}!</span>
       <Spacer y={2} />
-      <PromotionCard promotions={promotions} tableId={tableId} />
+      <PromotionCard tableId={tableId} promotions={promotions} />
       <Spacer y={3} />
       <div className="flex flex-col items-center w-full">
         <span className="text-primary text-center">

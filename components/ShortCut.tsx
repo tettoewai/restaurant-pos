@@ -23,7 +23,7 @@ const ShortcutButton = ({ keys, onClick, letter }: ShortcutButtonProps) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [keys, onClick]);
+  }, [keys, onClick, letter]);
 
   return (
     <Kbd

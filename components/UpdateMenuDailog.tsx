@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteImage, updateMenu } from "@/app/lib/backoffice/action";
+import { deleteMenuImage, updateMenu } from "@/app/lib/backoffice/action";
 import {
   Button,
   Input,
@@ -76,7 +76,7 @@ export default function UpdateMenuDialog({
       JSON.parse(JSON.stringify(selectedCategoryArray))
     );
     menuImage && formData.append("image", menuImage);
-    if (!prevData?.assetUrl) deleteImage(id);
+    if (!prevData?.assetUrl) deleteMenuImage(id);
     const { message, isSuccess } = await updateMenu({ formData });
     setIsSubmitting(false);
     if (isSuccess) {

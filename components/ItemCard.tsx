@@ -121,7 +121,7 @@ export default async function ItemCard({
         </div>
       ) : null}
       <p
-        className={clsx("mt-2 truncate", {
+        className={clsx("mt-2 text-wrap text-center", {
           "text-red-500": Boolean(!hasAddon && itemType === "addonCategory"),
         })}
       >

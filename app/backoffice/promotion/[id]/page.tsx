@@ -1,11 +1,15 @@
 "use client";
-import { updatePromotion } from "@/app/lib/backoffice/action";
+import {
+  deletePromotionImage,
+  updatePromotion,
+} from "@/app/lib/backoffice/action";
 import {
   fetchFocCategoryAndFocMenu,
   fetchMenu,
   fetchPromotionMenuWithPromoId,
   fetchPromotionWithId,
 } from "@/app/lib/backoffice/data";
+import FileDropZone from "@/components/FileDropZone";
 import { dateToString } from "@/function";
 import { parseDate, parseTime } from "@internationalized/date";
 import {
@@ -25,6 +29,7 @@ import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
+import { IoMdClose } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
 import { toast } from "react-toastify";
 import useSWR from "swr";
@@ -53,7 +58,7 @@ export default function App({ params }: { params: { id: string } }) {
         return {
           id: index + 1,
           menuId: String(item.menuId),
-          quantity: item.quantity_requried,
+          quantity: item.quantity_required,
         };
       }),
     [promotionMenu]
@@ -76,6 +81,9 @@ export default function App({ params }: { params: { id: string } }) {
   }>();
 
   const [selectedDay, setSelectedDay] = useState<Set<string>>(new Set([]));
+
+  const [promotionImage, setPromotionImage] = useState<File | null>(null);
+  const [prevImage, setPrevImage] = useState<String | null>();
 
   const days = [
     { name: "Sunday" },
@@ -108,6 +116,9 @@ export default function App({ params }: { params: { id: string } }) {
     const isMenu = Boolean(
       prevMenuQty && prevMenuQty?.length > 0 && !data?.totalPrice
     );
+    if (data?.imageUrl) {
+      setPrevImage(data.imageUrl);
+    }
     setIsFoc(data?.discount_type === DISCOUNT.FOCMENU ? true : false);
 
     const prevFocMenu =
@@ -136,7 +147,7 @@ export default function App({ params }: { params: { id: string } }) {
         }
       });
     }
-  }, [prevMenuQty, prevCondition, data, , isLoading]);
+  }, [prevMenuQty, prevCondition, data, , isLoading, focData]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -154,12 +165,17 @@ export default function App({ params }: { params: { id: string } }) {
     const discountAmount = Number(formData.get("discount_amount"));
     const startDate = formData.get("start_date") as string;
     const endDate = formData.get("end_date") as string;
+    const priority = formData.get("priority");
+
+    promotionImage && formData.append("image", promotionImage);
     if (isFoc) {
       formData.set("discount_type", "foc");
       formData.set("focMenu", JSON.stringify(focMenu));
     }
     const discountType = formData.get("discount_type");
-    const isValid = Boolean(name && description && startDate && endDate);
+    const isValid = Boolean(
+      name && description && startDate && endDate && priority
+    );
 
     if (isFoc) {
       const focValid =
@@ -170,7 +186,7 @@ export default function App({ params }: { params: { id: string } }) {
       if (!focValid) return toast.error("Missing required foc field!");
     }
     if (!isValid) return toast.error("Missing required field!");
-
+    if (!prevImage) deletePromotionImage(id);
     if (enabelTime) {
       const periodValid =
         timePeriod && timePeriod.startTime && timePeriod.endTime;
@@ -212,9 +228,9 @@ export default function App({ params }: { params: { id: string } }) {
         <Spinner size="sm" />
       ) : (
         <form onSubmit={handleSubmit} className="w-full">
-          <span className="mb-2 font-semibold">Update Pomotion</span>
-          <div className="mb-2">
-            <div>
+          <span className="mb-4 font-semibold">Update Pomotion</span>
+          <div className="my-2">
+            <div className="w-full flex justify-between">
               <Select
                 size="sm"
                 label="Discount type"
@@ -230,10 +246,34 @@ export default function App({ params }: { params: { id: string } }) {
                 <SelectItem key="1">Discount</SelectItem>
                 <SelectItem key="2">FOC</SelectItem>
               </Select>
+              <div className="flex space-x-1">
+                <Input
+                  size="sm"
+                  name="priority"
+                  label="Priority"
+                  variant="bordered"
+                  required
+                  type="number"
+                  isRequired
+                  defaultValue={String(data.priority)}
+                  className="w-28"
+                  min={1}
+                />
+                <Input
+                  size="sm"
+                  name="group"
+                  label="Group (Optional)"
+                  variant="bordered"
+                  type="string"
+                  defaultValue={data.group || ""}
+                  className="min-w-60"
+                />
+              </div>
             </div>
             <div className="flex flex-row">
               <div className="space-y-1 w-1/2 p-1">
                 <Input
+                  size="sm"
                   name="name"
                   label="Name"
                   variant="bordered"
@@ -242,6 +282,7 @@ export default function App({ params }: { params: { id: string } }) {
                   defaultValue={data?.name}
                 />
                 <Input
+                  size="sm"
                   name="description"
                   label="Description"
                   variant="bordered"
@@ -252,6 +293,7 @@ export default function App({ params }: { params: { id: string } }) {
               </div>
               <div className="space-y-1 w-1/2 p-1">
                 <DateRangePicker
+                  size="sm"
                   label="Promotion duration"
                   variant="bordered"
                   isRequired
@@ -407,6 +449,7 @@ export default function App({ params }: { params: { id: string } }) {
             ) : null}
             <div>
               <Select
+                size="sm"
                 label="Promotion type"
                 variant="bordered"
                 placeholder="Select type of promotion"
@@ -430,6 +473,7 @@ export default function App({ params }: { params: { id: string } }) {
                           key={item.id}
                         >
                           <Select
+                            size="sm"
                             label="Select Menu"
                             variant="bordered"
                             className="w-3/4"
@@ -489,6 +533,7 @@ export default function App({ params }: { params: { id: string } }) {
                             )}
                           </Select>
                           <Input
+                            size="sm"
                             type="number"
                             variant="bordered"
                             label="Qty"
@@ -549,6 +594,7 @@ export default function App({ params }: { params: { id: string } }) {
                   </>
                 ) : (
                   <Input
+                    size="sm"
                     name="totalPrice"
                     label="Tatal price"
                     variant="bordered"
@@ -563,19 +609,46 @@ export default function App({ params }: { params: { id: string } }) {
                 )}
               </div>
             </div>
-
+            <div className="mt-3">
+              {prevImage ? (
+                <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
+                  <span className="truncate ...">{prevImage}</span>
+                  <IoMdClose
+                    className="text-primary size-6x mr-3 cursor-pointer"
+                    onClick={() => setPrevImage(null)}
+                  />
+                </div>
+              ) : promotionImage ? (
+                <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
+                  <span className="truncate ...">{promotionImage.name}</span>
+                  <IoMdClose
+                    className="text-primary size-6x mr-3 cursor-pointer"
+                    onClick={() => {
+                      setPromotionImage(null);
+                    }}
+                  />
+                </div>
+              ) : (
+                <FileDropZone
+                  onDrop={(files) => {
+                    setPromotionImage(files[0]);
+                  }}
+                />
+              )}
+            </div>
             <div>
               <Accordion>
                 <AccordionItem
                   key="1"
                   aria-label="More options"
-                  title="More Conditions"
+                  title="More Conditions (Optional)"
                   isCompact
                   className="w-full"
                 >
                   <div className="flex w-full justify-between mb-1">
                     <div className="w-11/12">
                       <Select
+                        size="sm"
                         label="Promotion days"
                         variant="bordered"
                         selectionMode="multiple"
@@ -588,6 +661,12 @@ export default function App({ params }: { params: { id: string } }) {
                           <SelectItem key={day.name}>{day.name}</SelectItem>
                         ))}
                       </Select>
+                      {!enableDay && (
+                        <span className="text-default-700 text-sm">
+                          * If you do not set days, promotion will effect every
+                          days!
+                        </span>
+                      )}
                     </div>
                     <Checkbox
                       size="lg"
@@ -596,27 +675,37 @@ export default function App({ params }: { params: { id: string } }) {
                     />
                   </div>
                   <div className="flex w-full justify-between">
-                    <div className="flex w-11/12 space-x-1">
-                      <TimeInput
-                        label="Start time"
-                        variant="bordered"
-                        value={timePeriod?.startTime}
-                        onChange={(e) =>
-                          setTimePeriod({ ...timePeriod, startTime: e })
-                        }
-                        isDisabled={!enabelTime}
-                        isRequired
-                      />
-                      <TimeInput
-                        label="End time"
-                        variant="bordered"
-                        isDisabled={!enabelTime}
-                        value={timePeriod?.endTime}
-                        onChange={(e) =>
-                          setTimePeriod({ ...timePeriod, endTime: e })
-                        }
-                        isRequired
-                      />
+                    <div className="flex w-11/12 space-x-1 flex-col">
+                      <div className="flex">
+                        <TimeInput
+                          size="sm"
+                          label="Start time"
+                          variant="bordered"
+                          value={timePeriod?.startTime}
+                          onChange={(e) =>
+                            setTimePeriod({ ...timePeriod, startTime: e })
+                          }
+                          isDisabled={!enabelTime}
+                          isRequired
+                        />
+                        <TimeInput
+                          size="sm"
+                          label="End time"
+                          variant="bordered"
+                          isDisabled={!enabelTime}
+                          value={timePeriod?.endTime}
+                          onChange={(e) =>
+                            setTimePeriod({ ...timePeriod, endTime: e })
+                          }
+                          isRequired
+                        />
+                      </div>
+                      {!enabelTime && (
+                        <span className="text-default-700 text-sm">
+                          * If you do not set time period, promotion will be
+                          effect the whole day!
+                        </span>
+                      )}
                     </div>
                     <Checkbox
                       size="lg"

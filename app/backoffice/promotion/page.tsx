@@ -28,6 +28,7 @@ async function PromotionPage() {
     { key: "discountAmount", label: "Discount or FOC" },
     { key: "duration", label: "Duration" },
     { key: "menuOrPrice", label: "Menu Or Total price" },
+    { key: "group", label: "Group" },
     { key: "status", label: "Status" },
     { key: "action", label: "Action" },
   ];
@@ -145,7 +146,7 @@ async function PromotionPage() {
                   key={promoMenu.id}
                   className="mr-1"
                 >
-                  {currentMenu?.name} ({promoMenu.quantity_requried})
+                  {currentMenu?.name} ({promoMenu.quantity_required})
                 </Chip>
               );
             })}
@@ -161,7 +162,7 @@ async function PromotionPage() {
                   {currentPromotionMenu.slice(2).map((item) => (
                     <Chip variant="bordered" size="sm" key={item.id}>
                       {menus.find((menu) => menu.id === item.menuId)?.name} (
-                      {item.quantity_requried})
+                      {item.quantity_required})
                     </Chip>
                   ))}
                 </div>
@@ -173,17 +174,28 @@ async function PromotionPage() {
           ) : null}
         </div>
       );
+      const now = new Date();
+      const isCurrentlyActive =
+        item.is_active && item.start_date <= now && item.end_date >= now;
+
       return {
         key: index + 1,
         name,
         discountAmount,
         duration,
         menuOrPrice,
-        status: item.is_active ? (
-          <Chip color="primary">Active</Chip>
-        ) : (
-          <Chip>Inactive</Chip>
-        ),
+        group: (item.group || "") + `(${item.priority})`,
+        status: isCurrentlyActive ? (
+          <Chip color="success" className="text-white">
+            Active
+          </Chip>
+        ) : !item.is_active ? (
+          <Chip color="danger">Inactive</Chip>
+        ) : !isCurrentlyActive ? (
+          <Chip color="warning" className="text-white">
+            Out of date
+          </Chip>
+        ) : null,
         action: (
           <MoreOptionButton
             itemType="promotion"

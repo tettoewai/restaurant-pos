@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "@nextui-org/react";
 import { useState } from "react";
-import { mutate } from "swr";
+import { toast } from "react-toastify";
 
 interface Props {
   id?: string;
@@ -29,8 +29,14 @@ export default function CancelOrderDialog({
     event.preventDefault();
     if (!id) return;
     setIsLoading(true);
-    await candelOrder(id);
+    const { isSuccess, message } = await candelOrder(id);
     setIsLoading(false);
+    if (isSuccess) {
+      onClose();
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
   };
   return (
     <div className="relative">

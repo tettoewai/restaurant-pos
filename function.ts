@@ -1,3 +1,5 @@
+import { Promotion, PromotionMenu } from "@prisma/client";
+
 export const dateToString = ({
   date,
   type,
@@ -48,4 +50,65 @@ export function checkArraySame(
     }
   }
   return true;
+}
+
+export function calculateApplicablePromotions({
+  promotions,
+  promotionMenus,
+  menuOrderData,
+  totalPrice,
+}: {
+  promotions?: Promotion[];
+  promotionMenus?: PromotionMenu[];
+  menuOrderData: Record<
+    number,
+    {
+      menuId: number;
+      quantity: number;
+    }
+  >;
+  totalPrice?: number;
+}) {
+  return promotions
+    ?.filter((promotion) => {
+      const currentMenuPromo = promotionMenus
+        ?.filter((item) => item.promotionId === promotion.id)
+        .filter((item) => item !== undefined);
+      if (currentMenuPromo && currentMenuPromo.length) {
+        const applicableMenuPromotion = currentMenuPromo.filter(
+          (item) =>
+            menuOrderData[item.menuId] &&
+            menuOrderData[item.menuId].quantity >= item.quantity_required
+        );
+        return (
+          applicableMenuPromotion &&
+          applicableMenuPromotion.length === currentMenuPromo.length
+        );
+      }
+      return (
+        promotion.totalPrice && totalPrice && totalPrice >= promotion.totalPrice
+      );
+    })
+    .sort((a, b) => {
+      if (a.priority === b.priority) {
+        // Get menus related to each promotion
+        const validPromoMenuA =
+          promotionMenus?.filter((item) => item.promotionId === a.id) || [];
+        const validPromoMenuB =
+          promotionMenus?.filter((item) => item.promotionId === b.id) || [];
+
+        // Sort promotions with more menu promotions first
+        if (validPromoMenuA.length !== validPromoMenuB.length) {
+          return validPromoMenuB.length - validPromoMenuA.length; // Descending order
+        }
+
+        // Fallback to compare based on totalPrice
+        if (a.totalPrice && b.totalPrice) {
+          return b.totalPrice - a.totalPrice;
+        }
+      }
+
+      // Default to sorting by priority
+      return b.priority - a.priority;
+    });
 }

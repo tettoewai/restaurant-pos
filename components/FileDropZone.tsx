@@ -22,7 +22,7 @@ function FileDropZone({ onDrop, maxSize = 3000000 }: Props) {
       {isDragActive ? (
         <p>Drop the files here ...</p>
       ) : (
-        <p>Drag and drop some files here, or click to select files</p>
+        <p>Drag and drop image here, or click to select image (Optional)</p>
       )}
       {fileRejections.length > 0 && (
         <div className="text-primary">

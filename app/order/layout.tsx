@@ -7,14 +7,16 @@ import { ToastContainer } from "react-toastify";
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <OrderContextProvider>
-      <div className="bg-gray-200 dark:bg-gray-950 min-h-dvh select-none">
-        <Suspense>
-          <TopBarOrder />
-        </Suspense>
-        <div className="pt-16 px-1">
+      <div>
+        <div className="bg-gray-200 dark:bg-gray-950 min-h-dvh select-none">
           <Suspense>
-            <CheckLocation>{children}</CheckLocation>
+            <TopBarOrder />
           </Suspense>
+          <div className="pt-16 px-1">
+            <Suspense>
+              <CheckLocation>{children}</CheckLocation>
+            </Suspense>
+          </div>
         </div>
       </div>
       <ToastContainer position="bottom-right" />

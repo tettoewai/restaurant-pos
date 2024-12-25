@@ -1,20 +1,27 @@
 "use client";
-import { Card, Divider, ScrollShadow } from "@nextui-org/react";
+import {
+  Card,
+  CardFooter,
+  Divider,
+  Image,
+  ScrollShadow,
+} from "@nextui-org/react";
 import { Promotion } from "@prisma/client";
-import { useEffect, useRef } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { Image } from "@nextui-org/react";
 import NextImage from "next/image";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 export default function PromotionCard({
-  promotions,
   tableId,
+  promotions,
 }: {
-  promotions: Promotion[];
   tableId: number;
+  promotions: Promotion[];
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const toDay = new Date();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -44,31 +51,41 @@ export default function PromotionCard({
         className="w-full flex space-x-1 p-1 justify-start snap-mandatory snap-x scroll-smooth"
         ref={scrollRef}
       >
-        {promotions.map((item, index) => (
-          <Link
-            href={`/order/promotion/${item.id}?tableId=${tableId}`}
-            key={index}
-            className="min-w-full max-w-sm h-60 sm:min-w-64 md:h-56 snap-center flex items-center justify-center"
-          >
-            <Card shadow="none" className="relative w-full bg-background">
-              <div className="w-full h-full items-center flex justify-center">
-                <Image
-                  isBlurred
-                  as={NextImage}
-                  src=""
-                  alt="promotion image"
-                  height={240}
-                  width={240}
-                  className="object-fill h-full w-auto hover:scale-110"
-                />
-              </div>
-              <div className="absolute bottom-0 left-0 pl-3 pb-2 bg-gray-500 bg-opacity-20 w-full z-10">
-                <h1 className="text-lg font-bold">{item.name}</h1>
-                <h4 className="text-default-500">{item.description}</h4>
-              </div>
-            </Card>
-          </Link>
-        ))}
+        {promotions &&
+          promotions.length &&
+          promotions.map((item, index) => (
+            <Link
+              href={`/order/promotion/${item.id}?tableId=${tableId}`}
+              key={index}
+              className="min-w-full max-w-sm h-60 sm:min-w-64 md:h-56 snap-center flex items-center justify-center"
+            >
+              <Card
+                isFooterBlurred
+                shadow="none"
+                className="relative w-full h-full bg-background"
+              >
+                <div className="w-full h-full items-center flex justify-center">
+                  {item.imageUrl && (
+                    <Image
+                      isBlurred
+                      as={NextImage}
+                      src={item.imageUrl}
+                      alt="promotion image"
+                      height={240}
+                      width={240}
+                      className="object-fill h-full w-auto hover:scale-110"
+                    />
+                  )}
+                </div>
+                <CardFooter className="flex flex-col items-start before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-md bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+                  <h1 className="text-lg font-bold stroke-white stroke-2">
+                    {item.name}
+                  </h1>
+                  <h4 className="text-default-500">{item.description}</h4>
+                </CardFooter>
+              </Card>
+            </Link>
+          ))}
       </ScrollShadow>
       <div className="hidden md:flex">
         <button

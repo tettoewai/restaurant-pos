@@ -2,6 +2,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/db";
 import {
+  fetchAddonCategoryWithIds,
   fetchCompany,
   fetchLocationWithId,
   fetchTableWithId,
@@ -184,13 +185,35 @@ export async function fetchCanceledOrder(itemId: string) {
   }
 }
 
-export async function fetchPromotionWithLocation(locationId: number) {
+export async function fetchPromotionWithTableId(tableId: number) {
   noStore();
   try {
-    return await prisma.promotion.findMany({ where: { locationId } });
+    const table = await fetchTableWithId(tableId);
+    if (!table) return [];
+    return await prisma.promotion.findMany({
+      where: {
+        locationId: table.locationId,
+        start_date: { lte: new Date() },
+        end_date: { gte: new Date() },
+        is_active: true,
+      },
+    });
   } catch (error) {
     console.error("Error in fetchPromotion:", error);
     throw new Error("Failed to fetch promotion data.");
+  }
+}
+
+export async function fetchPromotionMenuWithPromotionIds(ids: number[]) {
+  noStore();
+  try {
+    return await prisma.promotionMenu.findMany({
+      where: { promotionId: { in: ids } },
+      orderBy: { quantity_required: "desc" },
+    });
+  } catch (error) {
+    console.error("Error in fetchPromotionMenu:", error);
+    throw new Error("Failed to fetch promotionMenu data.");
   }
 }
 
@@ -211,5 +234,21 @@ export async function fetchFocMenuWithPromotiionId(promotionId: number) {
   } catch (error) {
     console.error("Error in fetchFocMenu:", error);
     throw new Error("Failed to fetch focMenu data.");
+  }
+}
+
+export async function fetchAddonCategoryWithMenuId(menuId: number) {
+  noStore();
+  try {
+    const menuAddonCategory = await prisma.menuAddonCategory.findMany({
+      where: { menuId },
+    });
+    const addonCategoryIds = menuAddonCategory.map(
+      (item) => item.addonCategoryId
+    );
+    return await fetchAddonCategoryWithIds(addonCategoryIds);
+  } catch (error) {
+    console.error("Error in fetchAddonCategoryWithMenuId:", error);
+    throw new Error("Failed to fetch AddonCategory data.");
   }
 }

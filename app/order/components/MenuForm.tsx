@@ -10,6 +10,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 import { toast } from "react-toastify";
+import { updatePromotion } from "@/app/lib/backoffice/action";
 const { customAlphabet } = require("nanoid");
 
 interface Props {
@@ -30,6 +31,7 @@ export default function MenuForm({
     addonId: number;
   }
   const { carts, setCarts } = useContext(OrderContext);
+  const { promotionQue, setPromotionQue } = useContext(OrderContext);
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -37,6 +39,9 @@ export default function MenuForm({
 
   const cartId = searchParams.get("cartId");
   const tableId = searchParams.get("tableId");
+  const requiredQty = Number(searchParams.get("requiredQty"));
+  const promotionId = Number(searchParams.get("promotionId"));
+
   const validCarts = carts.find((item) => item.id === cartId);
   const validAddonOrderId = useMemo(() => {
     return order?.map((item) => item.addonId);
@@ -74,7 +79,9 @@ export default function MenuForm({
   const [selectedValue, setSelectedValue] =
     useState<SelectedAddon[]>(validSelectedValue);
 
-  const [quantity, setQuantity] = useState<number>(validCarts?.quantity || 1);
+  const [quantity, setQuantity] = useState<number>(
+    validCarts?.quantity || requiredQty || 1
+  );
   const [instruction, setInstruction] = useState<string>(
     validCarts?.instruction || ""
   );
@@ -100,7 +107,6 @@ export default function MenuForm({
       const alreadySelected = prevSelected.find(
         (item) => item.categoryId === categoryId && item.addonId === addonId
       );
-
       if (alreadySelected) {
         // If the addon is already selected and the category is required, remove it
         if (!addonCategory.find((cat) => cat.id === categoryId)?.isRequired) {
@@ -123,6 +129,18 @@ export default function MenuForm({
   if (!tableId) return null;
 
   const handleAddToCart = async () => {
+    if (promotionId) {
+      const updatedPromotionQue = promotionQue.filter(
+        (item) => item.menuId !== menuId
+      );
+      setPromotionQue(updatedPromotionQue);
+      if (updatedPromotionQue && updatedPromotionQue.length) {
+        const url = `/order/${updatedPromotionQue[0].menuId}?tableId=${tableId}&promotionId=${updatedPromotionQue[0].promotionId}&requiredQty=${updatedPromotionQue[0].quantity_required}`;
+        router.push(url);
+      } else {
+        router.push(`/order/cart?tableId=${tableId}`);
+      }
+    }
     setSelectedValue([]);
     setQuantity(1);
     setInstruction("");
@@ -258,7 +276,8 @@ export default function MenuForm({
         <div className="flex space-x-1 w-[30%]">
           <button
             onClick={() => {
-              if (quantity > 1) setQuantity(quantity - 1);
+              const minQty = requiredQty || 1;
+              if (quantity > minQty) setQuantity(quantity - 1);
             }}
           >
             <CiCircleMinus className="size-6 text-primary" />

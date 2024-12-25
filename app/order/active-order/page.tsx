@@ -2,22 +2,28 @@
 import {
   fetchAddonCategoryWithIds,
   fetchAddonWithIds,
+  fetchFocCatAndFocMenuWithPromotionIds,
   fetchMenuWithIds,
 } from "@/app/lib/backoffice/data";
-import { fetchCanceledOrders, fetchOrder } from "@/app/lib/order/data";
+import {
+  fetchCanceledOrders,
+  fetchOrder,
+  fetchPromotionMenuWithPromotionIds,
+  fetchPromotionWithTableId,
+} from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
-import { formatCurrency } from "@/function";
+import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
-import { Button, Card, Link } from "@nextui-org/react";
-import { Order } from "@prisma/client";
+import { Button, Card, Checkbox, cn, Link } from "@nextui-org/react";
+import { DISCOUNT, Order } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import NoticeCancelDialog from "../components/NoticeCancelDialog";
+import FocPromotion from "../components/FocPromotion";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();
@@ -44,15 +50,15 @@ function ActiveOrder() {
   );
 
   const filteredOrders = orders?.filter((item) => {
-    const validCanceledOrder = canceledOrderData?.find(
-      (order) => order.itemId === item.itemId
-    );
-    if (
-      canceledOrderData &&
-      validCanceledOrder &&
-      validCanceledOrder.userKnow
-    ) {
-      return false;
+    if (canceledOrderData && canceledOrderData.length) {
+      const validCanceledOrder = canceledOrderData.find(
+        (order) => order.itemId === item.itemId
+      );
+      if (validCanceledOrder && validCanceledOrder.userKnow) {
+        return false;
+      } else {
+        return true;
+      }
     } else {
       return true;
     }
@@ -62,7 +68,14 @@ function ActiveOrder() {
     filteredOrders && filteredOrders?.length > 0
       ? formatOrder(filteredOrders)
       : [];
-  const menuIds = orderData?.map((item) => item.menuId) as number[];
+  const menuIds = orderData
+    ?.map((item) => item.menuId)
+    .reduce((acc: number[], id) => {
+      if (id && !acc.includes(id)) {
+        acc.push(id);
+      }
+      return acc;
+    }, []);
   const itemAddon = orderData?.map((item) =>
     item.addons ? JSON.parse(item.addons) : []
   );
@@ -74,8 +87,16 @@ function ActiveOrder() {
     data: menus,
     error: menuError,
     isLoading: menuLoading,
-  } = useSWR([menuIds], () =>
-    menuIds.length ? fetchMenuWithIds(menuIds) : Promise.resolve([])
+  } = useSWR(menuIds.length > 0 ? [menuIds] : null, () =>
+    fetchMenuWithIds(menuIds)
+  );
+
+  const {
+    data: promotions,
+    error: promotionError,
+    isLoading: promotionLoading,
+  } = useSWR(tableId ? [`promotions-${tableId}`] : null, () =>
+    fetchPromotionWithTableId(tableId)
   );
 
   const {
@@ -84,6 +105,13 @@ function ActiveOrder() {
     isLoading: addonLoading,
   } = useSWR([orderData], () =>
     uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
+  );
+
+  const promotionIds = promotions ? promotions.map((item) => item.id) : [];
+
+  const { data: promotionMenus } = useSWR(
+    promotionIds && promotionIds.length ? [promotionIds] : null,
+    () => fetchPromotionMenuWithPromotionIds(promotionIds)
   );
 
   const addonCategoryIds =
@@ -101,19 +129,106 @@ function ActiveOrder() {
       : Promise.resolve([])
   );
 
-  const [unKnownCanceledItemId, setUnKnownCanceledItemId] = useState<
-    String | undefined
-  >();
-
   const totalPrice = addons && getTotalOrderPrice({ orderData, menus, addons });
+
+  const menuOrderData = orderData.reduce(
+    (
+      acc: Record<number, { menuId: number; quantity: number }>,
+      { menuId, quantity }
+    ) => {
+      if (menuId && !acc[menuId]) {
+        acc[menuId] = { menuId, quantity: 0 };
+      }
+      if (menuId && quantity) {
+        acc[menuId] = { menuId, quantity: acc[menuId].quantity + quantity };
+      }
+      return acc;
+    },
+    {}
+  );
+
+  const applicablePromotion = Object.values(
+    calculateApplicablePromotions({
+      promotionMenus,
+      promotions,
+      menuOrderData,
+      totalPrice,
+    })?.reduce((acc: any, promotion) => {
+      const groupName = promotion.group?.toLowerCase() || promotion.name;
+      if (!acc[groupName]) {
+        acc[groupName] = promotion;
+      }
+      return acc;
+    }, {}) || []
+  );
+
+  const discountApplicablePromo = applicablePromotion.filter(
+    (item: any) => item.discount_value
+  );
+  const discountedPrice = discountApplicablePromo.reduce(
+    (acc: number, promo: any) => {
+      if (promo.discount_type === DISCOUNT.FIXED_AMOUNT) {
+        return (acc += promo.discount_value);
+      }
+      if (promo.discount_type === DISCOUNT.PERCENTAGE && totalPrice) {
+        const value = (totalPrice / 100) * promo.discount_value;
+        return (acc += value);
+      }
+    },
+    0
+  );
+
+  const focPromotions = applicablePromotion.filter(
+    (item: any) => item.discount_type === DISCOUNT.FOCMENU
+  );
+
+  const focPromotionIds = focPromotions.map((item: any) => item.id);
+
+  const { data: focData } = useSWR(
+    focPromotionIds.length ? `focCategory - ${focPromotionIds}` : null,
+    () => fetchFocCatAndFocMenuWithPromotionIds(focPromotionIds)
+  );
+
+  const focDataMenuIds = focData?.focMenu
+    .map((item) => item.menuId)
+    .reduce((acc: number[], id) => {
+      if (!acc.includes(id) && !menuIds.includes(id)) {
+        acc.push(id);
+      }
+      return acc;
+    }, []);
+
+  const { data: focMenus } = useSWR(
+    focDataMenuIds && focDataMenuIds.length > 0 ? [focDataMenuIds] : null,
+    () => focDataMenuIds && fetchMenuWithIds(focDataMenuIds)
+  );
+
+  const allMenus = focMenus && menus && menus.concat(focMenus);
+
+  if (orderError || menuError || addonError || promotionError) {
+    return (
+      <div className="flex items-center justify-center mt-36 w-full">
+        <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
+          <span className="text-red-500">
+            Something went wrong. Please try again later.
+          </span>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="mb-3">
       {orderData && orderData.length > 0 ? (
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">
             <span>Your orders</span>
-            {totalPrice && (
-              <span>Total price: {formatCurrency(totalPrice)}</span>
+            {totalPrice && discountedPrice && (
+              <span>
+                Total price: {totalPrice}-{discountedPrice}
+                {" = "}
+                {formatCurrency(totalPrice - discountedPrice)}
+              </span>
             )}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
@@ -127,16 +242,18 @@ function ActiveOrder() {
               const validAddon = addons?.filter((addon) =>
                 addonIds.includes(addon.id)
               );
-              const unseenCanceledOrder = canceledOrderData?.find(
-                (order) => order.itemId === item.itemId
-              );
+              const unseenCanceledOrder =
+                canceledOrderData &&
+                canceledOrderData.length &&
+                canceledOrderData.find((order) => order.itemId === item.itemId);
               if (!validMenu) return null;
               return (
                 <div key={item.itemId}>
                   {orderLoading &&
                   menuLoading &&
                   addonLoading &&
-                  addonCatLoading ? (
+                  addonCatLoading &&
+                  promotionLoading ? (
                     <MenuLoading />
                   ) : (
                     <Card className="w-[11em] h-60 bg-background">
@@ -230,6 +347,13 @@ function ActiveOrder() {
             </Link>
           </Card>
         </div>
+      )}
+      {focPromotions.length > 0 && focData && allMenus && (
+        <FocPromotion
+          focPromotions={focPromotions}
+          focData={focData}
+          allMenus={allMenus}
+        />
       )}
     </div>
   );

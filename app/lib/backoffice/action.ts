@@ -2,10 +2,12 @@
 
 import { config } from "@/config";
 import { prisma } from "@/db";
+import { PaidData } from "@/general";
 import { DISCOUNT, ORDERSTATUS } from "@prisma/client";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
+import { fetchOrderWithItemId } from "../order/data";
 import {
   fetchCompany,
   fetchFocCategoryAndFocMenu,
@@ -14,9 +16,6 @@ import {
   fetchPromotionMenuWithPromoId,
   fetchSelectedLocation,
 } from "./data";
-import { OrderData, PaidData } from "@/general";
-import { fetchOrderWithItemId } from "../order/data";
-import { checkArraySame } from "@/function";
 
 interface Props {
   formData: FormData;
@@ -156,12 +155,12 @@ export async function updateMenu({ formData }: Props) {
   try {
     if (image) {
       const imageUrl = (await uploadImage(formData)) as string;
-      const menu = await prisma.menu.update({
+      await prisma.menu.update({
         where: { id },
         data: { name, price, assetUrl: imageUrl, description },
       });
     } else {
-      const menu = await prisma.menu.update({
+      await prisma.menu.update({
         where: { id },
         data: { name, price, description },
       });
@@ -687,11 +686,26 @@ export async function deleteTable(id: number) {
   }
 }
 
-export async function deleteImage(id: number) {
+export async function deleteMenuImage(id: number) {
   try {
     const menu = await prisma.menu.update({
       where: { id },
       data: { assetUrl: "" },
+    });
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while deleting image",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deletePromotionImage(id: number) {
+  try {
+    const menu = await prisma.promotion.update({
+      where: { id },
+      data: { imageUrl: "" },
     });
   } catch (error) {
     console.error(error);
@@ -881,9 +895,14 @@ export async function createPromotion(formData: FormData) {
   const totalPrice = Number(formData.get("totalPrice"));
   const menuQty = JSON.parse(formData.get("menuQty") as string);
   const focMenu = JSON.parse(formData.get("focMenu") as string);
+  const image = formData.get("image");
+  const priority = Number(formData.get("priority"));
+  const group = formData.get("group") as string;
   const conditions = formData.get("conditions") as string;
 
-  const isValid = Boolean(name && description && startDate && endDate);
+  const isValid = Boolean(
+    name && description && startDate && endDate && priority
+  );
   if (discountType === "foc") {
     const focValid = focMenu && focMenu.length > 0 && !discount_value;
     if (!focValid)
@@ -908,6 +927,11 @@ export async function createPromotion(formData: FormData) {
   const end_date = new Date(endDate);
 
   try {
+    let imageUrl: string | null = null;
+
+    if (image) {
+      imageUrl = (await uploadImage(formData)) as string;
+    }
     const location = await fetchSelectedLocation();
     const promotion = await prisma.promotion.create({
       data: {
@@ -920,6 +944,9 @@ export async function createPromotion(formData: FormData) {
         conditions,
         totalPrice,
         locationId: location?.id,
+        imageUrl,
+        priority,
+        group,
       },
     });
 
@@ -945,7 +972,7 @@ export async function createPromotion(formData: FormData) {
               data: {
                 promotionId: promotion.id,
                 menuId: Number(item.menuId),
-                quantity_requried: item.quantity,
+                quantity_required: item.quantity,
               },
             })
         )
@@ -974,8 +1001,14 @@ export async function updatePromotion(formData: FormData) {
   const menuQty = JSON.parse(formData.get("menuQty") as string);
   const focMenu = JSON.parse(formData.get("focMenu") as string);
   const conditions = formData.get("conditions") as string;
+  const priority = Number(formData.get("priority"));
+  const image = formData.get("image");
+  const group = formData.get("group") as string;
   const totalPrice = Number(formData.get("totalPrice"));
-  const isValid = Boolean(name && description && startDate && endDate);
+
+  const isValid = Boolean(
+    name && description && startDate && endDate && priority
+  );
   if (discountType === "foc") {
     const focValid = focMenu && focMenu.length > 0 && !discount_value;
     if (!focValid)
@@ -1001,48 +1034,71 @@ export async function updatePromotion(formData: FormData) {
   const end_date = new Date(endDate);
 
   const prevPromoMenu = await fetchPromotionMenuWithPromoId(id);
-  const prevMenuId = prevPromoMenu.map((item) => item.menuId);
+  const prevMenuId = prevPromoMenu && prevPromoMenu.map((item) => item.menuId);
 
   try {
-    await prisma.promotion.update({
-      where: { id },
-      data: {
-        name,
-        description,
-        discount_type,
-        discount_value,
-        start_date,
-        end_date,
-        conditions,
-        totalPrice,
-      },
-    });
+    if (image) {
+      const imageUrl = (await uploadImage(formData)) as string;
+      await prisma.promotion.update({
+        where: { id },
+        data: {
+          name,
+          description,
+          discount_type,
+          discount_value,
+          start_date,
+          end_date,
+          conditions,
+          totalPrice,
+          imageUrl,
+          priority,
+          group,
+        },
+      });
+    } else {
+      await prisma.promotion.update({
+        where: { id },
+        data: {
+          name,
+          description,
+          discount_type,
+          discount_value,
+          start_date,
+          end_date,
+          conditions,
+          totalPrice,
+          priority,
+          group,
+        },
+      });
+    }
+
     const isMenuQty = Boolean(menuQty && menuQty.length && !totalPrice);
     if (!isMenuQty) {
-      const allPromoMenuId = prevPromoMenu.map((promoMenu) => promoMenu.id);
+      const allPromoMenuId = prevPromoMenu?.map((promoMenu) => promoMenu.id);
       await prisma.promotionMenu.deleteMany({
         where: { id: { in: allPromoMenuId }, promotionId: id },
       });
     }
     if (isMenuQty) {
       menuQty.map(async (item: any) => {
-        const samePromotionMenu = prevPromoMenu.find(
+        const samePromotionMenu = prevPromoMenu?.find(
           (prevMenu) => prevMenu.menuId === Number(item.menuId)
         );
         if (
-          item.quantity !== samePromotionMenu?.quantity_requried &&
+          item.quantity !== samePromotionMenu?.quantity_required &&
           samePromotionMenu
         ) {
           await prisma.promotionMenu.update({
             where: { id: samePromotionMenu.id, promotionId: id },
-            data: { quantity_requried: item.quantity },
+            data: { quantity_required: item.quantity },
           });
         }
       });
     }
     const toAdd =
       isMenuQty &&
-      menuQty.filter((item: any) => !prevMenuId.includes(Number(item.menuId)));
+      menuQty.filter((item: any) => !prevMenuId?.includes(Number(item.menuId)));
 
     if (toAdd && toAdd.length > 0 && isMenuQty) {
       await Promise.all(
@@ -1052,7 +1108,7 @@ export async function updatePromotion(formData: FormData) {
               data: {
                 promotionId: id,
                 menuId: Number(item.menuId),
-                quantity_requried: item.quantity,
+                quantity_required: item.quantity,
               },
             })
         )
@@ -1061,7 +1117,7 @@ export async function updatePromotion(formData: FormData) {
 
     const toRemove =
       isMenuQty &&
-      prevPromoMenu.filter(
+      prevPromoMenu?.filter(
         (item) =>
           !menuQty.find(
             (menuqty: any) => Number(menuqty.menuId) === item.menuId
