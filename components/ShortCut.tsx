@@ -12,7 +12,7 @@ interface ShortcutButtonProps {
 const ShortcutButton = ({ keys, onClick, letter }: ShortcutButtonProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const ctrlPressed = keys.includes("command") && event.ctrlKey;
+      const ctrlPressed = keys.includes("ctrl") && event.ctrlKey;
       const letterPressed =
         event.key && letter.toLowerCase() === event.key.toLocaleLowerCase();
       if (ctrlPressed && letterPressed) {

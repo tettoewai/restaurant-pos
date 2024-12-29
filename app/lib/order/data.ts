@@ -204,6 +204,16 @@ export async function fetchPromotionWithTableId(tableId: number) {
   }
 }
 
+export async function fetchMenuCategoryWithIds(ids: number[]) {
+  noStore();
+  try {
+    return await prisma.menuCategory.findMany({ where: { id: { in: ids } } });
+  } catch (error) {
+    console.error("Error in menuCategory:", error);
+    throw new Error("Failed to fetch menuCategory data.");
+  }
+}
+
 export async function fetchPromotionMenuWithPromotionIds(ids: number[]) {
   noStore();
   try {
@@ -250,5 +260,17 @@ export async function fetchAddonCategoryWithMenuId(menuId: number) {
   } catch (error) {
     console.error("Error in fetchAddonCategoryWithMenuId:", error);
     throw new Error("Failed to fetch AddonCategory data.");
+  }
+}
+
+export async function fetchAddonCategoryMenuWithMenuIds(menuIds: number[]) {
+  noStore();
+  try {
+    return await prisma.menuAddonCategory.findMany({
+      where: { menuId: { in: menuIds } },
+    });
+  } catch (error) {
+    console.error("Error in fetchAddonCategoryMenuWithMenuIds:", error);
+    throw new Error("Failed to fetch menuAddonCategory data.");
   }
 }

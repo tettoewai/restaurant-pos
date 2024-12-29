@@ -16,7 +16,7 @@ import MoreOptionButton from "@/components/MoreOptionButton";
 import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card, Checkbox, cn, Link } from "@nextui-org/react";
-import { DISCOUNT, Order } from "@prisma/client";
+import { DISCOUNT, Order, ORDERSTATUS } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -134,8 +134,11 @@ function ActiveOrder() {
   const menuOrderData = orderData.reduce(
     (
       acc: Record<number, { menuId: number; quantity: number }>,
-      { menuId, quantity }
+      { menuId, quantity, status }
     ) => {
+      if (status === ORDERSTATUS.PENDING || status === ORDERSTATUS.CANCELED) {
+        return [];
+      }
       if (menuId && !acc[menuId]) {
         acc[menuId] = { menuId, quantity: 0 };
       }
@@ -223,13 +226,16 @@ function ActiveOrder() {
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">
             <span>Your orders</span>
-            {totalPrice && discountedPrice && (
-              <span>
-                Total price: {totalPrice}-{discountedPrice}
-                {" = "}
-                {formatCurrency(totalPrice - discountedPrice)}
-              </span>
-            )}
+            <span>
+              Total price:{" "}
+              {totalPrice && discountedPrice
+                ? `${totalPrice}-${discountedPrice} = ${formatCurrency(
+                    totalPrice - discountedPrice
+                  )}`
+                : totalPrice
+                ? formatCurrency(totalPrice)
+                : null}
+            </span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
             {orderData.map((item) => {

@@ -41,7 +41,7 @@ export default function PromotionCard({
   return (
     <div className="flex items-center flex-col relative">
       <span className="mb-2 text-primary text-center">
-        Promotions (Coming soon)
+        Promotions
         <Divider className="bg-gray-400 w-56 mt-1" />
       </span>
       <ScrollShadow
@@ -51,41 +51,41 @@ export default function PromotionCard({
         className="w-full flex space-x-1 p-1 justify-start snap-mandatory snap-x scroll-smooth"
         ref={scrollRef}
       >
-        {promotions &&
-          promotions.length &&
-          promotions.map((item, index) => (
-            <Link
-              href={`/order/promotion/${item.id}?tableId=${tableId}`}
-              key={index}
-              className="min-w-full max-w-sm h-60 sm:min-w-64 md:h-56 snap-center flex items-center justify-center"
-            >
-              <Card
-                isFooterBlurred
-                shadow="none"
-                className="relative w-full h-full bg-background"
+        {promotions && promotions.length
+          ? promotions.map((item, index) => (
+              <Link
+                href={`/order/promotion/${item.id}?tableId=${tableId}`}
+                key={index}
+                className="min-w-full max-w-sm h-60 sm:min-w-64 md:h-56 snap-center flex items-center justify-center"
               >
-                <div className="w-full h-full items-center flex justify-center">
-                  {item.imageUrl && (
-                    <Image
-                      isBlurred
-                      as={NextImage}
-                      src={item.imageUrl}
-                      alt="promotion image"
-                      height={240}
-                      width={240}
-                      className="object-fill h-full w-auto hover:scale-110"
-                    />
-                  )}
-                </div>
-                <CardFooter className="flex flex-col items-start before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-md bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
-                  <h1 className="text-lg font-bold stroke-white stroke-2">
-                    {item.name}
-                  </h1>
-                  <h4 className="text-default-500">{item.description}</h4>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
+                <Card
+                  isFooterBlurred
+                  shadow="none"
+                  className="relative w-full h-full bg-background"
+                >
+                  <div className="w-full h-full items-center flex justify-center">
+                    {item.imageUrl && (
+                      <Image
+                        isBlurred
+                        as={NextImage}
+                        src={item.imageUrl}
+                        alt="promotion image"
+                        height={240}
+                        width={240}
+                        className="object-fill h-full w-auto hover:scale-110"
+                      />
+                    )}
+                  </div>
+                  <CardFooter className="flex flex-col items-start before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-md bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+                    <h1 className="text-lg font-bold stroke-white stroke-2">
+                      {item.name}
+                    </h1>
+                    <h4 className="text-default-500">{item.description}</h4>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))
+          : null}
       </ScrollShadow>
       <div className="hidden md:flex">
         <button

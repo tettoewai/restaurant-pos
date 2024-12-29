@@ -1,9 +1,18 @@
 "use client";
-import { Button, Card, Checkbox, CheckboxGroup, cn } from "@nextui-org/react";
+import { fetchAddonCategoryWithIds } from "@/app/lib/backoffice/data";
+import { fetchAddonCategoryMenuWithMenuIds } from "@/app/lib/order/data";
+import {
+  Button,
+  Card,
+  Checkbox,
+  CheckboxGroup,
+  cn,
+  Spinner,
+} from "@nextui-org/react";
 import { FocCategory, FocMenu, Menu } from "@prisma/client";
-import React, { useState } from "react";
 import Image from "next/image";
-import UpdateMenuDialog from "@/components/UpdateMenuDailog";
+import { useState } from "react";
+import loading from "../loading";
 
 function FocPromotion({
   focPromotions,
@@ -20,6 +29,36 @@ function FocPromotion({
   const [selectedFocMenu, setSelectedFocMenu] = useState<
     { promotionId: number; focId: number; menuId: string[] }[]
   >([]);
+  const [isGettingPromo, setIsGettingPromo] = useState<{
+    loading: boolean;
+    promotionId: number;
+  } | null>();
+  const handleGetPromotion = async (menuIds: number[], promotionId: number) => {
+    setIsGettingPromo({ loading: true, promotionId });
+    const menuAddonCategory = await fetchAddonCategoryMenuWithMenuIds(menuIds);
+    const addonCatIds = menuAddonCategory.reduce((acc: number[], item) => {
+      if (!acc.includes(item.addonCategoryId)) {
+        acc.push(item.addonCategoryId);
+      }
+      return acc;
+    }, []);
+    const addonCategory = await fetchAddonCategoryWithIds(addonCatIds);
+    const requiredAddonCatMenu = menuIds.map((item) => {
+      const currentMenuAddonCatIds = menuAddonCategory
+        .filter((menuAddonCat) => menuAddonCat.menuId === item)
+        .map((menuAddonCat) => menuAddonCat.addonCategoryId);
+      const requiredCurrentAddonCat = addonCategory?.filter(
+        (addonCat) =>
+          currentMenuAddonCatIds.includes(addonCat.id) && addonCat.isRequired
+      );
+      if (requiredCurrentAddonCat?.length) {
+        console.log("requiredAddonCatMenu", item);
+      } else {
+        console.log(item);
+      }
+    });
+    setIsGettingPromo(null);
+  };
 
   return (
     <div className="mt-2">
@@ -32,6 +71,21 @@ function FocPromotion({
           const validFocMenu = focData.focMenu.filter((menu) =>
             validFocCat.map((focCat) => focCat.id).includes(menu.focCategoryId)
           );
+
+          const preferFocMenu = selectedFocMenu.filter(
+            (selectedFoc) =>
+              selectedFoc.menuId.length && selectedFoc.promotionId === item.id
+          );
+          const menuIds = preferFocMenu
+            .map((item) => item.menuId)
+            .reduce((acc: number[], id) => {
+              id.map((item) => {
+                if (!acc.includes(Number(item))) {
+                  acc.push(Number(item));
+                }
+              });
+              return acc;
+            }, []);
           return (
             <Card key={item.id} className="border-1 border-primary p-2">
               <div className="w-16 h-16 -scale-x-100 absolute right-0 top-0">
@@ -100,7 +154,7 @@ function FocPromotion({
                                       base: cn("w-full max-w-md"),
                                       wrapper: cn("absolute right-0"),
                                     }}
-                                    value={String(menu.id)}
+                                    value={String(menu.menuId)}
                                   >
                                     <div className="flex w-full">
                                       <div className="w-14 h-full flex items-center justify-center">
@@ -138,18 +192,20 @@ function FocPromotion({
               <div className="w-full flex justify-end space-x-1">
                 <Button>No Thanks!</Button>
                 <Button
+                  isDisabled={
+                    Boolean(!menuIds.length) ||
+                    (isGettingPromo?.promotionId === item.id &&
+                      isGettingPromo?.loading)
+                  }
                   color="primary"
-                  onClick={() => {
-                    console.log(
-                      selectedFocMenu.filter(
-                        (selectedFoc) =>
-                          selectedFoc.menuId.length &&
-                          selectedFoc.promotionId === item.id
-                      )
-                    );
-                  }}
+                  onClick={() => handleGetPromotion(menuIds, item.id)}
                 >
-                  Get Promotion
+                  {isGettingPromo?.promotionId === item.id &&
+                  isGettingPromo?.loading ? (
+                    <Spinner color="white" />
+                  ) : (
+                    "Get Promotion"
+                  )}
                 </Button>
               </div>
             </Card>

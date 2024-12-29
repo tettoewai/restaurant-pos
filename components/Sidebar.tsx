@@ -155,7 +155,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                             router.push(item.route);
                             setSideBarOpen(false);
                           }}
-                          keys={["command"]}
+                          keys={["ctrl"]}
                           letter={
                             item.name === "Setting" ? "I" : String(index + 1)
                           }
