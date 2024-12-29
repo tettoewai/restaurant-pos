@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma migrate reset",
+    "build": "npx prisma migrate reset --force",
     "start": "next start",
     "lint": "next lint"
   },
