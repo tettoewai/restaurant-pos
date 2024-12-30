@@ -24,46 +24,53 @@ export default function GetPromotion({
   const { promotionQue, setPromotionQue } = useContext(OrderContext);
 
   const handleGetPromotion = async () => {
-    let updatedPromotionQue = [...promotionQue];
-    for (const item of promotionMenu || []) {
-      const addonCategory = await fetchAddonCategoryWithMenuId(item.menuId);
-      const isRequired = addonCategory?.filter(
-        (addonCat) => addonCat.isRequired
-      );
-
-      if (isRequired && isRequired.length) {
-        updatedPromotionQue = [...updatedPromotionQue, item];
-        setPromotionQue(updatedPromotionQue);
-      } else {
-        const isExist = carts.find(
-          (exist) => exist.menuId === item.menuId && exist.addons.length === 0
+    if (promotionMenu?.length) {
+      let updatedPromotionQue = [...promotionQue];
+      for (const item of promotionMenu || []) {
+        const addonCategory = await fetchAddonCategoryWithMenuId(item.menuId);
+        const isRequired = addonCategory?.filter(
+          (addonCat) => addonCat.isRequired
         );
 
-        if (isExist) {
-          const otherItem = carts.filter((cart) => cart.id !== isExist.id);
-          setCarts([
-            ...otherItem,
-            { ...isExist, quantity: isExist.quantity + item.quantity_required },
-          ]);
+        if (isRequired && isRequired.length) {
+          updatedPromotionQue = [...updatedPromotionQue, item];
+          setPromotionQue(updatedPromotionQue);
         } else {
-          setCarts([
-            ...carts,
-            {
-              id: generateNumericID(),
-              menuId: item.menuId,
-              addons: [],
-              quantity: item.quantity_required,
-            },
-          ]);
+          const isExist = carts.find(
+            (exist) => exist.menuId === item.menuId && exist.addons.length === 0
+          );
+
+          if (isExist) {
+            const otherItem = carts.filter((cart) => cart.id !== isExist.id);
+            setCarts([
+              ...otherItem,
+              {
+                ...isExist,
+                quantity: isExist.quantity + item.quantity_required,
+              },
+            ]);
+          } else {
+            setCarts([
+              ...carts,
+              {
+                id: generateNumericID(),
+                menuId: item.menuId,
+                addons: [],
+                quantity: item.quantity_required,
+              },
+            ]);
+          }
         }
       }
-    }
-    if (updatedPromotionQue && updatedPromotionQue.length) {
-      const firstMenu = updatedPromotionQue[0];
-      if (firstMenu) {
-        const url = `/order/${firstMenu.menuId}?tableId=${tableId}&promotionId=${firstMenu.promotionId}&requiredQty=${firstMenu.quantity_required}`;
-        router.push(url);
+      if (updatedPromotionQue && updatedPromotionQue.length) {
+        const firstMenu = updatedPromotionQue[0];
+        if (firstMenu) {
+          const url = `/order/${firstMenu.menuId}?tableId=${tableId}&promotionId=${firstMenu.promotionId}&requiredQty=${firstMenu.quantity_required}`;
+          router.push(url);
+        }
       }
+    } else {
+      router.push(`/order?tableId=${tableId}`);
     }
   };
 

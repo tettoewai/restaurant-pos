@@ -184,7 +184,6 @@ function ActiveOrder() {
   const focPromotions = applicablePromotion.filter(
     (item: any) => item.discount_type === DISCOUNT.FOCMENU
   );
-
   const focPromotionIds = focPromotions.map((item: any) => item.id);
 
   const { data: focData } = useSWR(
@@ -206,7 +205,7 @@ function ActiveOrder() {
     () => focDataMenuIds && fetchMenuWithIds(focDataMenuIds)
   );
 
-  const allMenus = focMenus && menus && menus.concat(focMenus);
+  const allMenus = (focMenus && menus && menus.concat(focMenus)) || menus;
 
   if (orderError || menuError || addonError || promotionError) {
     return (
@@ -221,7 +220,7 @@ function ActiveOrder() {
   }
 
   return (
-    <div className="mb-3">
+    <div className="pb-3">
       {orderData && orderData.length > 0 ? (
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">

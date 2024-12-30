@@ -59,7 +59,7 @@ export default function MenuForCart({
   };
 
   return (
-    <Card className="h-32 mb-3">
+    <Card className="h-32 mb-3 bg-background">
       <Link
         href={`/order/${validCart.menuId}?tableId=${tableId}&cartId=${validCart.id}`}
       >

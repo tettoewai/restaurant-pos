@@ -29,6 +29,12 @@ export default function UpdateCompanyDialog() {
   const [prevData, setPrevData] = useState<Company | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const isUpdateCompany =
+    typeof window !== "undefined"
+      ? localStorage.getItem("isUpdateCompany")
+      : null;
+
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
@@ -49,6 +55,10 @@ export default function UpdateCompanyDialog() {
     setIsSubmitting(false);
     if (isSuccess) {
       toast.success(message);
+      localStorage.setItem(
+        "isUpdateCompany",
+        isUpdateCompany === "false" ? "true" : "false"
+      );
       onClose();
     } else toast.error(message);
   };

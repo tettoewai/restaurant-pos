@@ -61,7 +61,7 @@ function FocPromotion({
   };
 
   return (
-    <div className="mt-2">
+    <div className="pt-2">
       <h1>Congratulation ! You got FOC Promotion(s)</h1>
       <div className="mt-2 space-y-1">
         {focPromotions.map((item: any) => {
@@ -87,7 +87,10 @@ function FocPromotion({
               return acc;
             }, []);
           return (
-            <Card key={item.id} className="border-1 border-primary p-2">
+            <Card
+              key={item.id}
+              className="border-1 border-primary p-2 bg-background"
+            >
               <div className="w-16 h-16 -scale-x-100 absolute right-0 top-0">
                 <Image
                   src="/ribbon_cornor.png"
@@ -146,7 +149,7 @@ function FocPromotion({
                               return (
                                 <Card
                                   key={menu.id}
-                                  className="p-2 border-1"
+                                  className="p-2 border-1 bg-background"
                                   shadow="none"
                                 >
                                   <Checkbox

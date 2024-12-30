@@ -176,13 +176,18 @@ const PromotionPage = async ({ params }: { params: { id: string } }) => {
         </div>
       </Card>
 
-      <Card className="mt-2 min-h-28 p-2">
-        <div className="text-sm mb-3 w-2/3">
-          {days && <span>{`Available in ${days}`}</span>}
-        </div>
-        <div className="text-sm mb-3 w-full flex justify-end">
-          {duration && <span>{duration}</span>}
-        </div>
+      <Card className="mt-2 min-h-28 p-2 bg-background">
+        {days ? (
+          <div className="text-sm mb-3 w-2/3">
+            <span>{`Available in ${days}`}</span>
+          </div>
+        ) : null}
+        {duration ? (
+          <div className="text-sm mb-3 w-full flex justify-end">
+            <span>{duration}</span>
+          </div>
+        ) : null}
+
         <h4 className="text-default-500 truncate">{promotion.description}</h4>
       </Card>
 

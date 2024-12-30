@@ -89,6 +89,7 @@ export default function UpdateMenuCategoryDialog({
                   defaultValue={prevData?.name}
                   required
                   isRequired
+                  autoFocus
                 />
               )}
             </ModalBody>

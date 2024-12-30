@@ -86,6 +86,7 @@ export default function UpdateTableDialog({
                   defaultValue={prevData?.name}
                   required
                   isRequired
+                  autoFocus
                 />
               )}
             </ModalBody>

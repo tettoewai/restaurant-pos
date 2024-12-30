@@ -50,10 +50,13 @@ const OrderPage = async ({
   };
   const validMenu = !menuCat ? menuOrder : getMenuWithMenuCat(menuCat);
   return (
-    <div className="mt-4 h-full">
+    <div className="mt-4 h-full pb-5">
       <span className="mt-3 text-lg">Welcome From {company?.name}!</span>
       <Spacer y={2} />
-      <PromotionCard tableId={tableId} promotions={promotions} />
+      {promotions.length ? (
+        <PromotionCard tableId={tableId} promotions={promotions} />
+      ) : null}
+
       <Spacer y={3} />
       <div className="flex flex-col items-center w-full">
         <span className="text-primary text-center">
