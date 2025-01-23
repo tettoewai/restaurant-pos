@@ -1,8 +1,12 @@
 "use client";
-import { createPromotion } from "@/app/lib/backoffice/action";
+import {
+  createFocMenuAddonCategory,
+  createPromotion,
+} from "@/app/lib/backoffice/action";
 import { fetchMenu } from "@/app/lib/backoffice/data";
+import ChooseRequiredAddonDialog from "@/components/ChooseRequiredAddonDialog";
 import FileDropZone from "@/components/FileDropZone";
-import { checkArraySame } from "@/function";
+import { checkArraySame, checkMenuRequiredAddonCat } from "@/function";
 import {
   Accordion,
   AccordionItem,
@@ -13,11 +17,13 @@ import {
   Select,
   SelectItem,
   Spinner,
+  Textarea,
   TimeInput,
+  useDisclosure,
 } from "@nextui-org/react";
 import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
@@ -33,10 +39,15 @@ export default function App() {
     { id: 1, menuId: [""], quantity: 1 },
   ]);
   const [creating, setCreating] = useState(false);
+  const [creatingMenuAddonCategory, setCreatingMenuAddonCategory] =
+    useState(false);
+  const [promotionFormData, setPromotionFormData] = useState<FormData>();
   const [enableDay, setEnableDay] = useState(false);
   const [enabelTime, setTimeEnable] = useState(false);
   const [promotionType, setPromotionType] = useState<"menu" | "total">("total");
   const [isFoc, setIsFoc] = useState<boolean>(false);
+
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
   const [timePeriod, setTimePeriod] = useState<{
     startTime?: TimeValue;
@@ -46,6 +57,22 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState<Set<string>>(new Set([]));
 
   const [promotionImage, setPromotionImage] = useState<File | null>(null);
+
+  const [focAddonCategory, setFocAddonCategory] = useState<
+    { menuId: number; addonCategoryId: number; addonId: number }[]
+  >([]);
+  const [checkingRequiredAddonCat, setCheckingRequiredAddonCat] =
+    useState(false);
+
+  const [menuRequiredAddonCatQue, setMenuRequiredAddonCatQue] = useState<
+    { menuId: number; addonCategoryIds: number[] }[]
+  >([]);
+
+  useEffect(() => {
+    if (menuRequiredAddonCatQue.length) {
+      onOpen();
+    }
+  }, [menuRequiredAddonCatQue]);
 
   const days = [
     { name: "Sunday" },
@@ -125,42 +152,114 @@ export default function App() {
     if (enableDay || enabelTime) {
       formData.set("conditions", JSON.stringify(conditions));
     }
+    const focMenuIds = focMenu.reduce((acc: number[], item) => {
+      item.menuId.map((id) => {
+        if (!acc.includes(Number(id))) {
+          acc.push(Number(id));
+        }
+      });
+      return acc;
+    }, []);
 
+    setCheckingRequiredAddonCat(true);
+
+    const menuRequiredAddonCat = await checkMenuRequiredAddonCat(focMenuIds);
+
+    setCheckingRequiredAddonCat(false);
+
+    if (menuRequiredAddonCat.length) {
+      setPromotionFormData(formData);
+      setMenuRequiredAddonCatQue(menuRequiredAddonCat);
+    } else {
+      setCreating(true);
+      const { isSuccess, message } = await createPromotion(formData);
+      setCreating(false);
+      if (isSuccess) {
+        toast.success(message);
+        router.back();
+      } else {
+        toast.error(message);
+      }
+    }
+  };
+
+  const handleSetAddonCategory = async () => {
+    const requiredAddonCategoryId = menuRequiredAddonCatQue.filter((item) => {
+      const validSelectedMenu = focAddonCategory.filter(
+        (focAddonCat) => focAddonCat.menuId === item.menuId
+      );
+      const selectedAddonCat = validSelectedMenu.map(
+        (item) => item.addonCategoryId
+      );
+      return checkArraySame(item.addonCategoryIds, selectedAddonCat);
+    });
+    const isValid =
+      requiredAddonCategoryId.length === menuRequiredAddonCatQue.length;
+    if (!isValid || !promotionFormData)
+      return toast.error("Missing required addon");
     setCreating(true);
-
-    const { isSuccess, message } = await createPromotion(formData);
+    const {
+      isSuccess: promotionSuccess,
+      message: promotionMessage,
+      promotionId,
+    } = await createPromotion(promotionFormData);
     setCreating(false);
+    if (promotionSuccess) {
+      toast.success(promotionMessage);
+      router.back();
+    } else {
+      toast.error(promotionMessage);
+    }
+    setCreatingMenuAddonCategory(true);
+    const { isSuccess, message } = await createFocMenuAddonCategory({
+      focAddonCategory,
+      promotionId,
+    });
+    setCreatingMenuAddonCategory(false);
     if (isSuccess) {
       toast.success(message);
-      router.back();
     } else {
       toast.error(message);
     }
   };
   return (
     <div className="bg-background p-2 rounded-md">
+      <ChooseRequiredAddonDialog
+        creatingMenuAddonCategory={creatingMenuAddonCategory}
+        handleSetAddonCategory={handleSetAddonCategory}
+        menuRequiredAddonCatQue={menuRequiredAddonCatQue}
+        isOpen={isOpen}
+        onClose={onClose}
+        onOpenChange={onOpenChange}
+        menus={menus}
+        focAddonCategory={focAddonCategory}
+        setFocAddonCategory={setFocAddonCategory}
+      />
       <div className="my-1 mb-3">
         <span className="font-semibold">New Promotion</span>
       </div>
       <form onSubmit={handleSubmit}>
         <div>
-          <div className="w-full flex justify-between">
-            <Select
-              size="sm"
-              label="Discount type"
-              variant="bordered"
-              placeholder="Select type of discount"
-              className="w-40"
-              selectedKeys={isFoc ? "2" : "1"}
-              onChange={(e) => {
-                const value = e.target.value === "1" ? false : true;
-                setIsFoc(value);
-              }}
-            >
-              <SelectItem key="1">Discount</SelectItem>
-              <SelectItem key="2">FOC</SelectItem>
-            </Select>
-            <div className="flex space-x-1">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2">
+            <div className="w-full pb-1 sm:pb-0">
+              <Select
+                size="sm"
+                label="Discount type"
+                variant="bordered"
+                placeholder="Select type of discount"
+                className="max-w-36"
+                selectedKeys={isFoc ? "2" : "1"}
+                onChange={(e) => {
+                  const value = e.target.value === "1" ? false : true;
+                  setIsFoc(value);
+                }}
+              >
+                <SelectItem key="1">Discount</SelectItem>
+                <SelectItem key="2">FOC</SelectItem>
+              </Select>
+            </div>
+
+            <div className="flex space-x-1 justify-end w-full">
               <Input
                 size="sm"
                 name="priority"
@@ -170,7 +269,6 @@ export default function App() {
                 type="number"
                 isRequired
                 defaultValue="1"
-                className="w-28"
                 min={1}
               />
               <Input
@@ -179,12 +277,11 @@ export default function App() {
                 label="Group (Optional)"
                 variant="bordered"
                 type="string"
-                className="min-w-60"
               />
             </div>
           </div>
-          <div className="flex flex-row">
-            <div className="space-y-1 w-1/2 p-1">
+          <div className="flex w-full flex-wrap my-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 w-full space-x-0 sm:space-x-1 space-y-1 sm:space-y-0">
               <Input
                 size="sm"
                 name="name"
@@ -193,17 +290,8 @@ export default function App() {
                 required
                 isRequired
                 autoFocus
+                fullWidth
               />
-              <Input
-                size="sm"
-                name="description"
-                label="Description"
-                variant="bordered"
-                required
-                isRequired
-              />
-            </div>
-            <div className="space-y-1 w-1/2 p-1">
               <DateRangePicker
                 size="sm"
                 label="Promotion duration"
@@ -211,7 +299,10 @@ export default function App() {
                 isRequired
                 startName="start_date"
                 endName="end_date"
+                fullWidth
               />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 w-full space-x-0 sm:space-x-1 space-y-1 sm:space-y-0 mt-1">
               {!isFoc ? (
                 <Input
                   size="sm"
@@ -220,6 +311,7 @@ export default function App() {
                   variant="bordered"
                   type="number"
                   min={1}
+                  fullWidth
                   endContent={
                     <div className="flex items-center h-full">
                       <label className="sr-only" htmlFor="discount_type">
@@ -239,19 +331,28 @@ export default function App() {
                   isRequired
                 />
               ) : null}
+              <Textarea
+                size="sm"
+                name="description"
+                label="Description"
+                variant="bordered"
+                required
+                isRequired
+                fullWidth
+              />
             </div>
           </div>
           {isFoc ? (
-            <div className="border-2 p-1 rounded-md mb-1">
+            <div className="border-2 border-default p-1 rounded-md mb-1">
               <span>FOC menus</span>
-              <div className=" grid grid-cols-2 ">
+              <div className="grid grid-cols-1 sm:grid-cols-2">
                 {focMenu.map((item) => (
-                  <div className="flex items-center" key={item.id}>
+                  <div className="flex items-center p-1" key={item.id}>
                     <Select
                       size="sm"
                       label="Select Menu"
                       variant="bordered"
-                      className="w-3/4 mr-1"
+                      className="w-3/4"
                       selectionMode="multiple"
                       required
                       isRequired
@@ -285,7 +386,7 @@ export default function App() {
                       type="number"
                       variant="bordered"
                       label="Select"
-                      className="w-1/4"
+                      className="w-1/5"
                       min={1}
                       max={item.menuId.length}
                       required
@@ -343,6 +444,10 @@ export default function App() {
                   <BiPlusCircle className="size-7 text-primary" />
                 </Button>
               </div>
+              <span className="text-default-600 text-xs md:text-medium">
+                * If there are required addon-categories, it will let you choose
+                addons at the next step.
+              </span>
             </div>
           ) : null}
         </div>
@@ -365,9 +470,9 @@ export default function App() {
           <div>
             {promotionType === "menu" ? (
               <>
-                <div className="space-y-1 w-full grid grid-cols-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2">
                   {menuQty.map((item: any) => (
-                    <div className="flex items-center" key={item.id}>
+                    <div className="flex items-center p-1" key={item.id}>
                       <Select
                         size="sm"
                         label="Select Menu"
@@ -426,7 +531,7 @@ export default function App() {
                         type="number"
                         variant="bordered"
                         label="Qty"
-                        className="w-1/4"
+                        className="w-1/5"
                         min={1}
                         max={100}
                         required
@@ -491,7 +596,7 @@ export default function App() {
                 required
                 isRequired
                 endContent="Ks"
-                className="w-1/2"
+                className="w-full sm:w-1/2"
               />
             )}
           </div>
@@ -518,38 +623,41 @@ export default function App() {
               isCompact
               className="w-full"
             >
-              <div className="flex w-full justify-between mb-1">
-                <div className="w-11/12">
-                  <Select
-                    size="sm"
-                    label="Promotion days"
-                    variant="bordered"
-                    selectionMode="multiple"
-                    placeholder="Select days"
-                    selectedKeys={selectedDay}
-                    onChange={handleSelectionChange}
-                    isDisabled={!enableDay}
-                  >
-                    {days.map((day) => (
-                      <SelectItem key={day.name}>{day.name}</SelectItem>
-                    ))}
-                  </Select>
-                  {!enableDay && (
-                    <span className="text-default-700 text-sm">
-                      * If you do not set days, promotion will effect every
-                      days!
-                    </span>
-                  )}
+              <div className="w-full mb-1 items-center">
+                <div className="flex items-center w-full justify-between">
+                  <div className="w-11/12 items-center">
+                    <Select
+                      size="sm"
+                      label="Promotion days"
+                      variant="bordered"
+                      selectionMode="multiple"
+                      placeholder="Select days"
+                      selectedKeys={selectedDay}
+                      onChange={handleSelectionChange}
+                      isDisabled={!enableDay}
+                      fullWidth
+                    >
+                      {days.map((day) => (
+                        <SelectItem key={day.name}>{day.name}</SelectItem>
+                      ))}
+                    </Select>
+                  </div>
+                  <Checkbox
+                    size="lg"
+                    isSelected={enableDay}
+                    onValueChange={setEnableDay}
+                    className="ml-1"
+                  />
                 </div>
-                <Checkbox
-                  size="lg"
-                  isSelected={enableDay}
-                  onValueChange={setEnableDay}
-                />
+                {!enableDay && (
+                  <span className="text-default-700 text-sm block">
+                    * If you do not set days, promotion will effect every days!
+                  </span>
+                )}
               </div>
-              <div className="flex w-full justify-between">
-                <div className="flex w-11/12 space-x-1 flex-col">
-                  <div className="flex">
+              <div className="w-full items-center">
+                <div className="flex w-full justify-between">
+                  <div className="flex w-full">
                     <TimeInput
                       size="sm"
                       label="Start time"
@@ -560,6 +668,7 @@ export default function App() {
                       }
                       isDisabled={!enabelTime}
                       isRequired
+                      fullWidth
                     />
                     <TimeInput
                       size="sm"
@@ -571,21 +680,23 @@ export default function App() {
                         setTimePeriod({ ...timePeriod, endTime: e })
                       }
                       isRequired
+                      fullWidth
                     />
                   </div>
-                  {!enabelTime && (
-                    <span className="text-default-700 text-sm">
-                      * If you do not set time period, promotion will be effect
-                      the whole day!
-                    </span>
-                  )}
+                  <Checkbox
+                    size="lg"
+                    isSelected={enabelTime}
+                    onValueChange={setTimeEnable}
+                    className="ml-1"
+                  />
                 </div>
 
-                <Checkbox
-                  size="lg"
-                  isSelected={enabelTime}
-                  onValueChange={setTimeEnable}
-                />
+                {!enabelTime && (
+                  <span className="text-default-700 text-sm block">
+                    * If you do not set time period, promotion will be effect
+                    the whole day!
+                  </span>
+                )}
               </div>
             </AccordionItem>
           </Accordion>
@@ -603,7 +714,19 @@ export default function App() {
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
             isDisabled={creating}
           >
-            {creating ? <Spinner color="white" /> : "Create"}
+            {creating ? (
+              <>
+                <span>Creating promotion</span>
+                <Spinner color="white" />
+              </>
+            ) : checkingRequiredAddonCat && isFoc && focMenu.length ? (
+              <>
+                <span>Checking menu have required addon category....</span>
+                <Spinner color="white" />
+              </>
+            ) : (
+              "Create"
+            )}
           </Button>
         </div>
       </form>

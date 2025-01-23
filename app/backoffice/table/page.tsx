@@ -1,4 +1,5 @@
-import { fetchTable } from "@/app/lib/backoffice/data";
+import { fetchOrderWithTableId, fetchTable } from "@/app/lib/backoffice/data";
+import { fetchActiveOrderWithTableIds } from "@/app/lib/order/data";
 import ItemCard from "@/components/ItemCard";
 import NewTableDialog from "@/components/NewTableDailog";
 import { Bebas_Neue } from "next/font/google";
@@ -6,6 +7,9 @@ const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
 export default async function Table() {
   const tables = await fetchTable();
+  const orders = await fetchActiveOrderWithTableIds(
+    tables.map((item) => item.id)
+  );
   return (
     <div>
       <div className="w-full flex justify-between items-center">
@@ -17,15 +21,21 @@ export default async function Table() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 mt-2">
         {tables.length > 0 ? (
-          tables.map((item) => (
-            <ItemCard
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              itemType="table"
-              assetUrl={item.assetUrl}
-            />
-          ))
+          tables.map((item) => {
+            const isActive = Boolean(
+              orders.find((order) => order.tableId === item.id)
+            );
+            return (
+              <ItemCard
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                itemType="table"
+                assetUrl={item.assetUrl}
+                isActive={isActive}
+              />
+            );
+          })
         ) : (
           <span>There is no table</span>
         )}

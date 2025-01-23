@@ -88,7 +88,7 @@ export default function PaidAndPrintDialog({
     });
     return {
       key: index + 1,
-      menu: validMenu?.name,
+      menu: item.isFoc ? `${validMenu?.name} (FOC)` : validMenu?.name,
       addon: addonCatAddon?.length ? addonCatAddon.join(", ") : "--",
       quantity: item.quantity,
       action: (
@@ -107,21 +107,23 @@ export default function PaidAndPrintDialog({
 
   const [taxRate, setTaxRate] = useState(5);
 
-  const subTotal = paid.reduce((accu, curr) => {
-    const validMenu = menus?.find((item) => item.id === curr.menuId);
-    const paidAddons: number[] = curr.addons ? JSON.parse(curr.addons) : [];
-    const paidAddonPrices = addons
-      ?.filter((item) => paidAddons.includes(item.id))
-      .reduce((accu, curr) => curr.price + accu, 0);
-    if (!curr.quantity) return 0;
-    const totalPrice =
-      paidAddonPrices && validMenu
-        ? (validMenu.price + paidAddonPrices) * curr.quantity + accu
-        : validMenu
-        ? validMenu.price * curr.quantity + accu
-        : 0;
-    return totalPrice;
-  }, 0);
+  const subTotal = paid
+    .filter((item) => !item.isFoc)
+    .reduce((accu, curr) => {
+      const validMenu = menus?.find((item) => item.id === curr.menuId);
+      const paidAddons: number[] = curr.addons ? JSON.parse(curr.addons) : [];
+      const paidAddonPrices = addons
+        ?.filter((item) => paidAddons.includes(item.id))
+        .reduce((accu, curr) => curr.price + accu, 0);
+      if (!curr.quantity) return 0;
+      const totalPrice =
+        paidAddonPrices && validMenu
+          ? (validMenu.price + paidAddonPrices) * curr.quantity + accu
+          : validMenu
+          ? validMenu.price * curr.quantity + accu
+          : 0;
+      return totalPrice;
+    }, 0);
 
   // Tax and total calculations based on user input
   const tax = subTotal * (taxRate / 100);

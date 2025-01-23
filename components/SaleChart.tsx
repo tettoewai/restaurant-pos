@@ -117,7 +117,7 @@ const SalesChart = () => {
   );
 
   return (
-    <Card className="h-fit w-full md:w-3/5 bg-background p-2 mt-1">
+    <Card className="h-fit w-full md:w-3/5 bg-background">
       <div className="w-full flex justify-end">
         <Dropdown className="bg-background">
           <DropdownTrigger>

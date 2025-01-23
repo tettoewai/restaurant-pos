@@ -11,6 +11,7 @@ import { fetchOrderWithItemId } from "../order/data";
 import {
   fetchCompany,
   fetchFocCategoryAndFocMenu,
+  fetchFocMenuAddonCategoryWithPromotionId,
   fetchLocation,
   fetchMenuAddonCategory,
   fetchPromotionMenuWithPromoId,
@@ -703,7 +704,7 @@ export async function deleteMenuImage(id: number) {
 
 export async function deletePromotionImage(id: number) {
   try {
-    const menu = await prisma.promotion.update({
+    await prisma.promotion.update({
       where: { id },
       data: { imageUrl: "" },
     });
@@ -758,10 +759,141 @@ export async function updateOrderStatus({
   }
 }
 
+export async function createFocMenuAddonCategory({
+  focAddonCategory,
+  promotionId,
+}: {
+  focAddonCategory: {
+    menuId: number;
+    addonCategoryId: number;
+    addonId: number;
+  }[];
+  promotionId?: number;
+}) {
+  if (!promotionId)
+    return {
+      message: "Promotion's id is not provided.",
+      isSuccess: false,
+    };
+  try {
+    const dataWithPromotionId = focAddonCategory.map((item) => ({
+      ...item,
+      promotionId,
+    }));
+    await prisma.focMenuAddonCategory.createMany({
+      data: dataWithPromotionId,
+    });
+    revalidatePath("/backoffice/promotion");
+    return {
+      message: `Created ${focAddonCategory.length} focMenuAddonCategory(ies) successfully.`,
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while create FocMenuAddonCategory",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function updateFocMenuAddonCategory({
+  focAddonCategory,
+  promotionId,
+}: {
+  focAddonCategory: {
+    menuId: number;
+    addonCategoryId: number;
+    addonId: number;
+  }[];
+  promotionId: number;
+}) {
+  if (!promotionId && !focAddonCategory.length)
+    return {
+      message: "Something went wrong!",
+      isSuccess: false,
+    };
+  try {
+    const prevFocMenuAddonCat = await fetchFocMenuAddonCategoryWithPromotionId(
+      promotionId
+    );
+    const toRemove = prevFocMenuAddonCat.filter(
+      (focMenuAddonCat) =>
+        !focAddonCategory.find(
+          (item) =>
+            item.menuId === focMenuAddonCat.menuId &&
+            item.addonCategoryId === focMenuAddonCat.addonCategoryId &&
+            item.addonId === focMenuAddonCat.addonId
+        )
+    );
+    const toAdd = focAddonCategory.filter(
+      (focAddonCat) =>
+        !prevFocMenuAddonCat.find(
+          (item) =>
+            item.menuId === focAddonCat.menuId &&
+            item.addonCategoryId === focAddonCat.addonCategoryId &&
+            item.addonId === focAddonCat.addonId
+        )
+    );
+    if (toRemove.length) {
+      await prisma.focMenuAddonCategory.deleteMany({
+        where: { promotionId, id: { in: toRemove.map((item) => item.id) } },
+      });
+    }
+    if (toAdd.length) {
+      await createFocMenuAddonCategory({
+        focAddonCategory: toAdd,
+        promotionId,
+      });
+    }
+    return {
+      message: `Updated FOC menu addon-category successfully.`,
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while updating FocMenuAddonCategory",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deleteFocMenuAddonCategoryWithPromoId(
+  promotionId: number
+) {
+  if (!promotionId) return;
+  try {
+    await prisma.focMenuAddonCategory.deleteMany({ where: { promotionId } });
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while deleting focMenuAddonCategory",
+      isSuccess: false,
+    };
+  }
+}
+
 export async function setNotiRead(id: number) {
   if (!id) return;
   try {
-    await prisma.notification.update({ where: { id }, data: { isRead: true } });
+    await prisma.notification.update({
+      where: { id },
+      data: { isRead: true },
+    });
+    revalidatePath("/backoffice");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function setNotiReadWithTableId(id: number) {
+  if (!id) return;
+  try {
+    await prisma.notification.updateMany({
+      where: { tableId: id, isRead: false },
+      data: { isRead: true },
+    });
     revalidatePath("/backoffice");
   } catch (error) {
     console.log(error);
@@ -980,7 +1112,11 @@ export async function createPromotion(formData: FormData) {
     }
 
     revalidatePath(`/backoffice/promotion`);
-    return { message: "Created promotion successfully.", isSuccess: true };
+    return {
+      message: "Created promotion successfully.",
+      isSuccess: true,
+      promotionId: promotion.id,
+    };
   } catch (error) {
     console.error(error);
     return {

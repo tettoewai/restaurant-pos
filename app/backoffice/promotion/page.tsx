@@ -59,7 +59,10 @@ async function PromotionPage() {
 
               return (
                 <Chip variant="bordered" key={item.id}>
-                  {validMenus.join(", ")} ({item.minSelection})
+                  {item.minSelection === 1
+                    ? validMenus.join(" or ")
+                    : validMenus.join(" , ")}{" "}
+                  ({item.minSelection})
                 </Chip>
               );
             })}

@@ -1,5 +1,9 @@
 "use client";
-import { updateOrderStatus } from "@/app/lib/backoffice/action";
+import {
+  setNotiRead,
+  setNotiReadWithTableId,
+  updateOrderStatus,
+} from "@/app/lib/backoffice/action";
 import {
   checkTableLocation,
   fetchAddonCategoryWithIds,
@@ -11,6 +15,7 @@ import CancelOrderBODialog from "@/components/CancelOrderBODialog";
 import PaidAndPrintDialog from "@/components/PaidAndPrintDialog";
 import QuantityDialog from "@/components/QuantityDialog";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
+import { formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice, OrderData } from "@/general";
 import {
   Badge,
@@ -43,10 +48,11 @@ export default function App({ params }: { params: { id: string } }) {
   const [isUpdateLocation, setIsUpdateLocation] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsUpdateLocation(localStorage.getItem("isUpdateLocation"));
+    if (tableId) {
+      console.log(tableId);
+      setNotiReadWithTableId(tableId);
     }
-  }, []);
+  }, [tableId]);
 
   useEffect(() => {
     if (tableId) {
@@ -235,7 +241,7 @@ export default function App({ params }: { params: { id: string } }) {
   };
 
   const totalUnpidPrice = getTotalOrderPrice({
-    orderData: unpaidOrderData,
+    orders: unpaidOrderData.filter((item) => !item.isFoc),
     menus: menus,
     addons: addons,
   });
@@ -245,10 +251,14 @@ export default function App({ params }: { params: { id: string } }) {
   );
   return (
     <div className="flex w-full flex-col relative">
-      <span className="flex md:absolute top-5 left-3">
-        Order of {table?.name},{" "}
-        {unpaidOrderData.length && "Total price :" + totalUnpidPrice}
-      </span>
+      {table ? (
+        <span className="flex md:absolute top-5 left-3">
+          Order of {table?.name},{" "}
+          {unpaidOrderData.length &&
+            totalUnpidPrice &&
+            "Total price : " + formatCurrency(totalUnpidPrice)}
+        </span>
+      ) : null}
       <div className="absolute mt-1.5 top-8 right-2.5 md:top-1 md:right-2">
         <PaidAndPrintDialog
           menus={menus}
@@ -337,7 +347,11 @@ export default function App({ params }: { params: { id: string } }) {
                                 src: validMenu?.assetUrl || "/default-menu.png",
                               }}
                               description={item.instruction}
-                              name={validMenu?.name}
+                              name={
+                                item.isFoc
+                                  ? `${validMenu?.name} (FOC)`
+                                  : validMenu?.name
+                              }
                             >
                               {item.instruction}
                             </User>

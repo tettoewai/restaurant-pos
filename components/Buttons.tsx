@@ -8,6 +8,7 @@ import { GoScreenFull, GoScreenNormal } from "react-icons/go";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
 import ShortcutButton from "./ShortCut";
+import Link from "next/link";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);

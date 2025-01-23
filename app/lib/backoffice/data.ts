@@ -389,6 +389,7 @@ export async function fetchOrder() {
         status: { notIn: [ORDERSTATUS.PAID] },
         isArchived: false,
       },
+      orderBy: { id: "desc" },
     });
     return order;
   } catch (error) {
@@ -531,6 +532,44 @@ export const fetchFocCategoryAndFocMenu = async (id: number) => {
   }
 };
 
+export const fetchFocMenuAddonCategoryWithPromotionId = async (
+  promotionId: number
+) => {
+  try {
+    return await prisma.focMenuAddonCategory.findMany({
+      where: { promotionId },
+    });
+  } catch (error) {
+    console.error(
+      "Database error for FocMenuAddonCategoryWithPromotionId.",
+      error
+    );
+    throw new Error("Failed to fetch  FocMenuAddonCategoryWithPromotionId.");
+  }
+};
+
+export const fetchFocMenuAddonCategoryWithPromotionIdAndMenuIds = async ({
+  promotionId,
+  menuIds,
+}: {
+  promotionId: number;
+  menuIds: number[];
+}) => {
+  try {
+    return await prisma.focMenuAddonCategory.findMany({
+      where: { promotionId, menuId: { in: menuIds } },
+    });
+  } catch (error) {
+    console.error(
+      "Database error for FocMenuAddonCategoryWithPromotionIdAndMenuIds.",
+      error
+    );
+    throw new Error(
+      "Failed to fetch FocMenuAddonCategoryWithPromotionIdAndMenuIds."
+    );
+  }
+};
+
 export const fetchPromotionWithId = async (id: number) => {
   noStore();
   try {
@@ -551,6 +590,30 @@ export const fetchPromotionMenuWithPromoId = async (id: number) => {
     throw new Error("Failed to fetch promotionMenu with id.");
   }
 };
+
+export async function fetchMenuAddonCategoryWithMenuIds(menuIds: number[]) {
+  noStore();
+  try {
+    return await prisma.menuAddonCategory.findMany({
+      where: { menuId: { in: menuIds } },
+    });
+  } catch (error) {
+    console.error("Database error for menuAddonCateogry", error);
+    throw new Error("Failed to fetch menuAddonCateogry with menuId.");
+  }
+}
+
+export async function fetchAddonWithAddonCatIds(addonCatIds: number[]) {
+  noStore();
+  try {
+    return await prisma.addon.findMany({
+      where: { addonCategoryId: { in: addonCatIds } },
+    });
+  } catch (error) {
+    console.error("Database error for addon", error);
+    throw new Error("Failed to fetch addon with addonCatIds.");
+  }
+}
 
 export const getSalesData = async (year: number) => {
   noStore();

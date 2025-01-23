@@ -1,5 +1,4 @@
 import OrderForDate from "@/components/OrderForDate";
-import SalesChart from "@/components/SaleChart";
 
 const Dashboard = () => {
   return (
@@ -9,7 +8,6 @@ const Dashboard = () => {
         <span className="text-sm text-gray-600">Track your steps</span>
       </div>
       <OrderForDate />
-      <SalesChart />
     </div>
   );
 };

@@ -4,7 +4,12 @@ import {
   fetchPromotionWithId,
 } from "@/app/lib/backoffice/data";
 import { fetchFocMenuWithPromotiionId } from "@/app/lib/order/data";
-import { convert12Hour, formatCurrency } from "@/function";
+import {
+  checkPromotionDuration,
+  checkTimeInDuration,
+  convert12Hour,
+  formatCurrency,
+} from "@/function";
 import {
   Card,
   Chip,
@@ -15,12 +20,13 @@ import {
 } from "@nextui-org/react";
 import NextImage from "next/image";
 import GetPromotion from "../../components/GetPromotion";
+import { weekday } from "@/general";
 
 const PromotionPage = async ({ params }: { params: { id: string } }) => {
   const promotionId = Number(params.id);
   const promotion = await fetchPromotionWithId(promotionId);
 
-  if (!promotion) return <h1>There is no menu!</h1>;
+  if (!promotion) return <h1 className="pt-4">There is no promotion!</h1>;
 
   const isFoc = promotion.discount_type === "FOCMENU";
 
@@ -52,13 +58,15 @@ const PromotionPage = async ({ params }: { params: { id: string } }) => {
 
   const conditions =
     promotion.conditions && JSON.parse(promotion.conditions.toString());
-  const days =
+  const days: string =
     conditions &&
     conditions.length &&
     conditions
       .map((item: any) => (item.days ? item.days : []))
       .filter((item: any) => item !== undefined)
       .join(", ");
+
+  const promotionAvailabel = checkPromotionDuration({ days, conditions });
 
   const duration =
     conditions &&
@@ -192,7 +200,11 @@ const PromotionPage = async ({ params }: { params: { id: string } }) => {
       </Card>
 
       <div className="fixed bottom-2 right-0 left-0 m-auto w-full px-2">
-        <GetPromotion promotionMenu={promotionMenu} menus={menus} />
+        <GetPromotion
+          promotionMenu={promotionMenu}
+          menus={menus}
+          promotionAvailabel={promotionAvailabel}
+        />
       </div>
     </div>
   );

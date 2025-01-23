@@ -9,27 +9,28 @@ import {
   fetchCanceledOrders,
   fetchOrder,
   fetchPromotionMenuWithPromotionIds,
+  fetchPromotionUsage,
   fetchPromotionWithTableId,
 } from "@/app/lib/order/data";
 import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
-import { Button, Card, Checkbox, cn, Link } from "@nextui-org/react";
+import { Button, Card, Link } from "@nextui-org/react";
 import { DISCOUNT, Order, ORDERSTATUS } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
-import NoticeCancelDialog from "../components/NoticeCancelDialog";
 import FocPromotion from "../components/FocPromotion";
+import NoticeCancelDialog from "../components/NoticeCancelDialog";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
   const {
-    data: orders,
+    data: orders = [],
     error: orderError,
     isLoading: orderLoading,
   } = useSWR<Order[]>([tableId], () => fetchOrder(tableId).then((res) => res), {
@@ -37,6 +38,11 @@ function ActiveOrder() {
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
   });
+
+  const { data: promotionUsage = [] } = useSWR(
+    orders && tableId && orders.length ? "promotionUsage" : null,
+    () => fetchPromotionUsage({ tableId, orderSeq: orders[0].orderSeq })
+  );
 
   const canceledOrder = orders
     ? orders
@@ -129,7 +135,24 @@ function ActiveOrder() {
       : Promise.resolve([])
   );
 
-  const totalPrice = addons && getTotalOrderPrice({ orderData, menus, addons });
+  const orderDataForTotalPrice = orderData.filter((item) => !item.isFoc);
+
+  const totalPrice = getTotalOrderPrice({
+    orders: orderDataForTotalPrice,
+    menus,
+    addons,
+  });
+
+  const confirmedOrder = orderDataForTotalPrice.filter(
+    (item) =>
+      item.status !== ORDERSTATUS.PENDING &&
+      item.status !== ORDERSTATUS.CANCELED
+  );
+  const confirmedTotalPrice = getTotalOrderPrice({
+    orders: confirmedOrder,
+    menus,
+    addons,
+  });
 
   const menuOrderData = orderData.reduce(
     (
@@ -137,7 +160,7 @@ function ActiveOrder() {
       { menuId, quantity, status }
     ) => {
       if (status === ORDERSTATUS.PENDING || status === ORDERSTATUS.CANCELED) {
-        return [];
+        return acc;
       }
       if (menuId && !acc[menuId]) {
         acc[menuId] = { menuId, quantity: 0 };
@@ -155,7 +178,8 @@ function ActiveOrder() {
       promotionMenus,
       promotions,
       menuOrderData,
-      totalPrice,
+      totalPrice: confirmedTotalPrice,
+      promotionUsage,
     })?.reduce((acc: any, promotion) => {
       const groupName = promotion.group?.toLowerCase() || promotion.name;
       if (!acc[groupName]) {
@@ -184,6 +208,7 @@ function ActiveOrder() {
   const focPromotions = applicablePromotion.filter(
     (item: any) => item.discount_type === DISCOUNT.FOCMENU
   );
+
   const focPromotionIds = focPromotions.map((item: any) => item.id);
 
   const { data: focData } = useSWR(
@@ -225,16 +250,18 @@ function ActiveOrder() {
         <div className="p-1 w-full">
           <div className="flex justify-between w-full p-1 mt-1">
             <span>Your orders</span>
-            <span>
-              Total price:{" "}
-              {totalPrice && discountedPrice
-                ? `${totalPrice}-${discountedPrice} = ${formatCurrency(
-                    totalPrice - discountedPrice
-                  )}`
-                : totalPrice
-                ? formatCurrency(totalPrice)
-                : null}
-            </span>
+            {totalPrice ? (
+              <span>
+                Total price:{" "}
+                {totalPrice && discountedPrice
+                  ? `${totalPrice}-${discountedPrice} = ${formatCurrency(
+                      totalPrice - discountedPrice
+                    )}`
+                  : totalPrice
+                  ? formatCurrency(totalPrice)
+                  : null}
+              </span>
+            ) : null}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
             {orderData.map((item) => {
@@ -261,9 +288,24 @@ function ActiveOrder() {
                   promotionLoading ? (
                     <MenuLoading />
                   ) : (
-                    <Card className="w-[11em] h-60 bg-background">
+                    <Card
+                      className={clsx("w-[11em] h-60 bg-background relative", {
+                        "border-primary border-1": item.isFoc,
+                      })}
+                    >
+                      {item.isFoc ? (
+                        <div className="w-12 h-12 -scale-x-100 absolute right-0 top-0">
+                          <Image
+                            src="/ribbon_cornor.png"
+                            alt="ribbon cornor"
+                            width={1080}
+                            height={1080}
+                            className="w-full h-full"
+                          />
+                        </div>
+                      ) : null}
                       <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
-                        {item.status === "PENDING" ? (
+                        {item.status === "PENDING" && !item.isFoc ? (
                           <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
                             <MoreOptionButton
                               id={validMenu.id}
@@ -358,6 +400,7 @@ function ActiveOrder() {
           focPromotions={focPromotions}
           focData={focData}
           allMenus={allMenus}
+          tableId={tableId}
         />
       )}
     </div>

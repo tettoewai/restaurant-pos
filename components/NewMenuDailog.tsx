@@ -132,6 +132,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
                 onClick={onClose}
+                isDisabled={isSubmitting}
               >
                 Cancel
               </Button>

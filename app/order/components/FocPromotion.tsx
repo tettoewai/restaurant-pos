@@ -1,6 +1,12 @@
 "use client";
-import { fetchAddonCategoryWithIds } from "@/app/lib/backoffice/data";
+import {
+  fetchAddonCategoryWithIds,
+  fetchFocMenuAddonCategoryWithPromotionIdAndMenuIds,
+  fetchPromotionWithId,
+} from "@/app/lib/backoffice/data";
+import { createFocOrder } from "@/app/lib/order/action";
 import { fetchAddonCategoryMenuWithMenuIds } from "@/app/lib/order/data";
+import { checkPromotionDuration } from "@/function";
 import {
   Button,
   Card,
@@ -10,14 +16,18 @@ import {
   Spinner,
 } from "@nextui-org/react";
 import { FocCategory, FocMenu, Menu } from "@prisma/client";
+import { customAlphabet } from "nanoid";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import loading from "../loading";
+import { toast } from "react-toastify";
+import { mutate } from "swr";
 
 function FocPromotion({
   focPromotions,
   focData,
   allMenus,
+  tableId,
 }: {
   focPromotions: unknown[];
   focData: {
@@ -25,6 +35,7 @@ function FocPromotion({
     focMenu: FocMenu[];
   };
   allMenus: Menu[];
+  tableId: number;
 }) {
   const [selectedFocMenu, setSelectedFocMenu] = useState<
     { promotionId: number; focId: number; menuId: string[] }[]
@@ -35,6 +46,20 @@ function FocPromotion({
   } | null>();
   const handleGetPromotion = async (menuIds: number[], promotionId: number) => {
     setIsGettingPromo({ loading: true, promotionId });
+    const promotion = await fetchPromotionWithId(promotionId);
+    const conditions =
+      promotion?.conditions && JSON.parse(promotion.conditions.toString());
+    const days: string =
+      conditions &&
+      conditions.length &&
+      conditions
+        .map((item: any) => (item.days ? item.days : []))
+        .filter((item: any) => item !== undefined)
+        .join(", ");
+    const promotionAvailabel = checkPromotionDuration({ days, conditions });
+    if (!promotionAvailabel)
+      return toast.error("This promotion is not available now!");
+    if (!focData) return toast.error("There is no foc promotion!");
     const menuAddonCategory = await fetchAddonCategoryMenuWithMenuIds(menuIds);
     const addonCatIds = menuAddonCategory.reduce((acc: number[], item) => {
       if (!acc.includes(item.addonCategoryId)) {
@@ -43,7 +68,7 @@ function FocPromotion({
       return acc;
     }, []);
     const addonCategory = await fetchAddonCategoryWithIds(addonCatIds);
-    const requiredAddonCatMenu = menuIds.map((item) => {
+    const requiredAddonCatMenu = menuIds.filter((item) => {
       const currentMenuAddonCatIds = menuAddonCategory
         .filter((menuAddonCat) => menuAddonCat.menuId === item)
         .map((menuAddonCat) => menuAddonCat.addonCategoryId);
@@ -51,12 +76,44 @@ function FocPromotion({
         (addonCat) =>
           currentMenuAddonCatIds.includes(addonCat.id) && addonCat.isRequired
       );
-      if (requiredCurrentAddonCat?.length) {
-        console.log("requiredAddonCatMenu", item);
-      } else {
-        console.log(item);
-      }
+      return requiredCurrentAddonCat?.length;
     });
+    if (menuIds.length) {
+      const numbers = "0123456789";
+      const generateNumericID = customAlphabet(numbers, 7);
+      const focMenuAddonCategory =
+        await fetchFocMenuAddonCategoryWithPromotionIdAndMenuIds({
+          promotionId,
+          menuIds: requiredAddonCatMenu,
+        });
+      const focOrderWithAddon = menuIds.map((item) => {
+        const validAddons = focMenuAddonCategory
+          .filter(
+            (requiredAddonCatMenu) =>
+              requiredAddonCatMenu.menuId === item &&
+              promotionId === requiredAddonCatMenu.promotionId
+          )
+          .map((requiredAddonCatMenu) => requiredAddonCatMenu.addonId);
+        return {
+          id: generateNumericID(),
+          menuId: item,
+          addons: validAddons || [],
+          isFoc: true,
+          quantity: 1,
+        };
+      });
+      const { isSuccess, message } = await createFocOrder({
+        tableId,
+        cartItem: focOrderWithAddon,
+        promotionId,
+      });
+      if (isSuccess) {
+        toast.success(message);
+        mutate("promotionUsage");
+      } else {
+        toast.error(message);
+      }
+    }
     setIsGettingPromo(null);
   };
 

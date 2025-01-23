@@ -17,7 +17,7 @@ const Order = () => {
   );
   const tableId = order && order.map((item) => item.tableId);
   const { data: tables } = useSWR(
-    [tableId],
+    `table - ${[tableId]}`,
     () => tableId && fetchTableWithIds(tableId).then((res) => res)
   );
   const uniqueTable = Array.from(new Set(tableId));

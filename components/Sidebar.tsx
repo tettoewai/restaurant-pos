@@ -5,11 +5,25 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import { BiSolidCategoryAlt, BiSolidFoodMenu } from "react-icons/bi";
-import { IoFastFood } from "react-icons/io5";
+import {
+  BiCategory,
+  BiFoodMenu,
+  BiSolidCategory,
+  BiSolidCategoryAlt,
+  BiSolidFoodMenu,
+} from "react-icons/bi";
+import {
+  IoFastFood,
+  IoFastFoodOutline,
+  IoSettingsOutline,
+} from "react-icons/io5";
 
 import {
   MdLocationOn,
+  MdOutlineLocationOn,
+  MdOutlineRestaurantMenu,
+  MdOutlineSpaceDashboard,
+  MdOutlineTableBar,
   MdRestaurantMenu,
   MdSpaceDashboard,
   MdTableBar,
@@ -36,19 +50,19 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Order",
       route: "/backoffice/order",
-      icon: <IoFastFood />,
+      icon: <IoFastFoodOutline />,
     },
     {
       name: "Dashboard",
       route: "/backoffice/dashboard",
-      icon: <MdSpaceDashboard />,
+      icon: <MdOutlineSpaceDashboard />,
     },
     {
       name: "Menu category",
       route: "/backoffice/menu-category",
-      icon: <BiSolidCategoryAlt />,
+      icon: <BiCategory />,
     },
-    { name: "Menu", route: "/backoffice/menu", icon: <BiSolidFoodMenu /> },
+    { name: "Menu", route: "/backoffice/menu", icon: <BiFoodMenu /> },
     {
       name: "Addon Category",
       route: "/backoffice/addon-category",
@@ -57,17 +71,17 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Addon",
       route: "/backoffice/addon",
-      icon: <MdRestaurantMenu />,
+      icon: <MdOutlineRestaurantMenu />,
     },
     {
       name: "Table",
       route: "/backoffice/table",
-      icon: <MdTableBar />,
+      icon: <MdOutlineTableBar />,
     },
     {
       name: "Location",
       route: "/backoffice/location",
-      icon: <MdLocationOn />,
+      icon: <MdOutlineLocationOn />,
     },
     {
       name: "Promotion",
@@ -77,7 +91,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Setting",
       route: "/backoffice/setting",
-      icon: <IoSettings />,
+      icon: <IoSettingsOutline />,
     },
   ];
 

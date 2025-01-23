@@ -77,6 +77,7 @@ model Menu {
   Receipt              Receipt[]
   PromotionMenu        PromotionMenu[]
   FocMenu              FocMenu[]
+  FocMenuAddonCategory FocMenuAddonCategory[]
 }
 
 model DisabledLocationMenu {
@@ -96,14 +97,15 @@ model MenuCategoryMenu {
 }
 
 model AddonCategory {
-  id                Int                 @id @default(autoincrement())
-  name              String
-  isRequired        Boolean             @default(true)
-  isArchived        Boolean             @default(false)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  addons            Addon[]
-  menuAddonCategory MenuAddonCategory[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  isRequired           Boolean                @default(true)
+  isArchived           Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  addons               Addon[]
+  menuAddonCategory    MenuAddonCategory[]
+  FocMenuAddonCategory FocMenuAddonCategory[]
 }
 
 model MenuAddonCategory {
@@ -115,30 +117,32 @@ model MenuAddonCategory {
 }
 
 model Addon {
-  id              Int           @id @default(autoincrement())
-  name            String
-  price           Int           @default(0)
-  addonCategoryId Int
-  isArchived      Boolean       @default(false)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  addonCategory   AddonCategory @relation(fields: [addonCategoryId], references: [id])
-  Order           Order[]
-  Receipt         Receipt[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  price                Int                    @default(0)
+  addonCategoryId      Int
+  isArchived           Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  addonCategory        AddonCategory          @relation(fields: [addonCategoryId], references: [id])
+  Order                Order[]
+  Receipt              Receipt[]
+  FocMenuAddonCategory FocMenuAddonCategory[]
 }
 
 model Table {
-  id           Int            @id @default(autoincrement())
-  name         String
-  locationId   Int
-  assetUrl     String
-  isArchived   Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  orders       Order[]
-  location     Location       @relation(fields: [locationId], references: [id])
-  Notification Notification[]
-  Receipt      Receipt[]
+  id             Int              @id @default(autoincrement())
+  name           String
+  locationId     Int
+  assetUrl       String
+  isArchived     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  orders         Order[]
+  location       Location         @relation(fields: [locationId], references: [id])
+  Notification   Notification[]
+  Receipt        Receipt[]
+  PromotionUsage PromotionUsage[]
 }
 
 model User {
@@ -216,26 +220,28 @@ model Rating {
 }
 
 model Promotion {
-  id             Int             @id @default(autoincrement())
-  name           String
-  description    String
-  discount_type  DISCOUNT
-  discount_value Int?
-  totalPrice     Int?
-  start_date     DateTime
-  end_date       DateTime
-  locationId     Int?
-  is_active      Boolean         @default(true)
-  conditions     Json?
-  priority       Int             @default(1)
-  group          String?
-  imageUrl       String?
-  isArchived     Boolean         @default(false)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  location       Location?       @relation(fields: [locationId], references: [id])
-  PromotionMenu  PromotionMenu[]
-  FocCategory    FocCategory[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  description          String
+  discount_type        DISCOUNT
+  discount_value       Int?
+  totalPrice           Int?
+  start_date           DateTime
+  end_date             DateTime
+  locationId           Int?
+  is_active            Boolean                @default(true)
+  conditions           Json?
+  priority             Int                    @default(1)
+  group                String?
+  imageUrl             String?
+  isArchived           Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  location             Location?              @relation(fields: [locationId], references: [id])
+  PromotionMenu        PromotionMenu[]
+  FocCategory          FocCategory[]
+  FocMenuAddonCategory FocMenuAddonCategory[]
+  PromotionUsage       PromotionUsage[]
 }
 
 enum DISCOUNT {
@@ -267,6 +273,29 @@ model FocMenu {
   focCategoryId Int
   menu          Menu        @relation(fields: [menuId], references: [id])
   focCategory   FocCategory @relation(fields: [focCategoryId], references: [id])
+}
+
+model FocMenuAddonCategory {
+  id              Int           @id @default(autoincrement())
+  menuId          Int
+  addonCategoryId Int
+  addonId         Int
+  promotionId     Int
+  menu            Menu          @relation(fields: [menuId], references: [id])
+  addonCategory   AddonCategory @relation(fields: [addonCategoryId], references: [id])
+  addon           Addon         @relation(fields: [addonId], references: [id])
+  promotion       Promotion     @relation(fields: [promotionId], references: [id])
+}
+
+model PromotionUsage {
+  id          Int       @id @default(autoincrement())
+  promotionId Int
+  tableId     Int
+  orderSeq    String
+  table       Table     @relation(fields: [tableId], references: [id])
+  promotion   Promotion @relation(fields: [promotionId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model CanceledOrder {

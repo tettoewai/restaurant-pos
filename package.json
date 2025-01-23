@@ -12,7 +12,7 @@
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@nextui-org/react": "^2.4.6",
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "^6.2.1",
     "@vercel/speed-insights": "^1.0.12",
     "chart.js": "^4.4.4",
     "cloudinary": "^2.3.1",
@@ -40,7 +40,7 @@
     "@types/react": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
-    "prisma": "^5.19.1",
+    "prisma": "^6.2.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3"
   }

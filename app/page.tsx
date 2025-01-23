@@ -10,7 +10,8 @@ import {
 } from "react-icons/ri";
 import { FaUserShield } from "react-icons/fa6";
 import { VscFeedback } from "react-icons/vsc";
-const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
+
+const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
 export default async function Home() {
   const functionItem = [
@@ -51,11 +52,12 @@ export default async function Home() {
 
   return (
     <div className="flex  flex-col items-center bg-gray-200 dark:bg-gray-950 h-screen overflow-auto w-full">
-      <h1
-        className={`text-primary font-bold text-xl mt-5 ${bebasNeue.className}`}
+      <div
+        className={`flex items-center justify-center flex-col ${bebasNeue.className}`}
       >
-        TTW-Restaurant POS
-      </h1>
+        <h1 className="text-primary text-2xl mt-5">TTW-Restaurant POS</h1>
+        <h1 className="text-lg">The revolution of POS</h1>
+      </div>
       <div className="mt-16 max-w-96">
         <h1 className="text-wrap m-4 text-center font-bold text-lg">
           Manage your menu catelog easily with Restaurant POS and entice your

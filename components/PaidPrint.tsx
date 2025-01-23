@@ -103,24 +103,28 @@ function PaidPrint({
               (accu, curr) => curr.price + accu,
               0
             );
-            const currentTotalPrice =
-              currentAddonPrice && validMenu && item.quantity
-                ? (validMenu.price + currentAddonPrice) * item.quantity
-                : validMenu && item.quantity
-                ? validMenu.price * item.quantity
-                : 0;
+            const currentTotalPrice = item.isFoc
+              ? 0
+              : currentAddonPrice && validMenu && item.quantity
+              ? (validMenu.price + currentAddonPrice) * item.quantity
+              : validMenu && item.quantity
+              ? validMenu.price * item.quantity
+              : 0;
+            const menuName = item.isFoc
+              ? `${validMenu?.name} (FOC)`
+              : validMenu?.name;
             return (
               <tr className="border-b" key={index}>
-                <td className="text-wrap">
-                  <span className="text-wrap">
+                <td className="text-wrap max-w-28">
+                  <span>
                     {validAddon && validAddon.length > 0
-                      ? validMenu?.name +
+                      ? menuName +
                         `(${validAddon?.map((item) => item.name).join(", ")})`
-                      : validMenu?.name}
+                      : menuName}
                   </span>
                 </td>
-                <td>{item.quantity}</td>
-                <td>{currentTotalPrice} Ks</td>
+                <td className="text-center">{item.quantity}</td>
+                <td className="text-end">{currentTotalPrice} Ks</td>
               </tr>
             );
           })}

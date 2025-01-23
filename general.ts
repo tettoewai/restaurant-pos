@@ -42,6 +42,7 @@ export interface OrderData {
   quantity: number | undefined;
   status: $Enums.ORDERSTATUS | undefined;
   totalPrice: number | undefined;
+  isFoc?: boolean;
   instruction: string | null | undefined;
 }
 
@@ -67,6 +68,7 @@ export function formatOrder(orders: Order[]): OrderData[] {
     const status = validItem?.status;
     const totalPrice = validItem?.totalPrice;
     const instruction = validItem?.instruction;
+    const isFoc = Boolean(validItem?.isFoc);
     const addons = validItems
       .map((item) => item.addonId)
       .filter((item) => item !== null);
@@ -79,6 +81,7 @@ export function formatOrder(orders: Order[]): OrderData[] {
         status,
         totalPrice,
         instruction,
+        isFoc,
       };
     } else {
       return {
@@ -88,31 +91,46 @@ export function formatOrder(orders: Order[]): OrderData[] {
         status,
         totalPrice,
         instruction,
+        isFoc,
       };
     }
   });
   return orderData;
 }
 
+export const weekday = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 export const getTotalOrderPrice = ({
-  orderData,
+  orders,
   menus,
   addons,
 }: {
-  orderData: OrderData[] | undefined;
+  orders: OrderData[] | undefined;
   menus: Menu[] | undefined;
-  addons: Addon[];
+  addons?: Addon[];
 }) => {
-  return orderData?.reduce((accu, curr) => {
+  return orders?.reduce((accu, curr) => {
     const currentMenuPrice = menus?.find(
       (item) => curr.menuId === item.id
     )?.price;
     const unpaidAddon = curr.addons ? JSON.parse(curr.addons) : [];
     const addonPrices = addons
-      .filter((item) => unpaidAddon.includes(item.id))
+      ?.filter((item) => unpaidAddon.includes(item.id))
       .reduce((accu, curr) => curr.price + accu, 0);
     const totalPrice =
-      unpaidAddon && unpaidAddon.length && currentMenuPrice && curr.quantity
+      unpaidAddon &&
+      unpaidAddon.length &&
+      currentMenuPrice &&
+      curr.quantity &&
+      addonPrices
         ? (currentMenuPrice + addonPrices) * curr.quantity + accu
         : currentMenuPrice && curr.quantity
         ? currentMenuPrice * curr.quantity + accu

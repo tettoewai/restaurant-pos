@@ -10,9 +10,11 @@ import { useContext } from "react";
 export default function GetPromotion({
   promotionMenu,
   menus,
+  promotionAvailabel,
 }: {
   promotionMenu?: PromotionMenu[];
   menus: Menu[];
+  promotionAvailabel: boolean;
 }) {
   const numbers = "0123456789";
   const generateNumericID = customAlphabet(numbers, 7);
@@ -78,6 +80,7 @@ export default function GetPromotion({
     <Button
       onClick={handleGetPromotion}
       className="text-white bg-primary w-full"
+      isDisabled={!promotionAvailabel}
     >
       Get Promotion
     </Button>

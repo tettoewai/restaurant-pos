@@ -19,17 +19,16 @@ interface Props {
   addon: Addon[];
   order?: Order[] | null;
 }
-
+interface SelectedAddon {
+  categoryId: number;
+  addonId: number;
+}
 export default function MenuForm({
   addonCategory,
   addon,
   menuId,
   order,
 }: Props) {
-  interface SelectedAddon {
-    categoryId: number;
-    addonId: number;
-  }
   const { carts, setCarts } = useContext(OrderContext);
   const { promotionQue, setPromotionQue } = useContext(OrderContext);
 

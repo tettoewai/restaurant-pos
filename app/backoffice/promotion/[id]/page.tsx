@@ -1,16 +1,24 @@
 "use client";
 import {
+  deleteFocMenuAddonCategoryWithPromoId,
   deletePromotionImage,
+  updateFocMenuAddonCategory,
   updatePromotion,
 } from "@/app/lib/backoffice/action";
 import {
   fetchFocCategoryAndFocMenu,
+  fetchFocMenuAddonCategoryWithPromotionId,
   fetchMenu,
   fetchPromotionMenuWithPromoId,
   fetchPromotionWithId,
 } from "@/app/lib/backoffice/data";
+import ChooseRequiredAddonDialog from "@/components/ChooseRequiredAddonDialog";
 import FileDropZone from "@/components/FileDropZone";
-import { dateToString } from "@/function";
+import {
+  checkArraySame,
+  checkMenuRequiredAddonCat,
+  dateToString,
+} from "@/function";
 import { parseDate, parseTime } from "@internationalized/date";
 import {
   Accordion,
@@ -22,7 +30,9 @@ import {
   Select,
   SelectItem,
   Spinner,
+  Textarea,
   TimeInput,
+  useDisclosure,
 } from "@nextui-org/react";
 import { DISCOUNT } from "@prisma/client";
 import { TimeValue } from "@react-types/datepicker";
@@ -41,6 +51,12 @@ export default function App({ params }: { params: { id: string } }) {
 
   const { data, isLoading } = useSWR(id ? [id] : null, () =>
     fetchPromotionWithId(id)
+  );
+
+  const { data: focMenuAddonCatData } = useSWR(
+    id ? `focMenuAddonCat-${id}` : null,
+    () =>
+      id ? fetchFocMenuAddonCategoryWithPromotionId(id) : Promise.resolve([])
   );
 
   const { data: menus = [] } = useSWR("menus", () => fetchMenu());
@@ -81,9 +97,18 @@ export default function App({ params }: { params: { id: string } }) {
   }>();
 
   const [selectedDay, setSelectedDay] = useState<Set<string>>(new Set([]));
-
+  const [promotionFormData, setPromotionFormData] = useState<FormData>();
+  const [menuRequiredAddonCatQue, setMenuRequiredAddonCatQue] = useState<
+    { menuId: number; addonCategoryIds: number[] }[]
+  >([]);
   const [promotionImage, setPromotionImage] = useState<File | null>(null);
   const [prevImage, setPrevImage] = useState<String | null>();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [focAddonCategory, setFocAddonCategory] = useState<
+    { menuId: number; addonCategoryId: number; addonId: number }[]
+  >([]);
+  const [creatingMenuAddonCategory, setCreatingMenuAddonCategory] =
+    useState(false);
 
   const days = [
     { name: "Sunday" },
@@ -99,6 +124,9 @@ export default function App({ params }: { params: { id: string } }) {
     () => data && JSON.parse(data.conditions as string),
     [data]
   );
+
+  const [checkingRequiredAddonCat, setCheckingRequiredAddonCat] =
+    useState(false);
 
   const handleSelectionChange = (e: any) => {
     const value = e.target.value;
@@ -147,7 +175,7 @@ export default function App({ params }: { params: { id: string } }) {
         }
       });
     }
-  }, [prevMenuQty, prevCondition, data, , isLoading, focData]);
+  }, [prevMenuQty, prevCondition, data, isLoading, focData]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -208,15 +236,94 @@ export default function App({ params }: { params: { id: string } }) {
     if (enableDay || enabelTime) {
       formData.set("conditions", JSON.stringify(conditions));
     }
-    setIsSubmitting(true);
-    const { isSuccess, message } = await updatePromotion(formData);
-    setIsSubmitting(false);
 
+    const focMenuIds = focMenu.reduce((acc: number[], item) => {
+      item.menuId.map((id) => {
+        if (!acc.includes(Number(id))) {
+          acc.push(Number(id));
+        }
+      });
+      return acc;
+    }, []);
+
+    setCheckingRequiredAddonCat(true);
+
+    const menuRequiredAddonCat = await checkMenuRequiredAddonCat(focMenuIds);
+
+    setCheckingRequiredAddonCat(false);
+
+    if (menuRequiredAddonCat.length) {
+      onOpen();
+      setPromotionFormData(formData);
+      focMenuAddonCatData &&
+        setFocAddonCategory(
+          focMenuAddonCatData
+            .filter((item) =>
+              menuRequiredAddonCat
+                .map((requiredAdddonCat) => requiredAdddonCat.menuId)
+                .includes(item.menuId)
+            )
+            .map((item) => {
+              return {
+                menuId: item.menuId,
+                addonCategoryId: item.addonCategoryId,
+                addonId: item.addonId,
+              };
+            })
+        );
+      setMenuRequiredAddonCatQue(menuRequiredAddonCat);
+    } else {
+      await deleteFocMenuAddonCategoryWithPromoId(id);
+      setIsSubmitting(true);
+      const { isSuccess, message } = await updatePromotion(formData);
+      setIsSubmitting(false);
+
+      if (isSuccess) {
+        toast.success(message);
+        router.back();
+      } else {
+        toast.error(message);
+      }
+    }
+  };
+
+  const handleSetAddonCategory = async () => {
+    const requiredAddonCategoryId = menuRequiredAddonCatQue.filter((item) => {
+      const validSelectedMenu = focAddonCategory.filter(
+        (focAddonCat) => focAddonCat.menuId === item.menuId
+      );
+      const selectedAddonCat = validSelectedMenu.map(
+        (item) => item.addonCategoryId
+      );
+      return checkArraySame(item.addonCategoryIds, selectedAddonCat);
+    });
+    const isValid =
+      requiredAddonCategoryId.length === menuRequiredAddonCatQue.length;
+    console.log(requiredAddonCategoryId.length);
+    console.log(menuRequiredAddonCatQue.length);
+    if (!isValid || !promotionFormData)
+      return toast.error("Missing required addon");
+
+    setCreatingMenuAddonCategory(true);
+    const { isSuccess, message } = await updateFocMenuAddonCategory({
+      focAddonCategory,
+      promotionId: id,
+    });
+    setCreatingMenuAddonCategory(false);
     if (isSuccess) {
       toast.success(message);
-      router.back();
     } else {
       toast.error(message);
+    }
+    setIsSubmitting(true);
+    const { isSuccess: promotionSuccess, message: promotionMessage } =
+      await updatePromotion(promotionFormData);
+    setIsSubmitting(false);
+    if (promotionSuccess) {
+      toast.success(promotionMessage);
+      router.back();
+    } else {
+      toast.error(promotionMessage);
     }
   };
 
@@ -224,29 +331,43 @@ export default function App({ params }: { params: { id: string } }) {
 
   return (
     <div className="bg-background p-2 rounded-md flex justify-center items-center">
+      <ChooseRequiredAddonDialog
+        creatingMenuAddonCategory={creatingMenuAddonCategory}
+        handleSetAddonCategory={handleSetAddonCategory}
+        menuRequiredAddonCatQue={menuRequiredAddonCatQue}
+        isOpen={isOpen}
+        onClose={onClose}
+        onOpenChange={onOpenChange}
+        menus={menus}
+        focAddonCategory={focAddonCategory}
+        setFocAddonCategory={setFocAddonCategory}
+        promotionId={id}
+      />
       {isLoading || promotionMenuLoading ? (
         <Spinner size="sm" />
       ) : (
         <form onSubmit={handleSubmit} className="w-full">
           <span className="mb-4 font-semibold">Update Pomotion</span>
           <div className="my-2">
-            <div className="w-full flex justify-between">
-              <Select
-                size="sm"
-                label="Discount type"
-                variant="bordered"
-                placeholder="Select type of discount"
-                className="w-40 mt-1"
-                selectedKeys={isFoc ? "2" : "1"}
-                onChange={(e) => {
-                  const value = e.target.value === "1" ? false : true;
-                  setIsFoc(value);
-                }}
-              >
-                <SelectItem key="1">Discount</SelectItem>
-                <SelectItem key="2">FOC</SelectItem>
-              </Select>
-              <div className="flex space-x-1">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2">
+              <div className="w-full pb-1 sm:pb-0">
+                <Select
+                  size="sm"
+                  label="Discount type"
+                  variant="bordered"
+                  placeholder="Select type of discount"
+                  className="w-40 mt-1"
+                  selectedKeys={isFoc ? "2" : "1"}
+                  onChange={(e) => {
+                    const value = e.target.value === "1" ? false : true;
+                    setIsFoc(value);
+                  }}
+                >
+                  <SelectItem key="1">Discount</SelectItem>
+                  <SelectItem key="2">FOC</SelectItem>
+                </Select>
+              </div>
+              <div className="flex space-x-1 justify-end w-full">
                 <Input
                   size="sm"
                   name="priority"
@@ -256,7 +377,6 @@ export default function App({ params }: { params: { id: string } }) {
                   type="number"
                   isRequired
                   defaultValue={String(data.priority)}
-                  className="w-28"
                   min={1}
                 />
                 <Input
@@ -266,12 +386,11 @@ export default function App({ params }: { params: { id: string } }) {
                   variant="bordered"
                   type="string"
                   defaultValue={data.group || ""}
-                  className="min-w-60"
                 />
               </div>
             </div>
-            <div className="flex flex-row">
-              <div className="space-y-1 w-1/2 p-1">
+            <div className="flex w-full flex-wrap my-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 w-full space-x-0 sm:space-x-1 space-y-1 sm:space-y-0">
                 <Input
                   size="sm"
                   name="name"
@@ -280,33 +399,6 @@ export default function App({ params }: { params: { id: string } }) {
                   required
                   isRequired
                   defaultValue={data?.name}
-                />
-                <Input
-                  size="sm"
-                  name="description"
-                  label="Description"
-                  variant="bordered"
-                  required
-                  isRequired
-                  defaultValue={data?.description}
-                />
-              </div>
-              <div className="space-y-1 w-1/2 p-1">
-                <DateRangePicker
-                  size="sm"
-                  label="Promotion duration"
-                  variant="bordered"
-                  isRequired
-                  startName="start_date"
-                  endName="end_date"
-                  defaultValue={{
-                    start: parseDate(
-                      dateToString({ date: data.start_date, type: "YMD" })
-                    ),
-                    end: parseDate(
-                      dateToString({ date: data.end_date, type: "YMD" })
-                    ),
-                  }}
                 />
                 {!isFoc ? (
                   <Input
@@ -342,13 +434,40 @@ export default function App({ params }: { params: { id: string } }) {
                   />
                 ) : null}
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 w-full space-x-0 sm:space-x-1 space-y-1 sm:space-y-0 mt-1">
+                <DateRangePicker
+                  size="sm"
+                  label="Promotion duration"
+                  variant="bordered"
+                  isRequired
+                  startName="start_date"
+                  endName="end_date"
+                  defaultValue={{
+                    start: parseDate(
+                      dateToString({ date: data.start_date, type: "YMD" })
+                    ),
+                    end: parseDate(
+                      dateToString({ date: data.end_date, type: "YMD" })
+                    ),
+                  }}
+                />
+                <Textarea
+                  size="sm"
+                  name="description"
+                  label="Description"
+                  variant="bordered"
+                  required
+                  isRequired
+                  defaultValue={data?.description}
+                />
+              </div>
             </div>
             {isFoc ? (
               <div className="border-2 border-default p-1 rounded-md mb-1">
                 <span>FOC menus</span>
-                <div className=" grid grid-cols-2 ">
+                <div className="grid grid-cols-1 sm:grid-cols-2">
                   {focMenu.map((item) => (
-                    <div className="flex items-center" key={item.id}>
+                    <div className="flex items-center p-1" key={item.id}>
                       <Select
                         size="sm"
                         label="Select Menu"
@@ -387,7 +506,7 @@ export default function App({ params }: { params: { id: string } }) {
                         type="number"
                         variant="bordered"
                         label="Select"
-                        className="w-1/4"
+                        className="w-1/5"
                         min={1}
                         max={item.menuId.length}
                         required
@@ -445,6 +564,10 @@ export default function App({ params }: { params: { id: string } }) {
                     <BiPlusCircle className="size-7 text-primary" />
                   </Button>
                 </div>
+                <span className="text-default-600 text-xs md:text-medium">
+                  * If there are required addon-categories, it will let you
+                  choose addons at the next step.
+                </span>
               </div>
             ) : null}
             <div>
@@ -466,12 +589,9 @@ export default function App({ params }: { params: { id: string } }) {
               <div>
                 {promotionType === "menu" ? (
                   <>
-                    <div className="space-y-1 w-full grid grid-cols-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2">
                       {menuQty.map((item: any) => (
-                        <div
-                          className="flex items-center space-x-1"
-                          key={item.id}
-                        >
+                        <div className="flex items-center p-1" key={item.id}>
                           <Select
                             size="sm"
                             label="Select Menu"
@@ -537,7 +657,7 @@ export default function App({ params }: { params: { id: string } }) {
                             type="number"
                             variant="bordered"
                             label="Qty"
-                            className="w-1/4"
+                            className="w-1/5"
                             min={1}
                             max={100}
                             required
@@ -604,7 +724,7 @@ export default function App({ params }: { params: { id: string } }) {
                     required
                     isRequired
                     endContent="Ks"
-                    className="w-1/2"
+                    className="w-full sm:w-1/2"
                   />
                 )}
               </div>
@@ -645,38 +765,42 @@ export default function App({ params }: { params: { id: string } }) {
                   isCompact
                   className="w-full"
                 >
-                  <div className="flex w-full justify-between mb-1">
-                    <div className="w-11/12">
-                      <Select
-                        size="sm"
-                        label="Promotion days"
-                        variant="bordered"
-                        selectionMode="multiple"
-                        placeholder="Select days"
-                        selectedKeys={selectedDay}
-                        onChange={handleSelectionChange}
-                        isDisabled={!enableDay}
-                      >
-                        {days.map((day) => (
-                          <SelectItem key={day.name}>{day.name}</SelectItem>
-                        ))}
-                      </Select>
-                      {!enableDay && (
-                        <span className="text-default-700 text-sm">
-                          * If you do not set days, promotion will effect every
-                          days!
-                        </span>
-                      )}
+                  <div className="w-full mb-1 items-center">
+                    <div className="flex items-center w-full justify-between">
+                      <div className="w-11/12 items-center">
+                        <Select
+                          size="sm"
+                          label="Promotion days"
+                          variant="bordered"
+                          selectionMode="multiple"
+                          placeholder="Select days"
+                          selectedKeys={selectedDay}
+                          onChange={handleSelectionChange}
+                          isDisabled={!enableDay}
+                        >
+                          {days.map((day) => (
+                            <SelectItem key={day.name}>{day.name}</SelectItem>
+                          ))}
+                        </Select>
+                      </div>
+                      <Checkbox
+                        size="lg"
+                        isSelected={enableDay}
+                        onValueChange={setEnableDay}
+                        className="ml-1"
+                      />
                     </div>
-                    <Checkbox
-                      size="lg"
-                      isSelected={enableDay}
-                      onValueChange={setEnableDay}
-                    />
+
+                    {!enableDay && (
+                      <span className="text-default-700 text-sm block">
+                        * If you do not set days, promotion will effect every
+                        days!
+                      </span>
+                    )}
                   </div>
-                  <div className="flex w-full justify-between">
-                    <div className="flex w-11/12 space-x-1 flex-col">
-                      <div className="flex">
+                  <div className="w-full items-center">
+                    <div className="flex w-full justify-between">
+                      <div className="flex w-full">
                         <TimeInput
                           size="sm"
                           label="Start time"
@@ -700,18 +824,19 @@ export default function App({ params }: { params: { id: string } }) {
                           isRequired
                         />
                       </div>
-                      {!enabelTime && (
-                        <span className="text-default-700 text-sm">
-                          * If you do not set time period, promotion will be
-                          effect the whole day!
-                        </span>
-                      )}
+                      <Checkbox
+                        size="lg"
+                        isSelected={enabelTime}
+                        onValueChange={setTimeEnable}
+                        className="ml-1"
+                      />
                     </div>
-                    <Checkbox
-                      size="lg"
-                      isSelected={enabelTime}
-                      onValueChange={setTimeEnable}
-                    />
+                    {!enabelTime && (
+                      <span className="text-default-700 text-sm block">
+                        * If you do not set time period, promotion will be
+                        effect the whole day!
+                      </span>
+                    )}
                   </div>
                 </AccordionItem>
               </Accordion>
@@ -731,7 +856,19 @@ export default function App({ params }: { params: { id: string } }) {
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
               isDisabled={isSubmitting}
             >
-              {isSubmitting ? <Spinner color="white" /> : "Update"}
+              {isSubmitting ? (
+                <>
+                  <span>Updating promotion</span>
+                  <Spinner color="white" />
+                </>
+              ) : checkingRequiredAddonCat && isFoc && focMenu.length ? (
+                <>
+                  <span>Checking menu have required addon category....</span>
+                  <Spinner color="white" />
+                </>
+              ) : (
+                "Update"
+              )}
             </Button>
           </div>
         </form>

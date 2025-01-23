@@ -1,5 +1,6 @@
 "use client";
 import {
+  fetchAddonWithIds,
   fetchMenuWithIds,
   getOrderCountWithDate,
 } from "@/app/lib/backoffice/data";
@@ -16,6 +17,10 @@ import { IoFastFood } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
 import useSWR from "swr";
 import ListTable from "./ListTable";
+import { TbCoinOff } from "react-icons/tb";
+import SalesChart from "./SaleChart";
+import { getTotalOrderPrice } from "@/general";
+import { formatCurrency } from "@/function";
 
 function OrderForDate() {
   const iconClass = "text-white size-6";
@@ -49,36 +54,13 @@ function OrderForDate() {
     if (!isExist) sameMenuOrder.push(item);
   });
 
-  const grossRevenue = sameMenuOrder.reduce(
-    (acc, cur) => acc + cur.totalPrice,
-    0
-  );
+  const grossRevenue = sameMenuOrder
+    .filter((item) => !item.isFoc)
+    .reduce((acc, cur) => acc + cur.totalPrice, 0);
   const avgOrderVal = grossRevenue / sameMenuOrder.length;
   const pendingOrder = sameMenuOrder?.filter(
     (item) => item.status === "PENDING"
   );
-  const countStatus = [
-    {
-      name: "Pending Order",
-      icon: <MdOutlinePendingActions className={iconClass} />,
-      count: pendingOrder?.length,
-    },
-    {
-      name: "Total Order",
-      icon: <IoFastFood className={iconClass} />,
-      count: sameMenuOrder?.length,
-    },
-    {
-      name: "Gross Revenue",
-      icon: <BsCash className={iconClass} />,
-      count: grossRevenue,
-    },
-    {
-      name: "Avg. Order Value",
-      icon: <BiSolidDish className={iconClass} />,
-      count: avgOrderVal || 0,
-    },
-  ];
 
   const sortedOrders = sameMenuOrder
     .map((order) => ({
@@ -113,6 +95,49 @@ function OrderForDate() {
     validCount &&
       rows.push({ key: index + 1, name: item.name, count: validCount });
   });
+  const focOrder = totalOrder?.filter((item) => item.isFoc);
+
+  const addonIds = totalOrder
+    ? totalOrder.map((item) => item.addonId).filter((item) => item !== null)
+    : [];
+  const { data: addonData } = useSWR(
+    addonIds?.length ? `addonData-${addonIds}` : null,
+    () => fetchAddonWithIds(addonIds)
+  );
+  const focTotalPrice = getTotalOrderPrice({
+    orders: focOrder,
+    menus,
+    addons: addonData,
+  });
+  const countStatus = [
+    {
+      name: "Pending Order",
+      icon: <MdOutlinePendingActions className={iconClass} />,
+      count: pendingOrder?.length,
+    },
+    {
+      name: "Total Order",
+      icon: <IoFastFood className={iconClass} />,
+      count: sameMenuOrder?.length,
+    },
+    {
+      name: "Gross Revenue",
+      icon: <BsCash className={iconClass} />,
+      count: grossRevenue,
+    },
+    {
+      name: "Avg. Order Value",
+      icon: <BiSolidDish className={iconClass} />,
+      count: avgOrderVal || 0,
+    },
+    {
+      name: "Foc Menu",
+      icon: <TbCoinOff className={iconClass} />,
+      count:
+        (focTotalPrice ? formatCurrency(focTotalPrice) : "") +
+        ` (${focOrder?.length})`,
+    },
+  ];
   const topFiveRows = rows.slice(0, 5);
   return (
     <div className="mt-4">
@@ -159,25 +184,30 @@ function OrderForDate() {
                     {
                       "text-lg":
                         item.name === "Gross Revenue" ||
-                        item.name === "Avg. Order Value",
+                        item.name === "Avg. Order Value" ||
+                        item.name === "Foc Menu",
                     }
                   )}
                 >
                   {item.name === "Gross Revenue" ||
                   item.name === "Avg. Order Value"
-                    ? `${Math.round(item.count)} Ks`
-                    : Math.round(item.count)}
+                    ? formatCurrency(Math.round(Number(item.count)))
+                    : item.count}
                 </h1>
               </div>
             </Card>
           )
         )}
-        <div className="w-full sm:w-96">
-          {isLoading ? (
-            <TableSkeleton />
-          ) : (
-            <ListTable columns={columns} rows={topFiveRows} />
-          )}
+
+        <div className="flex w-full mt-2">
+          <div className="w-full sm:w-96 mr-2">
+            {isLoading ? (
+              <TableSkeleton />
+            ) : (
+              <ListTable columns={columns} rows={topFiveRows} />
+            )}
+          </div>
+          <SalesChart />
         </div>
       </div>
     </div>

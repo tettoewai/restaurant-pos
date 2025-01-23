@@ -121,6 +121,25 @@ export async function fetchOrder(tableId: number) {
   }
 }
 
+export async function fetchPromotionUsage({
+  tableId,
+  orderSeq,
+}: {
+  tableId: number;
+  orderSeq: string;
+}) {
+  if (!tableId && !orderSeq) return [];
+  noStore();
+  try {
+    return await prisma.promotionUsage.findMany({
+      where: { tableId, orderSeq },
+    });
+  } catch (error) {
+    console.error("Error in fetchPromotionUsage:", error);
+    throw new Error("Failed to fetch promotion usage data.");
+  }
+}
+
 export async function fetchOrderWithItemId(itemId: string) {
   noStore();
   if (!itemId) return null;
@@ -272,5 +291,20 @@ export async function fetchAddonCategoryMenuWithMenuIds(menuIds: number[]) {
   } catch (error) {
     console.error("Error in fetchAddonCategoryMenuWithMenuIds:", error);
     throw new Error("Failed to fetch menuAddonCategory data.");
+  }
+}
+
+export async function fetchActiveOrderWithTableIds(tableIds: number[]) {
+  noStore();
+  try {
+    return await prisma.order.findMany({
+      where: {
+        tableId: { in: tableIds },
+        status: { notIn: [ORDERSTATUS.PAID, ORDERSTATUS.CANCELED] },
+      },
+    });
+  } catch (error) {
+    console.error("Error in fetchOrderWithTableIds:", error);
+    throw new Error("Failed to fetch order with tableIds data.");
   }
 }

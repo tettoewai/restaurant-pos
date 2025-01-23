@@ -79,6 +79,7 @@ export const createOrder = async ({
                 totalPrice,
                 tableId,
                 instruction: item.instruction,
+                isFoc: item.isFoc,
               },
             });
           })
@@ -95,6 +96,7 @@ export const createOrder = async ({
             totalPrice,
             tableId,
             instruction: item.instruction,
+            isFoc: item.isFoc,
           },
         });
       }
@@ -114,11 +116,50 @@ export const createOrder = async ({
       data: { message: "There are new orders", tableId },
     });
 
-    return { message: "", isSuccess: true };
+    revalidatePath("/order");
+    return {
+      message: "Successfuly placed your orders.",
+      isSuccess: true,
+      orderSeq,
+    };
   } catch (error) {
     console.error(error);
     return {
       message: "Something went wrong while creating order",
+      isSuccess: false,
+    };
+  }
+};
+
+export const createFocOrder = async ({
+  tableId,
+  cartItem,
+  promotionId,
+}: {
+  tableId: number;
+  cartItem: CartItem[];
+  promotionId: number;
+}) => {
+  const isAllFoc = cartItem.every((item) => item.isFoc === true);
+  if (!tableId && !cartItem.length && !isAllFoc)
+    return { message: "Missing required fields", isSuccess: false };
+  try {
+    const { orderSeq, isSuccess } = await createOrder({ tableId, cartItem });
+
+    if (isSuccess && orderSeq) {
+      await prisma.promotionUsage.create({
+        data: { promotionId, tableId, orderSeq },
+      });
+    }
+    revalidatePath("/order/active-order");
+    return {
+      message: "Successfuly placed your foc orders.",
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong while creating foc order",
       isSuccess: false,
     };
   }
@@ -198,6 +239,7 @@ export async function updateOrder(formData: FormData) {
       where: { tableId, status: ORDERSTATUS.PENDING },
       data: { totalPrice },
     });
+    revalidatePath("/order");
     return { message: "Updated order successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -296,6 +338,7 @@ export async function changeTable({
         tableId,
       },
     });
+    revalidatePath("/order");
     return { message: "Changing table was successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
