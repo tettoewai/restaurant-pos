@@ -121,7 +121,7 @@ export default function App({ params }: { params: { id: string } }) {
   ];
 
   const prevCondition = useMemo(
-    () => data && JSON.parse(data.conditions as string),
+    () => data && data.conditions && JSON.parse(data.conditions as string),
     [data]
   );
 

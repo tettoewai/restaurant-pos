@@ -8,15 +8,8 @@ import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { dateToString } from "@/function";
 import { Card, Input } from "@nextui-org/react";
 import { Addon, Menu } from "@prisma/client";
-import { nanoid } from "nanoid";
 import Image from "next/image";
-import {
-  Dispatch,
-  RefObject,
-  SetStateAction,
-  useContext,
-  useState,
-} from "react";
+import { Dispatch, RefObject, SetStateAction, useContext } from "react";
 import useSWR from "swr";
 
 interface Props {

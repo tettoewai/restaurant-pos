@@ -661,7 +661,6 @@ export async function createDefaultData({ email, name }: Props) {
       data: {
         name: "Default table",
         locationId: newLocation.id,
-        assetUrl: "",
       },
     });
     const newMenuCategory = await prisma.menuCategory.create({

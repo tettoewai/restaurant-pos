@@ -216,18 +216,19 @@ function ActiveOrder() {
     () => fetchFocCatAndFocMenuWithPromotionIds(focPromotionIds)
   );
 
-  const focDataMenuIds = focData?.focMenu
-    .map((item) => item.menuId)
-    .reduce((acc: number[], id) => {
-      if (!acc.includes(id) && !menuIds.includes(id)) {
-        acc.push(id);
-      }
-      return acc;
-    }, []);
+  const focDataMenuIds =
+    focData?.focMenu
+      .map((item) => item.menuId)
+      .reduce((acc: number[], id) => {
+        if (!acc.includes(id) && !menuIds.includes(id)) {
+          acc.push(id);
+        }
+        return acc;
+      }, []) || [];
 
   const { data: focMenus } = useSWR(
-    focDataMenuIds && focDataMenuIds.length > 0 ? [focDataMenuIds] : null,
-    () => focDataMenuIds && fetchMenuWithIds(focDataMenuIds)
+    focDataMenuIds ? `focMenus-${[focDataMenuIds]}` : null,
+    () => fetchMenuWithIds(focDataMenuIds)
   );
 
   const allMenus = (focMenus && menus && menus.concat(focMenus)) || menus;

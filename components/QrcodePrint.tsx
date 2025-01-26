@@ -1,5 +1,5 @@
 "use client";
-import { Button, Card } from "@nextui-org/react";
+import { Card } from "@nextui-org/react";
 import { Table } from "@prisma/client";
 import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";
@@ -8,7 +8,13 @@ import { BsQrCodeScan } from "react-icons/bs";
 import { useReactToPrint } from "react-to-print";
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
-const QrcodePrint = ({ table }: { table?: Table }) => {
+const QrcodePrint = ({
+  table,
+  qrCodeData,
+}: {
+  table?: Table;
+  qrCodeData?: string;
+}) => {
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -16,14 +22,6 @@ const QrcodePrint = ({ table }: { table?: Table }) => {
     documentTitle: "QR Code Card",
   });
 
-  const handleClick = () => {
-    if (!table?.assetUrl || !table?.name) {
-      alert("Invalid QR code data. Cannot print.");
-      return;
-    }
-    // If valid, trigger the print
-    handlePrint();
-  };
   return (
     <div>
       <div className="hidden">
@@ -95,9 +93,9 @@ const QrcodePrint = ({ table }: { table?: Table }) => {
               </svg>
             </div>
             <div>
-              {table?.assetUrl && (
+              {qrCodeData && (
                 <Image
-                  src={table?.assetUrl}
+                  src={qrCodeData}
                   alt="qr code"
                   width={240}
                   height={240}
@@ -113,7 +111,7 @@ const QrcodePrint = ({ table }: { table?: Table }) => {
 
       <button
         className="w-full justify-between flex font-normal text-sm"
-        onClick={handleClick}
+        onClick={() => handlePrint()}
       >
         Print qr{" "}
         <BsQrCodeScan className="text-xl text-default-500 pointer-events-none flex-shrink-0" />

@@ -1,5 +1,8 @@
 "use client";
-import { setPaidWithQuantity } from "@/app/lib/backoffice/action";
+import {
+  generateQRCode,
+  setPaidWithQuantity,
+} from "@/app/lib/backoffice/action";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
 import {
   Badge,
@@ -31,6 +34,7 @@ import PaidPrint from "./PaidPrint";
 import { useReactToPrint } from "react-to-print";
 import { config } from "@/config";
 import { OrderData } from "@/general";
+import useSWR from "swr";
 
 interface Props {
   menus: Menu[] | undefined;
@@ -137,6 +141,11 @@ export default function PaidAndPrintDialog({
     [paid]
   );
 
+  const { data: qrCodeData } = useSWR(
+    receiptUrl ? `qrCodeData -${receiptUrl}` : null,
+    () => generateQRCode(receiptUrl)
+  );
+
   useEffect(() => {
     const updatedPaid = paid.map((item) => {
       return { ...item, tax, totalPrice: total, qrCode: receiptUrl, tableId };
@@ -144,29 +153,16 @@ export default function PaidAndPrintDialog({
     setPaid(updatedPaid);
   }, [tax, total, tableId, receiptUrl]);
 
-  const [qrCodeImage, setQrCodeImage] = useState<string | null | undefined>("");
-
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePaidAndPrint = async () => {
     setIsLoading(true);
-    const { isSuccess, message, qrCodeImageDb } = await setPaidWithQuantity(
-      paid
-    );
+    const { isSuccess, message } = await setPaidWithQuantity(paid);
     if (isSuccess) {
       setIsLoading(false);
       toast.success(message);
-
-      if (qrCodeImageDb) {
-        await new Promise<void>((resolve) => {
-          setQrCodeImage(qrCodeImageDb[0]);
-          resolve(); // Resolve the promise after setting the QR code image
-        });
-      }
-
       printReceipt();
       setPaid([]);
-      setQrCodeImage("");
       onClose();
     } else {
       setIsLoading(false);
@@ -230,7 +226,7 @@ export default function PaidAndPrintDialog({
                     setTaxRate={setTaxRate}
                     taxRate={taxRate}
                     subTotal={subTotal}
-                    qrCodeImage={qrCodeImage}
+                    qrCodeImage={qrCodeData}
                   />
                 ) : null}
               </div>

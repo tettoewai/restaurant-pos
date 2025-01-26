@@ -35,6 +35,8 @@ import {
   useDisclosure,
   User,
 } from "@nextui-org/react";
+import { ORDERSTATUS } from "@prisma/client";
+import clsx from "clsx";
 import { nanoid } from "nanoid";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDropdown } from "react-icons/io";
@@ -404,13 +406,29 @@ export default function App({ params }: { params: { id: string } }) {
                                   handleStatusChange(status, item.itemId);
                                 }}
                               >
-                                <DropdownItem key="pending">
+                                <DropdownItem
+                                  key="pending"
+                                  className={clsx({
+                                    hidden: item.status === ORDERSTATUS.PENDING,
+                                  })}
+                                >
                                   Pending
                                 </DropdownItem>
-                                <DropdownItem key="cooking">
+                                <DropdownItem
+                                  key="cooking"
+                                  className={clsx({
+                                    hidden: item.status === ORDERSTATUS.COOKING,
+                                  })}
+                                >
                                   Cooking
                                 </DropdownItem>
-                                <DropdownItem key="complete">
+                                <DropdownItem
+                                  key="complete"
+                                  className={clsx({
+                                    hidden:
+                                      item.status === ORDERSTATUS.COMPLETE,
+                                  })}
+                                >
                                   Complete
                                 </DropdownItem>
                                 {selected === "pending" ? (

@@ -48,32 +48,51 @@ function OrderForDate() {
       revalidateOnReconnect: true,
     }
   );
-  const sameMenuOrder: Order[] = [];
+  const sameItemOrder: Order[] = [];
   totalOrder?.map((item) => {
-    const isExist = sameMenuOrder.find((same) => same.itemId === item.itemId);
-    if (!isExist) sameMenuOrder.push(item);
+    const isExist = sameItemOrder.find((same) => same.itemId === item.itemId);
+    if (!isExist) sameItemOrder.push(item);
   });
 
-  const grossRevenue = sameMenuOrder
+  const grossRevenue = sameItemOrder
     .filter((item) => !item.isFoc)
-    .reduce((acc, cur) => acc + cur.totalPrice, 0);
-  const avgOrderVal = grossRevenue / sameMenuOrder.length;
-  const pendingOrder = sameMenuOrder?.filter(
+    .reduce((acc, cur) => {
+      const totalPrice = Number(cur.totalPrice);
+      if (isNaN(totalPrice)) {
+        console.warn("Invalid totalPrice found:", cur.totalPrice);
+      }
+      return !isNaN(totalPrice) ? acc + cur.totalPrice : acc;
+    }, 0);
+  const avgOrderVal =
+    sameItemOrder.length > 0 ? grossRevenue / sameItemOrder.length : 0;
+  const pendingOrder = sameItemOrder?.filter(
     (item) => item.status === "PENDING"
   );
 
-  const sortedOrders = sameMenuOrder
-    .map((order) => ({
-      ...order,
-      menuCount: sameMenuOrder.filter((o) => o.menuId === order.menuId).length,
-    }))
-    .sort((a, b) => b.menuCount - a.menuCount);
+  const countedMenuOrder: { menuId: number; quantity: number } =
+    sameItemOrder.reduce((acc: any, curr) => {
+      const quantity = curr.quantity;
+      if (!acc[curr.menuId]) {
+        acc[curr.menuId] = quantity;
+      } else {
+        acc[curr.menuId] += quantity;
+      }
 
-  const topOrdeResult = sortedOrders.map(({ menuCount, ...order }) => order);
+      return acc;
+    }, {});
 
-  const topMenuOrdered = topOrdeResult.map((item) => item.menuId);
-  const { data: menus } = useSWR([topMenuOrdered], () =>
-    fetchMenuWithIds(topMenuOrdered).then((res) => res)
+  const sortedOrder = Object.entries(countedMenuOrder)
+    .slice(0, 5)
+    .sort(([keyA, valueA], [keyB, valueB]) => valueB - valueA) // Sort by value in descending order
+    .reduce((acc: { menuId: number; quantity: number }[], [key, value]) => {
+      acc.push({ menuId: Number(key), quantity: value });
+      return acc;
+    }, []);
+
+  const topOrdeResult = sortedOrder.map((item) => item.menuId);
+
+  const { data: menus } = useSWR(`menus - ${[topOrdeResult.join(", ")]}`, () =>
+    fetchMenuWithIds(topOrdeResult).then((res) => res)
   );
   const columns = [
     {
@@ -86,15 +105,13 @@ function OrderForDate() {
     },
     { key: "count", label: "Count" },
   ];
-  const rows: { key: number; name: string; count: number }[] = [];
+  const rows: { key: number; name: string; count: number }[] = sortedOrder.map(
+    (item, index) => {
+      const menu = menus?.find((o) => o.id === item.menuId);
+      return { key: index + 1, name: menu?.name || "", count: item.quantity };
+    }
+  );
 
-  menus?.map((item, index) => {
-    const validCount = sortedOrders.find(
-      (o) => o.menuId === item.id
-    )?.menuCount;
-    validCount &&
-      rows.push({ key: index + 1, name: item.name, count: validCount });
-  });
   const focOrder = totalOrder?.filter((item) => item.isFoc);
 
   const addonIds = totalOrder
@@ -118,7 +135,7 @@ function OrderForDate() {
     {
       name: "Total Order",
       icon: <IoFastFood className={iconClass} />,
-      count: sameMenuOrder?.length,
+      count: sameItemOrder?.length,
     },
     {
       name: "Gross Revenue",
@@ -138,7 +155,6 @@ function OrderForDate() {
         ` (${focOrder?.length})`,
     },
   ];
-  const topFiveRows = rows.slice(0, 5);
   return (
     <div className="mt-4">
       <div className="flex items-center w-full justify-between">
@@ -199,15 +215,20 @@ function OrderForDate() {
           )
         )}
 
-        <div className="flex w-full mt-2">
-          <div className="w-full sm:w-96 mr-2">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 mt-2 space-x-0 md:space-x-1 space-y-0 md:space-y-1">
+          <div className="w-full">
             {isLoading ? (
               <TableSkeleton />
             ) : (
-              <ListTable columns={columns} rows={topFiveRows} />
+              <>
+                <h2>Top 5 Most Ordered Menus</h2>
+                <ListTable columns={columns} rows={rows} />
+              </>
             )}
           </div>
-          <SalesChart />
+          <div className="w-full">
+            <SalesChart />
+          </div>
         </div>
       </div>
     </div>

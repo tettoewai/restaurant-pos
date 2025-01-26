@@ -117,24 +117,20 @@ export const getTotalOrderPrice = ({
   menus: Menu[] | undefined;
   addons?: Addon[];
 }) => {
-  return orders?.reduce((accu, curr) => {
-    const currentMenuPrice = menus?.find(
-      (item) => curr.menuId === item.id
-    )?.price;
-    const unpaidAddon = curr.addons ? JSON.parse(curr.addons) : [];
-    const addonPrices = addons
-      ?.filter((item) => unpaidAddon.includes(item.id))
-      .reduce((accu, curr) => curr.price + accu, 0);
-    const totalPrice =
-      unpaidAddon &&
-      unpaidAddon.length &&
-      currentMenuPrice &&
-      curr.quantity &&
-      addonPrices
-        ? (currentMenuPrice + addonPrices) * curr.quantity + accu
-        : currentMenuPrice && curr.quantity
-        ? currentMenuPrice * curr.quantity + accu
+  if (!orders || !menus) return 0;
+  return orders.reduce((total, order) => {
+    const menu = menus.find((item) => order.menuId === item.id);
+    const menuPrice = menu?.price || 0;
+    const unpaidAddon = order.addons ? JSON.parse(order.addons) : [];
+    const addonPrices =
+      addons
+        ?.filter((item) => unpaidAddon.includes(item.id))
+        .reduce((accu, curr) => (curr.price || 0) + accu, 0) || 0;
+    const orderTotal =
+      menuPrice && order.quantity
+        ? (menuPrice + addonPrices) * order.quantity
         : 0;
-    return totalPrice;
+
+    return total + orderTotal;
   }, 0);
 };

@@ -1,3 +1,4 @@
+import { generateQRCode } from "@/app/lib/backoffice/action";
 import {
   fetchAddonCategory,
   fetchAddonWithAddonCat,
@@ -7,6 +8,7 @@ import {
   fetchMenuAddonCategory,
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
+import { config } from "@/config";
 import {
   Card,
   Chip,
@@ -14,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@nextui-org/react";
+import { Table } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
 import { BiSolidCategoryAlt } from "react-icons/bi";
@@ -25,7 +28,6 @@ import {
 } from "react-icons/md";
 import { TbCategoryPlus } from "react-icons/tb";
 import MoreOptionButton from "./MoreOptionButton";
-import { Table } from "@prisma/client";
 
 interface Props {
   id: number;
@@ -33,7 +35,6 @@ interface Props {
   addonCategoryId?: number;
   itemType: "addonCategory" | "addon" | "table" | "location" | "menuCategory";
   required?: boolean;
-  assetUrl?: string;
   price?: number;
   isActive?: boolean;
 }
@@ -43,7 +44,6 @@ export default async function ItemCard({
   name,
   required,
   addonCategoryId,
-  assetUrl,
   price,
   isActive,
 }: Props) {
@@ -76,6 +76,12 @@ export default async function ItemCard({
   );
   const addons = await fetchAddonWithAddonCat(id);
   const hasAddon = addons && addons?.length > 0;
+
+  const qrCodeData =
+    id && itemType === "table"
+      ? await generateQRCode(`${config.orderAppUrl}?tableId=${id}`)
+      : "";
+
   return (
     <Card
       className={clsx(
@@ -96,6 +102,7 @@ export default async function ItemCard({
           table={table}
           location={location}
           disableLocationMenuCat={disableLocationMenuCategory}
+          qrCodeData={qrCodeData || ""}
         />
       </div>
       {itemType === "addonCategory" ? (
@@ -106,9 +113,9 @@ export default async function ItemCard({
         <BiSolidCategoryAlt className={iconClasses} />
       ) : itemType === "table" ? (
         <div className="flex justify-center items-center h-3/4 w-full overflow-hidden">
-          {assetUrl ? (
+          {qrCodeData ? (
             <Image
-              src={assetUrl}
+              src={qrCodeData}
               alt="menu"
               width={100}
               height={100}

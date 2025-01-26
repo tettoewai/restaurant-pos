@@ -134,7 +134,6 @@ model Table {
   id             Int              @id @default(autoincrement())
   name           String
   locationId     Int
-  assetUrl       String
   isArchived     Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -203,7 +202,6 @@ model Receipt {
   quantity   Int
   tax        Float
   date       DateTime
-  qrCode     String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   menu       Menu     @relation(fields: [menuId], references: [id])

@@ -558,18 +558,7 @@ export async function createTable(formData: FormData) {
       (item) => item.isSelected === true
     )?.id;
     const table =
-      locationId &&
-      (await prisma.table.create({ data: { name, locationId, assetUrl: "" } }));
-    const qrCodeData =
-      table &&
-      (await generateQRCode(`${config.orderAppUrl}?tableId=${table.id}`));
-    const qrcodeImage = qrCodeData && (await qrUploadCloudinary(qrCodeData));
-    if (qrcodeImage && table) {
-      await prisma.table.update({
-        where: { id: table.id },
-        data: { assetUrl: qrcodeImage },
-      });
-    }
+      locationId && (await prisma.table.create({ data: { name, locationId } }));
     revalidatePath("/backoffice/table");
     return { message: "Created table successfully.", isSuccess: true };
   } catch (error) {
@@ -928,49 +917,35 @@ export async function uploadImage(formData: FormData) {
 export async function createReceipt(paidData: PaidData[]) {
   if (!paidData.length) return;
   try {
-    const qrCodeData =
-      paidData[0].qrCode && (await generateQRCode(paidData[0].qrCode));
-    const qrcodeImage = qrCodeData && (await qrUploadCloudinary(qrCodeData));
-
     return Promise.all(
       paidData.map(async (item) => {
-        const addons: number[] = item.addons ? JSON.parse(item.addons) : [];
-        if (addons.length > 0) {
+        const baseData = {
+          itemId: item.itemId,
+          code: item.receiptCode,
+          tableId: item.tableId,
+          menuId: item.menuId as number,
+          totalPrice: item.totalPrice as number,
+          quantity: item.quantity as number,
+          tax: item.tax as number,
+          date: item.date as Date,
+        };
+
+        // Handle addons if present
+        if (item.addons?.length) {
+          const addons = JSON.parse(item.addons) as number[];
           await Promise.all(
-            addons.map(async (addon) => {
-              await prisma.receipt.create({
+            addons.map((addonId) =>
+              prisma.receipt.create({
                 data: {
-                  itemId: item.itemId,
-                  code: item.receiptCode,
-                  tableId: item.tableId,
-                  addonId: addon,
-                  menuId: item.menuId as number,
-                  totalPrice: item.totalPrice as number,
-                  quantity: item.quantity as number,
-                  tax: item.tax as number,
-                  date: item.date as Date,
-                  qrCode: qrcodeImage as string,
+                  ...baseData,
+                  addonId: addonId,
                 },
-              });
-            })
+              })
+            )
           );
         } else {
-          await prisma.receipt.create({
-            data: {
-              itemId: item.itemId,
-              code: item.receiptCode,
-              tableId: item.tableId,
-              menuId: item.menuId as number,
-              totalPrice: item.totalPrice as number,
-              quantity: item.quantity as number,
-              tax: item.tax as number,
-              date: item.date as Date,
-              qrCode: qrcodeImage as string,
-            },
-          });
+          await prisma.receipt.create({ data: baseData });
         }
-
-        return qrcodeImage;
       })
     );
   } catch (error) {
@@ -1002,11 +977,10 @@ export async function setPaidWithQuantity(item: PaidData[]) {
         data: { paidQuantity: paidQuantity, status },
       });
     });
-    const qrCodeImageDb = await createReceipt(item);
+    await createReceipt(item);
     return {
       message: "Paided order successfully.",
-      isSuccess: true,
-      qrCodeImageDb,
+      isSuccess: true
     };
   } catch (error) {
     console.error(error);

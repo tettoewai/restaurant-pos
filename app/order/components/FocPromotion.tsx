@@ -250,7 +250,6 @@ function FocPromotion({
                 );
               })}
               <div className="w-full flex justify-end space-x-1">
-                <Button>No Thanks!</Button>
                 <Button
                   isDisabled={
                     Boolean(!menuIds.length) ||

@@ -31,7 +31,6 @@ export default async function Table() {
                 id={item.id}
                 name={item.name}
                 itemType="table"
-                assetUrl={item.assetUrl}
                 isActive={isActive}
               />
             );

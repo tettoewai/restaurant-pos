@@ -67,6 +67,7 @@ interface Props {
   orderData?: OrderData;
   promotion?: Promotion;
   tableId?: number;
+  qrCodeData?: string;
 }
 
 export default function MoreOptionButton({
@@ -82,6 +83,7 @@ export default function MoreOptionButton({
   orderData,
   tableId,
   promotion,
+  qrCodeData,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -227,7 +229,7 @@ export default function MoreOptionButton({
               key="printQrcode"
               textValue="printQrdcode"
             >
-              <QrcodePrint table={table} />
+              <QrcodePrint table={table} qrCodeData={qrCodeData} />
             </DropdownItem>
           ) : itemType === "promotion" ? (
             <DropdownItem
