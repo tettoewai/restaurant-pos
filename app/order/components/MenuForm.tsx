@@ -3,7 +3,7 @@ import { updateOrder } from "@/app/lib/order/action";
 import { AddonCatSkeleton } from "@/app/ui/skeletons";
 import { checkArraySame, formatCurrency } from "@/function";
 import { OrderContext } from "@/context/OrderContext";
-import { Button, Card, Checkbox, Chip, Textarea } from "@nextui-org/react";
+import { Button, Card, Checkbox, Chip, Textarea } from "@heroui/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
 import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -291,7 +291,7 @@ export default function MenuForm({
 
         <Button
           isDisabled={isDisable}
-          onClick={() => handleAddToCart()}
+          onPress={() => handleAddToCart()}
           disabled={isUpdating}
           className="text-white bg-primary w-[65%]"
         >

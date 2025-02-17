@@ -1,5 +1,5 @@
 import { formatCurrency } from "@/function";
-import { Card, Chip, Divider, ScrollShadow, Spacer } from "@nextui-org/react";
+import { Card, Chip, Divider, ScrollShadow, Spacer } from "@heroui/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";

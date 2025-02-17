@@ -6,7 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { dateToString } from "@/function";
-import { Card, Input } from "@nextui-org/react";
+import { Card, Input } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
 import { Dispatch, RefObject, SetStateAction, useContext } from "react";
@@ -48,6 +48,7 @@ function PaidPrint({
   );
 
   const date = new Date();
+
   const tax = subTotal * (taxRate / 100);
   const total = subTotal + tax;
 

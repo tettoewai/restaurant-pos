@@ -1,45 +1,13 @@
-import {
-  fetchAddonWithIds,
-  fetchMenuWithIds,
-  fetchTableWithId,
-} from "@/app/lib/backoffice/data";
+import { fetchMenuWithIds, fetchTableWithId } from "@/app/lib/backoffice/data";
 import {
   fetchCompanyFromOrder,
   fetchReceiptWithCode,
 } from "@/app/lib/order/data";
 import Feedback from "@/components/Feedback";
-import { formatCurrency } from "@/function";
-import { dateToString } from "@/function";
-import { Card } from "@nextui-org/react";
+import { dateToString, formatCurrency, formatReceipt } from "@/function";
+import { Card } from "@heroui/react";
 import { Receipt } from "@prisma/client";
 import { ToastContainer } from "react-toastify";
-
-const formatReceipt = (receipts: Receipt[]) => {
-  const uniqueItem = [] as string[];
-  receipts.map((receipt) => {
-    const isExist = uniqueItem.find((item) => item === receipt.itemId);
-    if (!isExist) uniqueItem.push(receipt.itemId);
-  });
-  return uniqueItem.map((item) => {
-    const validReceipts = receipts.find((receipt) => receipt.itemId === item);
-    const validReceipt = receipts.filter((receipt) => receipt.itemId === item);
-    const addonIds = validReceipt
-      .map((receipt) => receipt.addonId)
-      .filter((item) => item !== null);
-    if (addonIds.length > 0) {
-      return {
-        menuId: validReceipts?.menuId,
-        quantity: validReceipts?.quantity,
-        addons: addonIds.length > 0 ? JSON.stringify(addonIds) : "",
-      };
-    } else {
-      return {
-        menuId: validReceipts?.menuId,
-        quantity: validReceipts?.quantity,
-      };
-    }
-  });
-};
 
 async function DigitalReceiptPage({
   params,
@@ -57,21 +25,10 @@ async function DigitalReceiptPage({
     .filter((item) => item !== undefined);
   const menus = menuIds && (await fetchMenuWithIds(menuIds));
 
-  const addonIdString = JSON.stringify(
-    receiptData
-      .map((receipt) => receipt.addons && JSON.parse(receipt.addons))
-      .filter((receipt) => receipt !== undefined)
-  );
-
-  const addonIds = JSON.parse(addonIdString);
-  const uniqueAddonIds: number[] = Array.from(new Set(addonIds?.flat()));
-
-  const addons = await fetchAddonWithIds(uniqueAddonIds);
-
   let subTotal = 0;
 
   return (
-    <div className="flex flex-col max-w-md mx-auto h-screen">
+    <div className="flex flex-col max-w-md mx-auto">
       <Card className="mt-2 p-2 mx-1 bg-background">
         <div>#{receiptCode}</div>
         <div className="text-center border-b pb-4 mb-4">
@@ -99,22 +56,7 @@ async function DigitalReceiptPage({
           <tbody>
             {receiptData.map((item, index) => {
               const validMenu = menus.find((menu) => menu.id === item.menuId);
-              const addonIds: number[] = item.addons
-                ? JSON.parse(item.addons)
-                : [];
-
-              const validAddons = addons.filter((addon) =>
-                addonIds.includes(addon.id)
-              );
-              const addonPrice = validAddons
-                .map((addon) => addon.price)
-                .reduce((accu, curr) => accu + curr, 0);
-              const currentPrice =
-                validAddons.length > 0 && validMenu && item.quantity
-                  ? (validMenu.price + addonPrice) * item.quantity
-                  : validMenu && item.quantity
-                  ? validMenu.price * item.quantity
-                  : 0;
+              const currentPrice = item.subTotal;
 
               subTotal += currentPrice;
 

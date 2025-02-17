@@ -1,13 +1,12 @@
 "use server";
-import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/db";
+import { ORDERSTATUS } from "@prisma/client";
+import { unstable_noStore as noStore } from "next/cache";
 import {
   fetchAddonCategoryWithIds,
-  fetchCompany,
   fetchLocationWithId,
   fetchTableWithId,
 } from "../backoffice/data";
-import { ORDERSTATUS } from "@prisma/client";
 
 async function fetchDisabledLocationMenuCatIds(locationId: number) {
   noStore();
@@ -266,16 +265,17 @@ export async function fetchFocMenuWithPromotiionId(promotionId: number) {
   }
 }
 
-export async function fetchAddonCategoryWithMenuId(menuId: number) {
+export async function fetchAddonCategoryWithMenuIds(menuIds: number[]) {
   noStore();
   try {
     const menuAddonCategory = await prisma.menuAddonCategory.findMany({
-      where: { menuId },
+      where: { menuId: { in: menuIds } },
     });
     const addonCategoryIds = menuAddonCategory.map(
       (item) => item.addonCategoryId
     );
-    return await fetchAddonCategoryWithIds(addonCategoryIds);
+    const addonCategories = await fetchAddonCategoryWithIds(addonCategoryIds);
+    return { addonCategories, menuAddonCategory };
   } catch (error) {
     console.error("Error in fetchAddonCategoryWithMenuId:", error);
     throw new Error("Failed to fetch AddonCategory data.");

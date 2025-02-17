@@ -1,6 +1,6 @@
 "use client";
 
-import { Tooltip } from "@nextui-org/react";
+import { Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -165,7 +165,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
                       <p>{item.name}</p>
                       <div>
                         <ShortcutButton
-                          onClick={() => {
+                          onPress={() => {
                             router.push(item.route);
                             setSideBarOpen(false);
                           }}

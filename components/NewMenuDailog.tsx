@@ -10,14 +10,14 @@ import {
   ModalFooter,
   ModalHeader,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
 import { useRef, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import { toast } from "react-toastify";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
-import { Spinner } from "@nextui-org/spinner";
+import { Spinner } from "@heroui/spinner";
 import ShortcutButton from "./ShortCut";
 
 interface Props {
@@ -71,7 +71,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        <ShortcutButton onClick={() => onOpen()} keys={["ctrl"]} letter="O" />{" "}
+        <ShortcutButton onPress={() => onOpen()} keys={["ctrl"]} letter="O" />{" "}
         New Menu
       </Button>
       <Modal
@@ -131,7 +131,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
             <ModalFooter>
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                onClick={onClose}
+                onPress={onClose}
                 isDisabled={isSubmitting}
               >
                 Cancel

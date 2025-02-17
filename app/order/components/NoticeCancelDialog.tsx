@@ -8,7 +8,7 @@ import {
   ModalHeader,
   Spinner,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useState } from "react";
 import { IoWarning } from "react-icons/io5";
 import { toast } from "react-toastify";

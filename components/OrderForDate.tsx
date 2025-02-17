@@ -6,7 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
-import { Card, DateRangePicker } from "@nextui-org/react";
+import { Card, DateRangePicker } from "@heroui/react";
 import { Order } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
 import clsx from "clsx";
@@ -24,8 +24,8 @@ import { formatCurrency } from "@/function";
 
 function OrderForDate() {
   const iconClass = "text-white size-6";
-
-  const today = new Date().toISOString().split("T")[0];
+  const nowDate = new Date();
+  const today = nowDate.toISOString().split("T")[0];
   const [date, setDate] = useState({
     start: parseDate(today),
     end: parseDate(today),
@@ -173,7 +173,9 @@ function OrderForDate() {
             label="Date range"
             color="primary"
             value={date}
-            onChange={setDate}
+            onChange={(e) => {
+              if (e) setDate({ start: e.start, end: e.end });
+            }}
             variant="bordered"
           />
         </div>

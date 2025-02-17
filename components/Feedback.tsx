@@ -6,7 +6,7 @@ import {
   Card,
   Spinner,
   Textarea,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -50,7 +50,7 @@ function Feedback({ receiptCode }: Props) {
         <span className="mr-2">Rating:</span>
         <ButtonGroup variant="light" size="lg">
           {[1, 2, 3, 4, 5].map((rate) => (
-            <Button key={rate} isIconOnly onClick={() => handleRating(rate)}>
+            <Button key={rate} isIconOnly onPress={() => handleRating(rate)}>
               <FaStar
                 size={24}
                 className={`cursor-pointer ${

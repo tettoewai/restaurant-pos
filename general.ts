@@ -51,6 +51,7 @@ export interface PaidData extends OrderData {
   tableId: number;
   tax?: number;
   qrCode?: string;
+  subTotal?: number;
   date?: Date;
 }
 

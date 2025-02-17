@@ -1,5 +1,5 @@
 "use client";
-import { Button, Spinner, Tooltip } from "@nextui-org/react";
+import { Button, Spinner, Tooltip } from "@heroui/react";
 import { Location } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { MdLocationOn } from "react-icons/md";
@@ -84,7 +84,7 @@ const LocationButton = ({ prevData }: Props) => {
           isIconOnly
           size="sm"
           radius="full"
-          onClick={getLocation}
+          onPress={getLocation}
           disabled={loading}
         >
           {loading ? (

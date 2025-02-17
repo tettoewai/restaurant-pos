@@ -1,4 +1,9 @@
-import { Promotion, PromotionMenu, PromotionUsage } from "@prisma/client";
+import {
+  Promotion,
+  PromotionMenu,
+  PromotionUsage,
+  Receipt,
+} from "@prisma/client";
 import {
   fetchAddonCategoryWithIds,
   fetchMenuAddonCategoryWithMenuIds,
@@ -8,9 +13,11 @@ import { weekday } from "./general";
 export const dateToString = ({
   date,
   type,
+  withHour,
 }: {
   date: Date;
   type: "DMY" | "YMD";
+  withHour?: boolean;
 }) => {
   const dayDate =
     date.getDate() < 10 ? "0" + String(date.getDate()) : date.getDate();
@@ -18,9 +25,19 @@ export const dateToString = ({
     date.getMonth() + 1 < 10
       ? "0" + String(date.getMonth() + 1)
       : date.getMonth() + 1;
-  return type === "DMY"
-    ? dayDate + "-" + month + "-" + date.getFullYear()
-    : date.getFullYear() + "-" + month + "-" + dayDate;
+  const hour = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const seconds = date.getUTCSeconds();
+  const time = `, ${convert12Hour(
+    `${hour < 10 ? "0" + hour : hour}:${
+      minutes < 10 ? "0" + minutes : minutes
+    }:${seconds < 10 ? "0" + seconds : seconds}`
+  )}`;
+  const dateInString =
+    type === "DMY"
+      ? dayDate + "-" + month + "-" + date.getFullYear()
+      : date.getFullYear() + "-" + month + "-" + dayDate;
+  return withHour ? dateInString + time : dateInString;
 };
 
 export const formatCurrency = (value: number) => {
@@ -31,14 +48,32 @@ export const formatCurrency = (value: number) => {
   );
 };
 
+export function formatReceipt(receipts: Receipt[]) {
+  const uniqueItem = [] as string[];
+  receipts.map((receipt) => {
+    const isExist = uniqueItem.find((item) => item === receipt.itemId);
+    if (!isExist) uniqueItem.push(receipt.itemId);
+  });
+  return uniqueItem.map((item) => {
+    const validReceipt = receipts.find((receipt) => receipt.itemId === item);
+    const validReceipts = receipts.filter((receipt) => receipt.itemId === item);
+    return {
+      menuId: validReceipt?.menuId,
+      quantity: validReceipt?.quantity,
+      addons: validReceipts.map((item) => item.addonId),
+      subTotal: validReceipt?.subTotal || 0,
+    };
+  });
+}
+
 export const convert12Hour = (time: string) => {
-  const [hour, minute] = time.split(":");
+  const [hour, minute, seconds] = time.split(":");
 
   const hourNumber = parseInt(hour, 10);
   const period = hourNumber >= 12 ? "PM" : "AM";
   const hour12 = hourNumber % 12 || 12;
 
-  return `${hour12}:${minute} ${period}`;
+  return `${hour12}:${minute}:${seconds} ${period}`;
 };
 
 export function checkArraySame(
@@ -55,6 +90,11 @@ export function checkArraySame(
     }
   }
   return true;
+}
+
+export function convertMyanmarTime(date: Date) {
+  const myanmarOffset = 6.5 * 60; // Myanmar is UTC+6:30
+  return new Date(date.getTime() + myanmarOffset * 60 * 1000);
 }
 
 export function calculateApplicablePromotions({
@@ -209,20 +249,14 @@ export function checkTimeInDuration({
   startTime: string;
   endTime: string;
 }) {
-  const now = new Date(); // Current time in UTC by default
-
-  // Convert now to Myanmar time
-  const myanmarOffset = 6.5 * 60; // Myanmar is UTC+6:30
-  const myanmarNow = new Date(now.getTime() + myanmarOffset * 60 * 1000);
+  const date = new Date();
 
   // Parse startTime and endTime as UTC
   const start = new Date(
-    myanmarNow.toISOString().split("T")[0] + "T" + startTime + "Z"
+    date.toISOString().split("T")[0] + "T" + startTime + "Z"
   );
-  const end = new Date(
-    myanmarNow.toISOString().split("T")[0] + "T" + endTime + "Z"
-  );
-  return myanmarNow >= start && myanmarNow <= end;
+  const end = new Date(date.toISOString().split("T")[0] + "T" + endTime + "Z");
+  return date >= start && date <= end;
 }
 
 export function checkPromotionDuration({

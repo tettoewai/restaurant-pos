@@ -15,7 +15,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Table } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";

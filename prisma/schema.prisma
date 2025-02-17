@@ -198,6 +198,7 @@ model Receipt {
   itemId     String
   addonId    Int?
   menuId     Int
+  subTotal   Int?
   totalPrice Int
   quantity   Int
   tax        Float

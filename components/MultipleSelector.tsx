@@ -1,4 +1,4 @@
-import { Select, SelectItem } from "@nextui-org/react";
+import { Select, SelectItem } from "@heroui/react";
 import { AddonCategory, Menu, MenuCategory } from "@prisma/client";
 import { Dispatch, SetStateAction } from "react";
 

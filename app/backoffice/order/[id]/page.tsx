@@ -34,7 +34,7 @@ import {
   Tabs,
   useDisclosure,
   User,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { ORDERSTATUS } from "@prisma/client";
 import clsx from "clsx";
 import { nanoid } from "nanoid";
@@ -251,6 +251,7 @@ export default function App({ params }: { params: { id: string } }) {
   const completedOrder = unpaidOrderData.filter(
     (item) => item.status === "COMPLETE"
   );
+
   return (
     <div className="flex w-full flex-col relative">
       {table ? (
@@ -274,7 +275,7 @@ export default function App({ params }: { params: { id: string } }) {
         color="primary"
         variant="bordered"
         selectedKey={selected}
-        onSelectionChange={(e) => setSelected(e.toLocaleString())}
+        onSelectionChange={(e: any) => setSelected(e.toLocaleString())}
         className="flex justify-center md:justify-end mr-9 md:mr-14 mt-2.5 relative"
       >
         {tabs.map((item) => {
@@ -388,7 +389,7 @@ export default function App({ params }: { params: { id: string } }) {
                               </DropdownTrigger>
                               <DropdownMenu
                                 aria-label="Static Actions"
-                                onAction={async (e) => {
+                                onAction={async (e: any) => {
                                   const status = String(e);
                                   setItemId(item.itemId);
                                   if (status === "paid") {
@@ -436,14 +437,14 @@ export default function App({ params }: { params: { id: string } }) {
                                     Cancel
                                   </DropdownItem>
                                 ) : (
-                                  <DropdownItem className="hidden">
+                                  <DropdownItem key="none" className="hidden">
                                     None
                                   </DropdownItem>
                                 )}
                                 {selected === "complete" ? (
                                   <DropdownItem key="paid">Paid</DropdownItem>
                                 ) : (
-                                  <DropdownItem className="hidden">
+                                  <DropdownItem key="none" className="hidden">
                                     None
                                   </DropdownItem>
                                 )}

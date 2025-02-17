@@ -7,7 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { signOut } from "next-auth/react";
 
 export default function SignOutDialog() {
@@ -33,13 +33,13 @@ export default function SignOutDialog() {
           <ModalFooter>
             <Button
               className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-              onClick={onClose}
+              onPress={onClose}
             >
               Cancel
             </Button>
             <Button
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              onClick={() => signOut()}
+              onPress={() => signOut()}
             >
               Sign out
             </Button>

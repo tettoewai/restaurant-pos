@@ -15,7 +15,7 @@ import {
   Spinner,
   Tooltip,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Addon, AddonCategory, Menu } from "@prisma/client";
 import {
   Dispatch,
@@ -99,7 +99,7 @@ export default function PaidAndPrintDialog({
         <Button
           isIconOnly
           variant="light"
-          onClick={() =>
+          onPress={() =>
             setPaid(paid.filter((paid) => paid.itemId !== item.itemId))
           }
         >
@@ -148,24 +148,47 @@ export default function PaidAndPrintDialog({
 
   useEffect(() => {
     const updatedPaid = paid.map((item) => {
-      return { ...item, tax, totalPrice: total, qrCode: receiptUrl, tableId };
+      const validMenu = menus?.find((menu) => menu.id === item.menuId);
+      const paidAddons: number[] = item.addons ? JSON.parse(item.addons) : [];
+      const validAddon = addons?.filter((addon) =>
+        paidAddons.includes(addon.id)
+      );
+      const currentAddonPrice = validAddon?.reduce(
+        (accu, curr) => curr.price + accu,
+        0
+      );
+
+      const currentTotalPrice = item.isFoc
+        ? 0
+        : currentAddonPrice && validMenu && item.quantity
+        ? (validMenu.price + currentAddonPrice) * item.quantity
+        : validMenu && item.quantity
+        ? validMenu.price * item.quantity
+        : 0;
+      return {
+        ...item,
+        tax,
+        totalPrice: total,
+        qrCode: receiptUrl,
+        tableId,
+        subTotal: currentTotalPrice,
+      };
     });
     setPaid(updatedPaid);
-  }, [tax, total, tableId, receiptUrl]);
+  }, [tax, total, receiptUrl]);
 
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePaidAndPrint = async () => {
     setIsLoading(true);
     const { isSuccess, message } = await setPaidWithQuantity(paid);
+    setIsLoading(false);
     if (isSuccess) {
-      setIsLoading(false);
       toast.success(message);
       printReceipt();
       setPaid([]);
       onClose();
     } else {
-      setIsLoading(false);
       toast.error(message);
     }
   };
@@ -235,13 +258,13 @@ export default function PaidAndPrintDialog({
           <ModalFooter>
             <Button
               className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-              onClick={onClose}
+              onPress={onClose}
               isDisabled={isLoading}
             >
               Close
             </Button>
             <Button
-              onClick={() => handlePaidAndPrint()}
+              onPress={() => handlePaidAndPrint()}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
               isDisabled={isLoading}
             >

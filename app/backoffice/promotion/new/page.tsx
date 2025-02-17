@@ -20,7 +20,7 @@ import {
   Textarea,
   TimeInput,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -72,7 +72,7 @@ export default function App() {
     if (menuRequiredAddonCatQue.length) {
       onOpen();
     }
-  }, [menuRequiredAddonCatQue]);
+  }, [menuRequiredAddonCatQue, onOpen]);
 
   const days = [
     { name: "Sunday" },
@@ -415,7 +415,7 @@ export default function App() {
                         isIconOnly
                         variant="light"
                         className="size-16"
-                        onClick={() => {
+                        onPress={() => {
                           setFocMenu(
                             focMenu.filter((foc) => foc.id !== item.id)
                           );
@@ -431,7 +431,7 @@ export default function App() {
                 <Button
                   size="sm"
                   variant="light"
-                  onClick={() => {
+                  onPress={() => {
                     const newFocMenu = {
                       id: focMenu[focMenu.length - 1].id + 1,
                       menuId: [],
@@ -557,7 +557,7 @@ export default function App() {
                           isIconOnly
                           variant="light"
                           className="size-16"
-                          onClick={() => {
+                          onPress={() => {
                             setMenuQty(
                               menuQty.filter((qty) => qty.id !== item.id)
                             );
@@ -573,7 +573,7 @@ export default function App() {
                   <Button
                     size="sm"
                     variant="light"
-                    onClick={() => {
+                    onPress={() => {
                       const newMenuQty = {
                         id: menuQty[menuQty.length - 1].id + 1,
                         menuId: "",
@@ -663,9 +663,9 @@ export default function App() {
                       label="Start time"
                       variant="bordered"
                       value={timePeriod?.startTime}
-                      onChange={(e) =>
-                        setTimePeriod({ ...timePeriod, startTime: e })
-                      }
+                      onChange={(e) => {
+                        if (e) setTimePeriod({ ...timePeriod, startTime: e });
+                      }}
                       isDisabled={!enabelTime}
                       isRequired
                       fullWidth
@@ -676,9 +676,9 @@ export default function App() {
                       variant="bordered"
                       isDisabled={!enabelTime}
                       value={timePeriod?.endTime}
-                      onChange={(e) =>
-                        setTimePeriod({ ...timePeriod, endTime: e })
-                      }
+                      onChange={(e) => {
+                        if (e) setTimePeriod({ ...timePeriod, endTime: e });
+                      }}
                       isRequired
                       fullWidth
                     />
@@ -704,7 +704,7 @@ export default function App() {
         <div className="flex justify-end items-center mt-1">
           <Button
             className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-            onClick={() => router.back()}
+            onPress={() => router.back()}
             isDisabled={creating}
           >
             Cancel

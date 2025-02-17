@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button, Kbd, KbdKey } from "@nextui-org/react";
+import { Button, Kbd, KbdKey } from "@heroui/react";
 
 interface ShortcutButtonProps {
   keys: KbdKey[];
-  onClick: () => void;
+  onPress: () => void;
   letter: string;
 }
 
-const ShortcutButton = ({ keys, onClick, letter }: ShortcutButtonProps) => {
+const ShortcutButton = ({ keys, onPress, letter }: ShortcutButtonProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const ctrlPressed = keys.includes("ctrl") && event.ctrlKey;
@@ -17,13 +17,13 @@ const ShortcutButton = ({ keys, onClick, letter }: ShortcutButtonProps) => {
         event.key && letter.toLowerCase() === event.key.toLocaleLowerCase();
       if (ctrlPressed && letterPressed) {
         event.preventDefault(); // Prevent Chrome's default behavior
-        onClick();
+        onPress();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [keys, onClick, letter]);
+  }, [keys, onPress, letter]);
 
   return (
     <Kbd

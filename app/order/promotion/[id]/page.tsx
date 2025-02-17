@@ -17,7 +17,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import NextImage from "next/image";
 import GetPromotion from "../../components/GetPromotion";
 import { weekday } from "@/general";

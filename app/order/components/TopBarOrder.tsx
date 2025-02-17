@@ -1,16 +1,16 @@
 "use client";
-import { fetchCompany, fetchTableWithId } from "@/app/lib/backoffice/data";
+import { fetchTableWithId } from "@/app/lib/backoffice/data";
+import { fetchCompanyFromOrder } from "@/app/lib/order/data";
 import { OrderContext } from "@/context/OrderContext";
-import { Badge, Tooltip } from "@nextui-org/react";
+import { Badge, Tooltip } from "@heroui/react";
 import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { IoClose, IoMenu } from "react-icons/io5";
 import { MdShoppingCart } from "react-icons/md";
 import useSWR from "swr";
 import SidebarOrder from "./SidebarOrder";
-import { fetchCompanyFromOrder } from "@/app/lib/order/data";
 
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 

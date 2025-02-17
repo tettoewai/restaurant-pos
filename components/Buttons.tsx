@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Tooltip } from "@nextui-org/react";
+import { Button, Tooltip } from "@heroui/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,14 +27,15 @@ export const FullScreenButton = () => {
           showArrow={true}
           delay={1000}
         >
-          <Button isIconOnly variant="light">
-            <GoScreenNormal
-              className="size-7 md:size-8 cursor-pointer text-primary p-1"
-              onClick={() => {
-                screenfull.isEnabled && screenfull.exit();
-                setIsFullScreen(false);
-              }}
-            />
+          <Button
+            isIconOnly
+            variant="light"
+            onPress={() => {
+              screenfull.isEnabled && screenfull.exit();
+              setIsFullScreen(false);
+            }}
+          >
+            <GoScreenNormal className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       ) : (
@@ -45,14 +46,15 @@ export const FullScreenButton = () => {
           showArrow={true}
           delay={1000}
         >
-          <Button isIconOnly variant="light">
-            <GoScreenFull
-              className="size-7 md:size-8 cursor-pointer text-primary p-1"
-              onClick={() => {
-                screenfull.isEnabled && screenfull.request();
-                setIsFullScreen(true);
-              }}
-            />
+          <Button
+            isIconOnly
+            variant="light"
+            onPress={() => {
+              screenfull.isEnabled && screenfull.request();
+              setIsFullScreen(true);
+            }}
+          >
+            <GoScreenFull className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       )}
@@ -72,11 +74,8 @@ export function ModeButton() {
           showArrow={true}
           delay={1000}
         >
-          <Button isIconOnly variant="light">
-            <MdDarkMode
-              className="size-7 md:size-8 cursor-pointer text-primary p-1"
-              onClick={() => setTheme("light")}
-            />
+          <Button isIconOnly variant="light" onPress={() => setTheme("light")}>
+            <MdDarkMode className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       ) : (
@@ -87,11 +86,8 @@ export function ModeButton() {
           showArrow={true}
           delay={1000}
         >
-          <Button isIconOnly variant="light">
-            <MdLightMode
-              className="size-7 md:size-8 cursor-pointer text-primary p-1"
-              onClick={() => setTheme("dark")}
-            />
+          <Button isIconOnly variant="light" onPress={() => setTheme("dark")}>
+            <MdLightMode className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       )}
@@ -104,10 +100,10 @@ export function NewPromtionButton() {
   return (
     <Button
       className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      onClick={() => router.push("/backoffice/promotion/new")}
+      onPress={() => router.push("/backoffice/promotion/new")}
     >
       <ShortcutButton
-        onClick={() => router.push("/backoffice/promotion/new")}
+        onPress={() => router.push("/backoffice/promotion/new")}
         keys={["ctrl"]}
         letter="O"
       />

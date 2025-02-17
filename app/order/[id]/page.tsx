@@ -5,7 +5,7 @@ import {
   fetchMenuWithId,
 } from "@/app/lib/backoffice/data";
 import { fetchOrderWithItemId } from "@/app/lib/order/data";
-import { Card } from "@nextui-org/react";
+import { Card } from "@heroui/react";
 import Image from "next/image";
 import { Suspense } from "react";
 import MenuForm from "../components/MenuForm";

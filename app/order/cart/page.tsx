@@ -2,7 +2,7 @@
 
 import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { OrderContext } from "@/context/OrderContext";
-import { Button, Card } from "@nextui-org/react";
+import { Button, Card } from "@heroui/react";
 import { Menu } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useContext } from "react";
@@ -36,7 +36,7 @@ export default function Cart() {
   const router = useRouter();
 
   return (
-    <div className="px-2">
+    <div className="px-2 pb-20">
       <div className="w-full flex justify-between items-center mt-3">
         <div className="flex flex-col pl-2">
           <span className="text-primary">Cart</span>
@@ -77,7 +77,7 @@ export default function Cart() {
               </span>
               <Button
                 className="bg-primary mt-4 text-white"
-                onClick={() => router.push(`/order?tableId=${tableId}`)}
+                onPress={() => router.push(`/order?tableId=${tableId}`)}
               >
                 Browse
               </Button>

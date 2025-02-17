@@ -2,7 +2,7 @@
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import BackOfficeContextProvider from "@/context/BackOfficeContext";
-import { ScrollShadow } from "@nextui-org/react";
+import { ScrollShadow } from "@heroui/react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { ReactNode, useState } from "react";

@@ -13,7 +13,7 @@ import {
   DropdownTrigger,
   Switch,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {
   AddonCategory,
   DisabledLocationMenu,
@@ -180,7 +180,7 @@ export default function MoreOptionButton({
           <DropdownItem
             key="edit"
             endContent={<MdEdit className={iconClasses} />}
-            onClick={onUpdateOpen}
+            onPress={onUpdateOpen}
             href={
               itemType === "activeOrder"
                 ? `/order/${orderData?.menuId}?tableId=${tableId}&orderId=${orderData?.itemId}`
@@ -248,7 +248,9 @@ export default function MoreOptionButton({
               Active
             </DropdownItem>
           ) : (
-            <DropdownItem className="hidden">None</DropdownItem>
+            <DropdownItem key="none" className="hidden">
+              None
+            </DropdownItem>
           )}
           <DropdownItem
             key="delete"
@@ -261,7 +263,7 @@ export default function MoreOptionButton({
                 <MdDelete className={cn(iconClasses, "text-danger")} />
               )
             }
-            onClick={onDeleteOpen}
+            onPress={onDeleteOpen}
           >
             {itemType === "activeOrder" ? "Cancel" : "Delete"}
           </DropdownItem>

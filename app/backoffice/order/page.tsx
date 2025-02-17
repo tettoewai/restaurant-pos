@@ -1,24 +1,18 @@
 "use client";
 import { fetchOrder, fetchTableWithIds } from "@/app/lib/backoffice/data";
-import { Card } from "@nextui-org/react";
+import { Card } from "@heroui/react";
 import Link from "next/link";
 import { MdTableBar } from "react-icons/md";
 import useSWR from "swr";
 
 const Order = () => {
-  const { data: order } = useSWR(
-    "order",
-    () => fetchOrder().then((res) => res),
-    {
-      refreshInterval: 5000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-    }
-  );
+  const { data: order } = useSWR("order", () => fetchOrder(), {
+    refreshInterval: 5000,
+  });
   const tableId = order && order.map((item) => item.tableId);
   const { data: tables } = useSWR(
-    `table - ${[tableId]}`,
-    () => tableId && fetchTableWithIds(tableId).then((res) => res)
+    tableId ? `table - ${[tableId]}` : null,
+    () => tableId && fetchTableWithIds(tableId)
   );
   const uniqueTable = Array.from(new Set(tableId));
   return (

@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -96,7 +96,7 @@ export default function UpdateMenuCategoryDialog({
             <ModalFooter>
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                onClick={onClose}
+                onPress={onClose}
               >
                 Cancel
               </Button>

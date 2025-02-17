@@ -1,7 +1,7 @@
 "use client";
 import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import { changeTable } from "@/app/lib/order/action";
-import { Button, Card, Spinner } from "@nextui-org/react";
+import { Button, Card, Spinner } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import QrScanner from "qr-scanner";
 import { useEffect, useRef, useState } from "react";
@@ -129,13 +129,13 @@ const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
                 color="primary"
                 className="w-28"
                 isDisabled={changing}
-                onClick={handleChangeTable}
+                onPress={handleChangeTable}
               >
                 {changing ? <Spinner color="white" /> : "Yes"}
               </Button>
               <Button
                 className="w-28"
-                onClick={() => {
+                onPress={() => {
                   params.set("tableId", String(prevTableId));
                   router.replace(`/order?${params.toString()}`);
                 }}

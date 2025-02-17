@@ -1,4 +1,4 @@
-import { Divider, Tooltip } from "@nextui-org/react";
+import { Divider, Tooltip } from "@heroui/react";
 import { Dispatch, SetStateAction } from "react";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { IoMenu } from "react-icons/io5";

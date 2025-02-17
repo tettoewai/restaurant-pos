@@ -5,7 +5,7 @@ import {
   Divider,
   Image,
   ScrollShadow,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Promotion } from "@prisma/client";
 import NextImage from "next/image";
 import Link from "next/link";
@@ -20,8 +20,6 @@ export default function PromotionCard({
   promotions: Promotion[];
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const toDay = new Date();
 
   useEffect(() => {
     const interval = setInterval(() => {

@@ -12,7 +12,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Location } from "@prisma/client";
 import React, { useEffect, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";

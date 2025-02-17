@@ -1,14 +1,12 @@
 "use client";
-import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { createOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
 import { formatCurrency } from "@/function";
-import { Button, Spinner } from "@nextui-org/react";
+import { Button, Spinner } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { toast } from "react-toastify";
-import useSWR from "swr";
 
 export default function ConfirmOrderBut({
   tableId,
@@ -81,7 +79,7 @@ export default function ConfirmOrderBut({
       <Button
         color="primary"
         className="text-white mt-1"
-        onClick={handleConfirmOrder}
+        onPress={handleConfirmOrder}
         disabled={isCreating}
       >
         {isCreating ? <Spinner color="primary" size="sm" /> : "Confirm Order"}

@@ -928,6 +928,7 @@ export async function createReceipt(paidData: PaidData[]) {
           quantity: item.quantity as number,
           tax: item.tax as number,
           date: item.date as Date,
+          subTotal: item.subTotal,
         };
 
         // Handle addons if present
@@ -954,38 +955,46 @@ export async function createReceipt(paidData: PaidData[]) {
 }
 
 export async function setPaidWithQuantity(item: PaidData[]) {
-  if (!item.length)
+  if (!item.length) {
     return {
       message: "Missing required fields",
       isSuccess: false,
     };
+  }
+
   try {
-    item.map(async (item) => {
-      const currentOrder = await fetchOrderWithItemId(item.itemId);
-      if (!currentOrder || !item.quantity)
+    for (const data of item) {
+      const currentOrder = await fetchOrderWithItemId(data.itemId);
+
+      if (!currentOrder || !data.quantity) {
         return {
           message: "Missing required fields",
           isSuccess: false,
         };
+      }
+
       const isPaid =
-        currentOrder[0].paidQuantity + item.quantity ===
+        currentOrder[0].paidQuantity + data.quantity ===
         currentOrder[0].quantity;
-      const paidQuantity = currentOrder[0].paidQuantity + item.quantity;
+      const paidQuantity = currentOrder[0].paidQuantity + data.quantity;
       const status = isPaid ? ORDERSTATUS.PAID : ORDERSTATUS.COMPLETE;
+
       await prisma.order.updateMany({
-        where: { itemId: item.itemId },
-        data: { paidQuantity: paidQuantity, status },
+        where: { itemId: data.itemId },
+        data: { paidQuantity, status },
       });
-    });
+    }
+
     await createReceipt(item);
+
     return {
-      message: "Paided order successfully.",
-      isSuccess: true
+      message: "Paid order successfully.",
+      isSuccess: true,
     };
   } catch (error) {
     console.error(error);
     return {
-      message: "Something went wrong while paiding order",
+      message: "Something went wrong while processing the payment.",
       isSuccess: false,
     };
   }

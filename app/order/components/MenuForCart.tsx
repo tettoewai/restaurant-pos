@@ -1,7 +1,7 @@
 "use client";
 import { formatCurrency } from "@/function";
 import { CartItem } from "@/context/OrderContext";
-import { Card } from "@nextui-org/react";
+import { Card } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";

@@ -14,7 +14,7 @@ import {
   CheckboxGroup,
   cn,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { FocCategory, FocMenu, Menu } from "@prisma/client";
 import { customAlphabet } from "nanoid";
 import Image from "next/image";
@@ -257,7 +257,7 @@ function FocPromotion({
                       isGettingPromo?.loading)
                   }
                   color="primary"
-                  onClick={() => handleGetPromotion(menuIds, item.id)}
+                  onPress={() => handleGetPromotion(menuIds, item.id)}
                 >
                   {isGettingPromo?.promotionId === item.id &&
                   isGettingPromo?.loading ? (

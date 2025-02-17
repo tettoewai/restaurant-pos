@@ -1,9 +1,7 @@
-import { fetchOrderWithTableId, fetchTable } from "@/app/lib/backoffice/data";
+import { fetchTable } from "@/app/lib/backoffice/data";
 import { fetchActiveOrderWithTableIds } from "@/app/lib/order/data";
 import ItemCard from "@/components/ItemCard";
 import NewTableDialog from "@/components/NewTableDailog";
-import { Bebas_Neue } from "next/font/google";
-const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
 export default async function Table() {
   const tables = await fetchTable();

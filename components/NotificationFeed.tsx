@@ -12,7 +12,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Tooltip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -38,7 +38,8 @@ export default function NotificationFeed() {
   );
 
   const timeAgo = (date: Date) => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    const nowDate = new Date();
+    const seconds = Math.floor((nowDate.getTime() - date.getTime()) / 1000);
     let interval = seconds / 31536000;
     if (interval > 1) {
       return Math.floor(interval) + " years ago";
@@ -107,7 +108,7 @@ export default function NotificationFeed() {
               return (
                 <DropdownItem
                   key={item.id}
-                  onClick={async () => {
+                  onPress={async () => {
                     await setNotiRead(item.id);
                     mutate("notification");
                     router.push(`/backoffice/order/${item.tableId}`);
@@ -128,7 +129,7 @@ export default function NotificationFeed() {
               );
             })
           ) : (
-            <DropdownItem>There is no data</DropdownItem>
+            <DropdownItem key="none">There is no data</DropdownItem>
           )}
         </DropdownMenu>
       </Dropdown>

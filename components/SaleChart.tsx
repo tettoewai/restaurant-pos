@@ -8,8 +8,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-  Skeleton,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Order } from "@prisma/client";
 import {
   CategoryScale,
@@ -21,7 +20,6 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { title } from "process";
 import { useState } from "react";
 import { Line } from "react-chartjs-2";
 import { IoIosArrowDown } from "react-icons/io";

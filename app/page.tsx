@@ -1,19 +1,19 @@
-import { Button } from "@nextui-org/react";
+import { Link as NextUiLink } from "@heroui/react";
 import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 import { BiSolidFoodMenu } from "react-icons/bi";
 import { BsQrCodeScan } from "react-icons/bs";
+import { FaUserShield } from "react-icons/fa6";
 import { MdAddLocationAlt, MdOutlineDevices } from "react-icons/md";
 import {
   RiCheckboxMultipleBlankFill,
   RiCustomerService2Line,
 } from "react-icons/ri";
-import { FaUserShield } from "react-icons/fa6";
 import { VscFeedback } from "react-icons/vsc";
 
 const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
-export default async function Home() {
+export default function Home() {
   const functionItem = [
     {
       icon: <MdOutlineDevices className="text-primary size-10" />,
@@ -51,7 +51,7 @@ export default async function Home() {
   ];
 
   return (
-    <div className="flex  flex-col items-center bg-gray-200 dark:bg-gray-950 h-screen overflow-auto w-full">
+    <div className="flex scrollbar-hide flex-col items-center bg-gray-200 dark:bg-gray-950 h-screen overflow-auto w-full">
       <div
         className={`flex items-center justify-center flex-col ${bebasNeue.className}`}
       >
@@ -65,16 +65,20 @@ export default async function Home() {
         </h1>
       </div>
       <div className="flex justify-center items-center mt-28">
-        <Link href={"/backoffice/order"}>
-          <Button className="bg-primary m-2 rounded-sm p-2 text-white">
-            Backoffice
-          </Button>
-        </Link>
-        <Link href={`/order?tableId=1`}>
-          <Button className="bg-orange-300 m-2 rounded-sm p-2 text-white">
-            Order
-          </Button>
-        </Link>
+        <NextUiLink
+          as={Link}
+          className="bg-primary m-2 rounded-md p-2 px-2 text-white"
+          href={"/backoffice/order"}
+        >
+          Backoffice
+        </NextUiLink>
+        <NextUiLink
+          as={Link}
+          className="bg-orange-300 m-2 rounded-md p-2 px-2 text-white"
+          href={`/order?tableId=1`}
+        >
+          Order
+        </NextUiLink>
       </div>
       <span>In usage, user must be scan qr code to place order</span>
       <div className="mt-9 flex items-center justify-center flex-wrap">

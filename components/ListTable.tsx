@@ -7,7 +7,7 @@ import {
   TableRow,
   TableCell,
   getKeyValue,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 interface Props {
   rows: any;
@@ -24,14 +24,18 @@ export default function ListTable({ rows, columns }: Props) {
     >
       <TableHeader>
         {columns.map((column: any) => (
-          <TableColumn key={column.key}>{column.label}</TableColumn>
+          <TableColumn align="center" key={column.key}>
+            {column.label}
+          </TableColumn>
         ))}
       </TableHeader>
       <TableBody items={rows} emptyContent={"There is no item"}>
         {(item: any) => (
           <TableRow key={item.key}>
             {(columnKey) => (
-              <TableCell>{getKeyValue(item, columnKey)}</TableCell>
+              <TableCell align="center">
+                {getKeyValue(item, columnKey)}
+              </TableCell>
             )}
           </TableRow>
         )}

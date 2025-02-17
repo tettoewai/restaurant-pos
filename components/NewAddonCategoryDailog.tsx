@@ -14,7 +14,7 @@ import {
   ModalHeader,
   Spinner,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { toast } from "react-toastify";
 import MultipleSelector from "./MultipleSelector";
 import { useRef, useState } from "react";
@@ -69,7 +69,7 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
         onPress={onOpen}
         className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
       >
-        <ShortcutButton onClick={() => onOpen()} keys={["ctrl"]} letter="O" />{" "}
+        <ShortcutButton onPress={() => onOpen()} keys={["ctrl"]} letter="O" />{" "}
         New Addon Category
       </Button>
       <Modal
@@ -113,7 +113,7 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
             <ModalFooter>
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                onClick={onClose}
+                onPress={onClose}
               >
                 Cancel
               </Button>

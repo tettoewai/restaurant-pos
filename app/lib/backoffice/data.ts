@@ -632,6 +632,19 @@ export const getSalesData = async (year: number) => {
   return sales;
 };
 
+export async function fetchRecentReceipt() {
+  noStore();
+  try {
+    const tableIds = (await fetchTable()).map((item) => item.id);
+    return await prisma.receipt.findMany({
+      where: { tableId: { in: tableIds } },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch recent receipt data.");
+  }
+}
+
 export async function createDefaultData({ email, name }: Props) {
   try {
     const user = await fetchUser();

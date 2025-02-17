@@ -1,11 +1,11 @@
 "use client";
-import { fetchAddonCategoryWithMenuId } from "@/app/lib/order/data";
-import { OrderContext } from "@/context/OrderContext";
-import { Button } from "@nextui-org/react";
+import { fetchAddonCategoryWithMenuIds } from "@/app/lib/order/data";
+import { CartItem, OrderContext } from "@/context/OrderContext";
+import { Button, Spinner } from "@heroui/react";
 import { Menu, PromotionMenu } from "@prisma/client";
 import { customAlphabet } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 export default function GetPromotion({
   promotionMenu,
@@ -25,45 +25,95 @@ export default function GetPromotion({
   const { carts, setCarts } = useContext(OrderContext);
   const { promotionQue, setPromotionQue } = useContext(OrderContext);
 
+  const [checkingRequiredAddonCat, setCheckingRequiredAddonCat] =
+    useState(false);
+
   const handleGetPromotion = async () => {
     if (promotionMenu?.length) {
       let updatedPromotionQue = [...promotionQue];
-      for (const item of promotionMenu || []) {
-        const addonCategory = await fetchAddonCategoryWithMenuId(item.menuId);
-        const isRequired = addonCategory?.filter(
-          (addonCat) => addonCat.isRequired
+      const promotionMenuIds = promotionMenu.map((item) => item.menuId);
+      setCheckingRequiredAddonCat(true);
+      const { addonCategories, menuAddonCategory } =
+        await fetchAddonCategoryWithMenuIds(promotionMenuIds);
+
+      const requiredPromotionMenu = promotionMenu.filter((promoMenu) => {
+        const currentMenuId = promoMenu.menuId;
+        const relatedAddonCatIds = menuAddonCategory
+          .filter((item) => item.menuId === currentMenuId)
+          .map((item) => item.addonCategoryId);
+        const validAdddonCat = addonCategories
+          ?.filter((item) => relatedAddonCatIds.includes(item.id))
+          .filter((item) => item.isRequired);
+        return validAdddonCat?.length;
+      });
+
+      //promotionMenu do not have required addon category
+      const otherPormotionMenu = promotionMenu.filter(
+        (item) =>
+          !requiredPromotionMenu.map((item) => item.id).includes(item.id)
+      );
+      if (otherPormotionMenu.length) {
+        const existingOtherPromotionMenu = otherPormotionMenu
+          .map((item) => {
+            const validExistCart = carts.find(
+              (cart) => cart.menuId === item.menuId && cart.addons.length === 0
+            );
+            if (validExistCart) {
+              return {
+                id: validExistCart?.id || "",
+                menuId: item.menuId,
+                quantity: validExistCart?.quantity + item.quantity_required,
+                addons: [],
+              };
+            }
+          })
+          .filter((item) => item !== undefined);
+        if (existingOtherPromotionMenu.length) {
+          // Update the carts state
+          const updatedCarts = carts
+            .filter(
+              (cart) =>
+                !otherPormotionMenu.some((item) => item.menuId === cart.menuId)
+            )
+            .concat(existingOtherPromotionMenu);
+
+          // Assuming setCarts is the state setter function for carts
+          setCarts(updatedCarts);
+        }
+
+        // new cart item not existed
+        const newOtherPromotionMenu = otherPormotionMenu.filter(
+          (item) =>
+            !existingOtherPromotionMenu
+              .map((exist) => exist.menuId)
+              .includes(item.menuId)
         );
 
-        if (isRequired && isRequired.length) {
-          updatedPromotionQue = [...updatedPromotionQue, item];
-          setPromotionQue(updatedPromotionQue);
-        } else {
-          const isExist = carts.find(
-            (exist) => exist.menuId === item.menuId && exist.addons.length === 0
-          );
-
-          if (isExist) {
-            const otherItem = carts.filter((cart) => cart.id !== isExist.id);
-            setCarts([
-              ...otherItem,
-              {
-                ...isExist,
-                quantity: isExist.quantity + item.quantity_required,
-              },
-            ]);
-          } else {
-            setCarts([
-              ...carts,
-              {
-                id: generateNumericID(),
-                menuId: item.menuId,
-                addons: [],
-                quantity: item.quantity_required,
-              },
-            ]);
+        const newCartItem: CartItem[] = newOtherPromotionMenu.map((item) => {
+          return {
+            id: generateNumericID(),
+            menuId: item.menuId,
+            addons: [],
+            quantity: item.quantity_required,
+          };
+        });
+        if (newCartItem.length) {
+          if (newCartItem.length) {
+            setCarts((prevCarts) => [...prevCarts, ...newCartItem]);
           }
         }
       }
+
+      setCheckingRequiredAddonCat(false);
+
+      if (requiredPromotionMenu.length) {
+        updatedPromotionQue = [
+          ...updatedPromotionQue,
+          ...requiredPromotionMenu,
+        ];
+        setPromotionQue(updatedPromotionQue);
+      }
+
       if (updatedPromotionQue && updatedPromotionQue.length) {
         const firstMenu = updatedPromotionQue[0];
         if (firstMenu) {
@@ -78,11 +128,18 @@ export default function GetPromotion({
 
   return (
     <Button
-      onClick={handleGetPromotion}
+      onPress={handleGetPromotion}
       className="text-white bg-primary w-full"
-      isDisabled={!promotionAvailabel}
+      isDisabled={!promotionAvailabel || checkingRequiredAddonCat}
     >
-      Get Promotion
+      {checkingRequiredAddonCat ? (
+        <>
+          <span>Checking menu have require addon-category</span>
+          <Spinner color="white" />
+        </>
+      ) : (
+        "Get Promotion"
+      )}
     </Button>
   );
 }

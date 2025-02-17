@@ -16,11 +16,11 @@ import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
-import { Button, Card, Link } from "@nextui-org/react";
+import { Button, Card, Link } from "@heroui/react";
 import { DISCOUNT, Order, ORDERSTATUS } from "@prisma/client";
 import clsx from "clsx";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import FocPromotion from "../components/FocPromotion";
@@ -29,6 +29,7 @@ import NoticeCancelDialog from "../components/NoticeCancelDialog";
 function ActiveOrder() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
+  const router = useRouter();
   const {
     data: orders = [],
     error: orderError,
@@ -390,9 +391,12 @@ function ActiveOrder() {
             <BsCartX className="size-12 text-primary mb-4" />
             <span>Hungry?</span>
             <span className="text-sm">You have not ordered anything!</span>
-            <Link href={`/order?tableId=${tableId}`}>
-              <Button className="bg-primary mt-4 text-white">Browse</Button>
-            </Link>
+            <Button
+              className="bg-primary mt-4 text-white"
+              onPress={() => router.push(`/order?tableId=${tableId}`)}
+            >
+              Browse
+            </Button>
           </Card>
         </div>
       )}

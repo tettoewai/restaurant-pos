@@ -1,5 +1,5 @@
 "use client";
-import { Card } from "@nextui-org/react";
+import { Card } from "@heroui/react";
 import { Table } from "@prisma/client";
 import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";

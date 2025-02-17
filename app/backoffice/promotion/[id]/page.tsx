@@ -33,7 +33,7 @@ import {
   Textarea,
   TimeInput,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { DISCOUNT } from "@prisma/client";
 import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
@@ -175,7 +175,7 @@ export default function App({ params }: { params: { id: string } }) {
         }
       });
     }
-  }, [prevMenuQty, prevCondition, data, isLoading, focData]);
+  }, [prevMenuQty, prevCondition, data, focData]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -258,10 +258,16 @@ export default function App({ params }: { params: { id: string } }) {
       focMenuAddonCatData &&
         setFocAddonCategory(
           focMenuAddonCatData
-            .filter((item) =>
-              menuRequiredAddonCat
-                .map((requiredAdddonCat) => requiredAdddonCat.menuId)
-                .includes(item.menuId)
+            .filter(
+              (item) =>
+                menuRequiredAddonCat
+                  .map((requiredAdddonCat) => requiredAdddonCat.menuId)
+                  .includes(item.menuId) &&
+                menuRequiredAddonCat.filter((requiredAddonCat) =>
+                  requiredAddonCat.addonCategoryIds.includes(
+                    item.addonCategoryId
+                  )
+                ).length
             )
             .map((item) => {
               return {
@@ -295,12 +301,12 @@ export default function App({ params }: { params: { id: string } }) {
       const selectedAddonCat = validSelectedMenu.map(
         (item) => item.addonCategoryId
       );
+
       return checkArraySame(item.addonCategoryIds, selectedAddonCat);
     });
     const isValid =
       requiredAddonCategoryId.length === menuRequiredAddonCatQue.length;
-    console.log(requiredAddonCategoryId.length);
-    console.log(menuRequiredAddonCatQue.length);
+
     if (!isValid || !promotionFormData)
       return toast.error("Missing required addon");
 
@@ -310,11 +316,6 @@ export default function App({ params }: { params: { id: string } }) {
       promotionId: id,
     });
     setCreatingMenuAddonCategory(false);
-    if (isSuccess) {
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
     setIsSubmitting(true);
     const { isSuccess: promotionSuccess, message: promotionMessage } =
       await updatePromotion(promotionFormData);
@@ -535,7 +536,7 @@ export default function App({ params }: { params: { id: string } }) {
                           isIconOnly
                           variant="light"
                           className="size-16"
-                          onClick={() => {
+                          onPress={() => {
                             setFocMenu(
                               focMenu.filter((foc) => foc.id !== item.id)
                             );
@@ -551,7 +552,7 @@ export default function App({ params }: { params: { id: string } }) {
                   <Button
                     size="sm"
                     variant="light"
-                    onClick={() => {
+                    onPress={() => {
                       const newFocMenu = {
                         id: focMenu[focMenu.length - 1].id + 1,
                         menuId: [],
@@ -682,7 +683,7 @@ export default function App({ params }: { params: { id: string } }) {
                               isIconOnly
                               variant="light"
                               className="size-16"
-                              onClick={() => {
+                              onPress={() => {
                                 setMenuQty(
                                   menuQty.filter((qty) => qty.id !== item.id)
                                 );
@@ -698,7 +699,7 @@ export default function App({ params }: { params: { id: string } }) {
                     <div className="w-full flex justify-center items-center mt-2">
                       <Button
                         variant="light"
-                        onClick={() => {
+                        onPress={() => {
                           const newMenuQty = {
                             id: menuQty[menuQty.length - 1].id + 1,
                             menuId: "",
@@ -806,9 +807,10 @@ export default function App({ params }: { params: { id: string } }) {
                           label="Start time"
                           variant="bordered"
                           value={timePeriod?.startTime}
-                          onChange={(e) =>
-                            setTimePeriod({ ...timePeriod, startTime: e })
-                          }
+                          onChange={(e) => {
+                            if (e)
+                              setTimePeriod({ ...timePeriod, startTime: e });
+                          }}
                           isDisabled={!enabelTime}
                           isRequired
                         />
@@ -818,9 +820,9 @@ export default function App({ params }: { params: { id: string } }) {
                           variant="bordered"
                           isDisabled={!enabelTime}
                           value={timePeriod?.endTime}
-                          onChange={(e) =>
-                            setTimePeriod({ ...timePeriod, endTime: e })
-                          }
+                          onChange={(e) => {
+                            if (e) setTimePeriod({ ...timePeriod, endTime: e });
+                          }}
                           isRequired
                         />
                       </div>
@@ -846,7 +848,7 @@ export default function App({ params }: { params: { id: string } }) {
           <div className="w-full flex justify-end items-center">
             <Button
               className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-              onClick={() => router.back()}
+              onPress={() => router.back()}
               isDisabled={isSubmitting}
             >
               Cancel
@@ -854,7 +856,7 @@ export default function App({ params }: { params: { id: string } }) {
             <Button
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              isDisabled={isSubmitting}
+              isDisabled={isSubmitting || checkingRequiredAddonCat}
             >
               {isSubmitting ? (
                 <>
