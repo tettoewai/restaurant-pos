@@ -1,16 +1,21 @@
 "use client";
 import { updateOrder } from "@/app/lib/order/action";
 import { AddonCatSkeleton } from "@/app/ui/skeletons";
-import { checkArraySame, formatCurrency } from "@/function";
 import { OrderContext } from "@/context/OrderContext";
-import { Button, Card, Checkbox, Chip, Textarea } from "@heroui/react";
+import { checkArraySame, formatCurrency } from "@/function";
+import {
+  addToast,
+  Button,
+  Card,
+  Checkbox,
+  Chip,
+  Textarea,
+} from "@heroui/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
 import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
-import { toast } from "react-toastify";
-import { updatePromotion } from "@/app/lib/backoffice/action";
 const { customAlphabet } = require("nanoid");
 
 interface Props {
@@ -152,14 +157,15 @@ export default function MenuForm({
       formData.append("addonIds", JSON.stringify(addonIds));
       formData.append("instruction", instruction);
       const { isSuccess, message } = await updateOrder(formData);
-
+      addToast({
+        title: message,
+        color: isSuccess ? "success" : "danger",
+      });
       if (isSuccess) {
         setIsUpdating(false);
-        toast.success(message);
         router.replace(`/order/active-order?tableId=${tableId}`);
       } else {
         setIsUpdating(false);
-        toast.error(message);
       }
       return;
     }

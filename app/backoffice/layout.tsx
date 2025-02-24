@@ -6,7 +6,6 @@ import { ScrollShadow } from "@heroui/react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { ReactNode, useState } from "react";
-import { ToastContainer } from "react-toastify";
 import useSWR from "swr";
 import { createDefaultData, fetchUser } from "../lib/backoffice/data";
 
@@ -46,7 +45,6 @@ const Layout = ({ children }: Props) => {
             </ScrollShadow>
           </div>
         </div>
-        <ToastContainer theme={resolvedTheme} position="bottom-right" />
       </div>
     </BackOfficeContextProvider>
   );

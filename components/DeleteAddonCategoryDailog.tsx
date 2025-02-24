@@ -1,8 +1,6 @@
+import { deleteAddonCategory } from "@/app/lib/backoffice/action";
 import {
-  deleteAddonCategory,
-  deleteMenuCategory,
-} from "@/app/lib/backoffice/action";
-import {
+  addToast,
   Button,
   Modal,
   ModalBody,
@@ -10,7 +8,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -29,11 +26,12 @@ export default function DeleteAddonCategoryDialog({
     event.preventDefault();
     if (!id) return;
     const { isSuccess, message } = await deleteAddonCategory(id);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
   return (
@@ -45,6 +43,7 @@ export default function DeleteAddonCategoryDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           {(onClose) => (

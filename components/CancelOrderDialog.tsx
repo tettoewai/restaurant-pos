@@ -8,8 +8,8 @@ import {
   ModalHeader,
   Spinner,
 } from "@heroui/react";
+import { addToast } from "@heroui/toast";
 import { useState } from "react";
-import { toast } from "react-toastify";
 
 interface Props {
   id?: string;
@@ -33,9 +33,15 @@ export default function CancelOrderDialog({
     setIsLoading(false);
     if (isSuccess) {
       onClose();
-      toast.success(message);
+      addToast({
+        title: "Toast title",
+        color: "success",
+      });
     } else {
-      toast.error(message);
+      addToast({
+        title: "Toast title",
+        color: "danger",
+      });
     }
   };
   return (
@@ -47,6 +53,7 @@ export default function CancelOrderDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

@@ -2,6 +2,11 @@
 
 import { deleteMenuImage, updateMenu } from "@/app/lib/backoffice/action";
 import {
+  fetchMenuCategoryWithMenu,
+  fetchMenuWithId,
+} from "@/app/lib/backoffice/data";
+import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -14,13 +19,8 @@ import {
 import { Menu, MenuCategory } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { IoMdClose } from "react-icons/io";
-import { toast } from "react-toastify";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
-import {
-  fetchMenuWithId,
-  fetchMenuCategoryWithMenu,
-} from "@/app/lib/backoffice/data";
 
 interface Props {
   id: number;
@@ -79,11 +79,12 @@ export default function UpdateMenuDialog({
     if (!prevData?.assetUrl) deleteMenuImage(id);
     const { message, isSuccess } = await updateMenu({ formData });
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
 
@@ -96,6 +97,7 @@ export default function UpdateMenuDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Update Menu</ModalHeader>

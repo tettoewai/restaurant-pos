@@ -1,5 +1,6 @@
 import { deleteMenuCategory } from "@/app/lib/backoffice/action";
 import {
+  addToast,
   Button,
   Modal,
   ModalBody,
@@ -7,7 +8,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -26,11 +26,12 @@ export default function DeleteMenuCategoryDialog({
     event.preventDefault();
     if (!id) return;
     const { isSuccess, message } = await deleteMenuCategory(id);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
   return (
@@ -42,6 +43,7 @@ export default function DeleteMenuCategoryDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

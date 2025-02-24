@@ -1,9 +1,7 @@
 "use client";
+import { createAddonCategory } from "@/app/lib/backoffice/action";
 import {
-  createAddonCategory,
-  createMenuCategory,
-} from "@/app/lib/backoffice/action";
-import {
+  addToast,
   Button,
   Checkbox,
   Input,
@@ -15,11 +13,10 @@ import {
   Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { toast } from "react-toastify";
-import MultipleSelector from "./MultipleSelector";
-import { useRef, useState } from "react";
 import { Menu } from "@prisma/client";
+import { useRef, useState } from "react";
 import { BsStar } from "react-icons/bs";
+import MultipleSelector from "./MultipleSelector";
 import ShortcutButton from "./ShortCut";
 
 interface Props {
@@ -56,11 +53,12 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
     formData.set("isRequired", String(isRequired));
     const { isSuccess, message } = await createAddonCategory(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       closeModal();
-    } else {
-      toast.error(message);
     }
   };
   return (

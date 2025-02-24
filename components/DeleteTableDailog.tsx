@@ -1,5 +1,6 @@
-import { deleteMenuCategory, deleteTable } from "@/app/lib/backoffice/action";
+import { deleteTable } from "@/app/lib/backoffice/action";
 import {
+  addToast,
   Button,
   Modal,
   ModalBody,
@@ -7,7 +8,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -26,11 +26,12 @@ export default function DeleteTableDialog({
     event.preventDefault();
     if (!id) return;
     const { isSuccess, message } = await deleteTable(id);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
   return (

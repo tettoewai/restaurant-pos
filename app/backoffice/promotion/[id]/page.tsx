@@ -23,6 +23,7 @@ import { parseDate, parseTime } from "@internationalized/date";
 import {
   Accordion,
   AccordionItem,
+  addToast,
   Button,
   Checkbox,
   DateRangePicker,
@@ -41,7 +42,6 @@ import { useEffect, useMemo, useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
 import { IoMdClose } from "react-icons/io";
 import { RxCross2 } from "react-icons/rx";
-import { toast } from "react-toastify";
 import useSWR from "swr";
 
 export default function App({ params }: { params: { id: string } }) {
@@ -211,15 +211,29 @@ export default function App({ params }: { params: { id: string } }) {
         focMenu &&
         focMenu.length > 0 &&
         !discountAmount;
-      if (!focValid) return toast.error("Missing required foc field!");
+      if (!focValid)
+        return addToast({
+          title: "Missing required foc field!",
+          color: "danger",
+        });
     }
-    if (!isValid) return toast.error("Missing required field!");
+    if (!isValid)
+      return addToast({
+        title: "Missing required field!",
+        color: "danger",
+      });
+
     if (!prevImage) deletePromotionImage(id);
     if (enabelTime) {
       const periodValid =
         timePeriod && timePeriod.startTime && timePeriod.endTime;
 
-      if (!periodValid) return toast.error("Missing time period!");
+      if (!periodValid)
+        return addToast({
+          title: "Missing time period!",
+          color: "danger",
+        });
+
       const timeCondition = {
         startTime: timePeriod.startTime?.toString(),
         endTime: timePeriod.endTime?.toString(),
@@ -228,7 +242,11 @@ export default function App({ params }: { params: { id: string } }) {
     }
 
     if (enableDay) {
-      if (!selectedDay) return toast.error("Missing day!");
+      if (!selectedDay)
+        return addToast({
+          title: "Missing day!",
+          color: "danger",
+        });
       const days = { days: Array.from(selectedDay) };
       conditions.push(days);
     }
@@ -283,12 +301,12 @@ export default function App({ params }: { params: { id: string } }) {
       setIsSubmitting(true);
       const { isSuccess, message } = await updatePromotion(formData);
       setIsSubmitting(false);
-
+      addToast({
+        title: message,
+        color: isSuccess ? "success" : "danger",
+      });
       if (isSuccess) {
-        toast.success(message);
         router.back();
-      } else {
-        toast.error(message);
       }
     }
   };
@@ -308,7 +326,10 @@ export default function App({ params }: { params: { id: string } }) {
       requiredAddonCategoryId.length === menuRequiredAddonCatQue.length;
 
     if (!isValid || !promotionFormData)
-      return toast.error("Missing required addon");
+      return addToast({
+        title: "Missing required addon",
+        color: "danger",
+      });
 
     setCreatingMenuAddonCategory(true);
     const { isSuccess, message } = await updateFocMenuAddonCategory({
@@ -320,11 +341,12 @@ export default function App({ params }: { params: { id: string } }) {
     const { isSuccess: promotionSuccess, message: promotionMessage } =
       await updatePromotion(promotionFormData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: promotionSuccess ? "success" : "danger",
+    });
     if (promotionSuccess) {
-      toast.success(promotionMessage);
       router.back();
-    } else {
-      toast.error(promotionMessage);
     }
   };
 
@@ -494,10 +516,7 @@ export default function App({ params }: { params: { id: string } }) {
                         }}
                       >
                         {menus.map((menu) => (
-                          <SelectItem
-                            key={String(menu.id)}
-                            value={String(menu.id)}
-                          >
+                          <SelectItem key={String(menu.id)}>
                             {menu.name}
                           </SelectItem>
                         ))}
@@ -633,16 +652,12 @@ export default function App({ params }: { params: { id: string } }) {
                                     <SelectItem
                                       className="hidden"
                                       key={String(menu.id)}
-                                      value={String(menu.id)}
                                     >
                                       {menu.name}
                                     </SelectItem>
                                   );
                                 return (
-                                  <SelectItem
-                                    key={String(menu.id)}
-                                    value={String(menu.id)}
-                                  >
+                                  <SelectItem key={String(menu.id)}>
                                     {menu.name}
                                   </SelectItem>
                                 );

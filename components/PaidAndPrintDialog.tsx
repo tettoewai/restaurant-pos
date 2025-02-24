@@ -15,6 +15,7 @@ import {
   Spinner,
   Tooltip,
   useDisclosure,
+  addToast,
 } from "@heroui/react";
 import { Addon, AddonCategory, Menu } from "@prisma/client";
 import {
@@ -28,7 +29,6 @@ import {
 } from "react";
 import { PiHandCoinsFill } from "react-icons/pi";
 import { RxCross2 } from "react-icons/rx";
-import { toast } from "react-toastify";
 import ListTable from "./ListTable";
 import PaidPrint from "./PaidPrint";
 import { useReactToPrint } from "react-to-print";
@@ -183,13 +183,15 @@ export default function PaidAndPrintDialog({
     setIsLoading(true);
     const { isSuccess, message } = await setPaidWithQuantity(paid);
     setIsLoading(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       printReceipt();
       setPaid([]);
       onClose();
     } else {
-      toast.error(message);
     }
   };
   return (
@@ -250,6 +252,7 @@ export default function PaidAndPrintDialog({
                     taxRate={taxRate}
                     subTotal={subTotal}
                     qrCodeImage={qrCodeData}
+                    paid={paid}
                   />
                 ) : null}
               </div>

@@ -2,6 +2,7 @@
 
 import { createMenu } from "@/app/lib/backoffice/action";
 import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -14,7 +15,6 @@ import {
 import { MenuCategory } from "@prisma/client";
 import { useRef, useState } from "react";
 import { IoMdClose } from "react-icons/io";
-import { toast } from "react-toastify";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
 import { Spinner } from "@heroui/spinner";
@@ -57,11 +57,13 @@ export default function NewMenuDialog({ menuCategory }: Props) {
     menuImage && formData.append("image", menuImage);
     const { message, isSuccess } = await createMenu({ formData });
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
+      
       closeModal();
-    } else {
-      toast.error(message);
     }
   };
 
@@ -81,6 +83,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Create Menu</ModalHeader>

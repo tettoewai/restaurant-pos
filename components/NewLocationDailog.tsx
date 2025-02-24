@@ -1,9 +1,7 @@
 "use client";
+import { createLocation } from "@/app/lib/backoffice/action";
 import {
-  createLocation,
-  createMenuCategory,
-} from "@/app/lib/backoffice/action";
-import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -15,7 +13,6 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { useState } from "react";
-import { toast } from "react-toastify";
 import LocationButton from "./LocationButton";
 import ShortcutButton from "./ShortCut";
 
@@ -36,12 +33,13 @@ export default function NewLocationDialog() {
     const formData = new FormData(form);
     const { isSuccess, message } = await createLocation(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       handleLocal();
       onClose();
-    } else {
-      toast.error(message);
     }
   };
 

@@ -1,6 +1,5 @@
 "use client";
 import {
-  setNotiRead,
   setNotiReadWithTableId,
   updateOrderStatus,
 } from "@/app/lib/backoffice/action";
@@ -17,30 +16,31 @@ import QuantityDialog from "@/components/QuantityDialog";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice, OrderData } from "@/general";
+import { useDisclosure } from "@heroui/react";
 import {
-  Badge,
-  Button,
   Dropdown,
-  DropdownItem,
-  DropdownMenu,
   DropdownTrigger,
-  Tab,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/dropdown";
+import { User } from "@heroui/user";
+import {
   Table,
   TableBody,
-  TableCell,
-  TableColumn,
   TableHeader,
+  TableColumn,
   TableRow,
-  Tabs,
-  useDisclosure,
-  User,
-} from "@heroui/react";
+  TableCell,
+} from "@heroui/table";
+import { Button } from "@heroui/button";
+import { Badge } from "@heroui/badge";
+import { addToast } from "@heroui/toast";
+import { Tab, Tabs } from "@heroui/tabs";
 import { ORDERSTATUS } from "@prisma/client";
 import clsx from "clsx";
 import { nanoid } from "nanoid";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDropdown } from "react-icons/io";
-import { toast } from "react-toastify";
 import useSWR, { mutate } from "swr";
 export default function App({ params }: { params: { id: string } }) {
   const tabs = useMemo(() => ["pending", "cooking", "complete"], []);
@@ -170,10 +170,10 @@ export default function App({ params }: { params: { id: string } }) {
     });
 
     if (isSuccess) {
-      toast.success(message);
+      addToast({ title: message, color: "success" });
       mutate([tableId, isUpdateLocation]);
     } else {
-      toast.error(message);
+      addToast({ title: message, color: "danger" });
     }
   };
 
@@ -303,7 +303,7 @@ export default function App({ params }: { params: { id: string } }) {
                     <Button
                       color="primary"
                       className="mb-2"
-                      onClick={() => addAllPaid(completedOrder)}
+                      onPress={() => addAllPaid(completedOrder)}
                     >
                       Paid all
                     </Button>

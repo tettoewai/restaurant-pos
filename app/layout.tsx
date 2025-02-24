@@ -1,7 +1,6 @@
 import { Providers } from "@/components/Providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Ubuntu } from "next/font/google";
-import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 const ubantu = Ubuntu({ subsets: ["latin"], weight: "500" });

@@ -2,6 +2,7 @@
 import { updateMenuCategory } from "@/app/lib/backoffice/action";
 import { fetchMenuCategoryWithId } from "@/app/lib/backoffice/data";
 import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -13,7 +14,6 @@ import {
 } from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -52,11 +52,12 @@ export default function UpdateMenuCategoryDialog({
     formData.set("id", String(id));
     const { isSuccess, message } = await updateMenuCategory(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
 
@@ -69,6 +70,7 @@ export default function UpdateMenuCategoryDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

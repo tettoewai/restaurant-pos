@@ -1,5 +1,6 @@
 import { setKnowCanceledOrder } from "@/app/lib/order/action";
 import {
+  addToast,
   Button,
   Modal,
   ModalBody,
@@ -11,7 +12,6 @@ import {
 } from "@heroui/react";
 import { useState } from "react";
 import { IoWarning } from "react-icons/io5";
-import { toast } from "react-toastify";
 import { mutate } from "swr";
 
 interface Props {
@@ -36,13 +36,14 @@ export default function NoticeCancelDialog({
     setIsLoading(true);
     const { message, isSuccess } = await setKnowCanceledOrder(id);
     setIsLoading(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       mutate([tableId]); // Refetch orders data
       mutate([canceledOrder]); // Refetch canceled orders data
       onClose();
-    } else {
-      toast.error(message);
     }
   };
 
@@ -62,6 +63,7 @@ export default function NoticeCancelDialog({
         placement="center"
         isDismissable={false}
         onClose={onClose}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

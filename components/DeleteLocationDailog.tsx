@@ -1,5 +1,6 @@
-import { deleteAddon, deleteLocation } from "@/app/lib/backoffice/action";
+import { deleteLocation } from "@/app/lib/backoffice/action";
 import {
+  addToast,
   Button,
   Modal,
   ModalBody,
@@ -8,7 +9,6 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { Location } from "@prisma/client";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -36,12 +36,13 @@ export default function DeleteLocationDialog({
     event.preventDefault();
     if (!id) return;
     const { isSuccess, message } = await deleteLocation(id);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       handleLocal();
       onClose();
-    } else {
-      toast.error(message);
     }
   };
   return (
@@ -53,6 +54,7 @@ export default function DeleteLocationDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

@@ -1,5 +1,8 @@
 "use client";
+import { updateAddon } from "@/app/lib/backoffice/action";
+import { fetchAddonWithId } from "@/app/lib/backoffice/data";
 import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -12,9 +15,6 @@ import {
 import { Addon, AddonCategory } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
-import { updateAddon } from "@/app/lib/backoffice/action";
-import { toast } from "react-toastify";
-import { fetchAddonWithId } from "@/app/lib/backoffice/data";
 
 interface Props {
   id: number;
@@ -76,11 +76,12 @@ export default function UpdateAddonDialog({
     );
     const { isSuccess, message } = await updateAddon(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       closeModal();
-    } else {
-      toast.error(message);
     }
   };
 
@@ -93,6 +94,7 @@ export default function UpdateAddonDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

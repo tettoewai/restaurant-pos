@@ -8,6 +8,7 @@ import { createFocOrder } from "@/app/lib/order/action";
 import { fetchAddonCategoryMenuWithMenuIds } from "@/app/lib/order/data";
 import { checkPromotionDuration } from "@/function";
 import {
+  addToast,
   Button,
   Card,
   Checkbox,
@@ -20,7 +21,6 @@ import { customAlphabet } from "nanoid";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { mutate } from "swr";
 
 function FocPromotion({
@@ -58,8 +58,15 @@ function FocPromotion({
         .join(", ");
     const promotionAvailabel = checkPromotionDuration({ days, conditions });
     if (!promotionAvailabel)
-      return toast.error("This promotion is not available now!");
-    if (!focData) return toast.error("There is no foc promotion!");
+      return addToast({
+        title: "This promotion is not available now!",
+        color: "danger",
+      });
+    if (!focData)
+      return addToast({
+        title: "There is no foc promotion!",
+        color: "danger",
+      });
     const menuAddonCategory = await fetchAddonCategoryMenuWithMenuIds(menuIds);
     const addonCatIds = menuAddonCategory.reduce((acc: number[], item) => {
       if (!acc.includes(item.addonCategoryId)) {
@@ -107,11 +114,12 @@ function FocPromotion({
         cartItem: focOrderWithAddon,
         promotionId,
       });
+      addToast({
+        title: message,
+        color: isSuccess ? "success" : "danger",
+      });
       if (isSuccess) {
-        toast.success(message);
         mutate("promotionUsage");
-      } else {
-        toast.error(message);
       }
     }
     setIsGettingPromo(null);

@@ -1,6 +1,7 @@
 "use client";
 import { createFeedback } from "@/app/lib/order/action";
 import {
+  addToast,
   Button,
   ButtonGroup,
   Card,
@@ -9,7 +10,6 @@ import {
 } from "@heroui/react";
 import React, { useState } from "react";
 import { FaStar } from "react-icons/fa";
-import { toast } from "react-toastify";
 
 interface Props {
   receiptCode: string;
@@ -33,15 +33,17 @@ function Feedback({ receiptCode }: Props) {
     const isValid = rating && receiptCode;
     if (!isValid) {
       setPosting(false);
-      return toast.success("Missing required field!");
+      return addToast({
+        title: "Missing required field!",
+        color: "danger",
+      });
     }
     const { isSuccess, message } = await createFeedback(formData);
     setPosting(false);
-    if (isSuccess) {
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
   };
 
   return (

@@ -1,6 +1,12 @@
 "use client";
 
+import { updateAddonCategory } from "@/app/lib/backoffice/action";
 import {
+  fetchAddonCategoryWithId,
+  fetchMenuAddonCategory,
+} from "@/app/lib/backoffice/data";
+import {
+  addToast,
   Button,
   Checkbox,
   Input,
@@ -13,14 +19,8 @@ import {
 } from "@heroui/react";
 import { AddonCategory, Menu } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
-import MultipleSelector from "./MultipleSelector";
 import { BsStar } from "react-icons/bs";
-import { updateAddonCategory } from "@/app/lib/backoffice/action";
-import { toast } from "react-toastify";
-import {
-  fetchAddonCategoryWithId,
-  fetchMenuAddonCategory,
-} from "@/app/lib/backoffice/data";
+import MultipleSelector from "./MultipleSelector";
 
 interface Props {
   id: number;
@@ -85,11 +85,12 @@ export default function UpdateAddonCategoryDialog({
     formData.set("isRequired", String(isRequired));
     const { isSuccess, message } = await updateAddonCategory(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       closeModal();
-    } else {
-      toast.error(message);
     }
   };
 
@@ -102,6 +103,7 @@ export default function UpdateAddonCategoryDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

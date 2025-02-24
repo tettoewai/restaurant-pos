@@ -1,10 +1,7 @@
 "use client";
+import { createTable } from "@/app/lib/backoffice/action";
 import {
-  createLocation,
-  createMenuCategory,
-  createTable,
-} from "@/app/lib/backoffice/action";
-import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -16,7 +13,6 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { useState } from "react";
-import { toast } from "react-toastify";
 import ShortcutButton from "./ShortCut";
 
 export default function NewTableDialog() {
@@ -29,11 +25,12 @@ export default function NewTableDialog() {
     const formData = new FormData(form);
     const { isSuccess, message } = await createTable(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
 

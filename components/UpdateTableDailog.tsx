@@ -1,10 +1,8 @@
 "use client";
-import { updateMenuCategory, updateTable } from "@/app/lib/backoffice/action";
+import { updateTable } from "@/app/lib/backoffice/action";
+import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import {
-  fetchMenuCategoryWithId,
-  fetchTableWithId,
-} from "@/app/lib/backoffice/data";
-import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -14,9 +12,8 @@ import {
   ModalHeader,
   Spinner,
 } from "@heroui/react";
-import { MenuCategory, Table } from "@prisma/client";
+import { Table } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 interface Props {
   id: number;
@@ -53,10 +50,13 @@ export default function UpdateTableDialog({
     formData.set("id", String(id));
     const { isSuccess, message } = await updateTable(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else toast.error(message);
+    }
   };
 
   return (
@@ -68,6 +68,7 @@ export default function UpdateTableDialog({
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

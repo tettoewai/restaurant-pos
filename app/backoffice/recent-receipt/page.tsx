@@ -1,19 +1,22 @@
 import {
+  fetchCompany,
   fetchRecentReceipt,
   fetchTableWithIds,
 } from "@/app/lib/backoffice/data";
+import ReceiptPrintButton from "@/components/ReceiptPrintButton";
 import ReceiptTable from "@/components/ReceiptTable";
 import { dateToString, formatCurrency } from "@/function";
-import { Button, Link as NextUiLink } from "@heroui/react";
+import { Link as NextUiLink } from "@heroui/react";
 import Link from "next/link";
 import { FaRegEye } from "react-icons/fa6";
-import { GrPrint } from "react-icons/gr";
 
 export default async function recentReceiptPage() {
   const receipts = await fetchRecentReceipt();
 
   const tableIds = receipts.length ? receipts.map((item) => item.tableId) : [];
   const tables = tableIds.length ? await fetchTableWithIds(tableIds) : [];
+
+  const company = await fetchCompany();
 
   const columns = [
     { key: "key", label: "No.", sortable: true },
@@ -32,19 +35,29 @@ export default async function recentReceiptPage() {
   }, []);
 
   const rows = uniqueRecieptCode.map((receiptCode, index) => {
+    // get only receipt
     const receipt = receipts.find((item) => item.code === receiptCode);
+
     const tableName =
-      receipt && receipt.tableId
+      (receipt && receipt.tableId
         ? tables.find((item) => item.id === receipt.tableId)?.name
-        : "";
-    const menuIds = receipts
-      .filter((item) => item.code === receiptCode)
-      .map((item) => item.menuId);
+        : "") || "";
+
+    // get all receipt related
+    const currentReceipts = receipts.filter(
+      (item) => item.code === receiptCode
+    );
+
+    const menuIds = currentReceipts.map((item) => item.menuId);
+
+    const addonIds = currentReceipts
+      .map((item) => item.addonId)
+      .filter((item) => item !== null);
 
     return {
       key: index + 1,
       code: receiptCode,
-      table: tableName || "",
+      table: tableName,
       totalPrice:
         receipt && receipt.totalPrice
           ? formatCurrency(receipt.totalPrice) +
@@ -65,9 +78,13 @@ export default async function recentReceiptPage() {
           >
             <FaRegEye className="size-6" />
           </NextUiLink>
-          <Button isIconOnly variant="light">
-            <GrPrint className="size-6 text-success" />
-          </Button>
+          <ReceiptPrintButton
+            receipts={currentReceipts}
+            menuIds={menuIds}
+            addonIds={addonIds}
+            tableName={tableName}
+            company={company}
+          />
         </div>
       ),
     };

@@ -1,6 +1,7 @@
 "use client";
 import { createAddon } from "@/app/lib/backoffice/action";
 import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -14,7 +15,6 @@ import {
 import { AddonCategory } from "@prisma/client";
 import { useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
-import { toast } from "react-toastify";
 import ShortcutButton from "./ShortCut";
 
 interface Props {
@@ -53,11 +53,12 @@ export default function NewAddonDialog({ addonCategory }: Props) {
     );
     const { isSuccess, message } = await createAddon(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       closeModal();
-    } else {
-      toast.error(message);
     }
   };
   return (

@@ -1,15 +1,8 @@
 "use client";
+import { updateCompany } from "@/app/lib/backoffice/action";
+import { fetchCompany } from "@/app/lib/backoffice/data";
 import {
-  updateCompany,
-  updateMenuCategory,
-  updateTable,
-} from "@/app/lib/backoffice/action";
-import {
-  fetchCompany,
-  fetchMenuCategoryWithId,
-  fetchTableWithId,
-} from "@/app/lib/backoffice/data";
-import {
+  addToast,
   Button,
   Input,
   Modal,
@@ -20,9 +13,8 @@ import {
   Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { Company, MenuCategory, Table } from "@prisma/client";
+import { Company } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 export default function UpdateCompanyDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -53,14 +45,13 @@ export default function UpdateCompanyDialog() {
     const formData = new FormData(form);
     const { isSuccess, message } = await updateCompany(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
-      localStorage.setItem(
-        "isUpdateCompany",
-        isUpdateCompany === "false" ? "true" : "false"
-      );
       onClose();
-    } else toast.error(message);
+    }
   };
 
   return (
@@ -75,6 +66,7 @@ export default function UpdateCompanyDialog() {
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

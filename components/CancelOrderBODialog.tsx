@@ -1,14 +1,14 @@
 import { cancelOrder } from "@/app/lib/backoffice/action";
+import { Button } from "@heroui/button";
+import { Textarea } from "@heroui/input";
+import { addToast } from "@heroui/toast";
 import {
-  Button,
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  Textarea,
-} from "@heroui/react";
-import { toast } from "react-toastify";
+  ModalFooter,
+} from "@heroui/modal";
 
 interface Props {
   itemId: string;
@@ -31,13 +31,18 @@ export default function CancelOrderBODialog({
     const reason = formData.get("cancelReason");
     const id = formData.get("itemId");
     const isValid = id && reason;
-    if (!isValid) return toast.error("Missng required fields");
+    if (!isValid)
+      return addToast({
+        title: "Missng required fields",
+        color: "success",
+      });
     const { isSuccess, message } = await cancelOrder(formData);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
   return (
@@ -48,6 +53,7 @@ export default function CancelOrderBODialog({
         onOpenChange={onOpenChange}
         className="bg-background"
         placement="center"
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

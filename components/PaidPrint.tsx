@@ -4,12 +4,12 @@ import {
   fetchSelectedLocation,
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
-import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { dateToString } from "@/function";
+import { PaidData } from "@/general";
 import { Card, Input } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
-import { Dispatch, RefObject, SetStateAction, useContext } from "react";
+import { Dispatch, RefObject, SetStateAction } from "react";
 import useSWR from "swr";
 
 interface Props {
@@ -22,6 +22,7 @@ interface Props {
   taxRate: number;
   setTaxRate: Dispatch<SetStateAction<number>>;
   qrCodeImage: string | null | undefined;
+  paid?: PaidData[];
 }
 
 function PaidPrint({
@@ -34,9 +35,8 @@ function PaidPrint({
   taxRate,
   setTaxRate,
   qrCodeImage,
+  paid,
 }: Props) {
-  const { paid, setPaid } = useContext(BackOfficeContext);
-
   const { data: company } = useSWR("company", () =>
     fetchCompany().then((res) => res)
   );
@@ -55,7 +55,9 @@ function PaidPrint({
   return (
     <Card
       ref={componentRef}
-      className="w-[320px] bg-white p-4 text-sm font-mono text-black"
+      shadow="none"
+      radius="none"
+      className="w-[320px] bg-white p-4 text-sm font-mono text-black border-none"
     >
       <div>#{receiptCode}</div>
       <div className="text-center border-b pb-4 mb-4">
@@ -85,7 +87,7 @@ function PaidPrint({
           </tr>
         </thead>
         <tbody>
-          {paid.map((item, index) => {
+          {paid?.map((item, index) => {
             const validMenu = menus?.find((menu) => menu.id === item.menuId);
             const paidAddons: number[] = item.addons
               ? JSON.parse(item.addons)

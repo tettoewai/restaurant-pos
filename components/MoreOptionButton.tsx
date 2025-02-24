@@ -6,6 +6,7 @@ import {
 } from "@/app/lib/backoffice/action";
 import { OrderData } from "@/general";
 import {
+  addToast,
   cn,
   Dropdown,
   DropdownItem,
@@ -28,7 +29,6 @@ import { useEffect, useState } from "react";
 import { IoMdMore } from "react-icons/io";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { TbLocationCancel } from "react-icons/tb";
-import { toast } from "react-toastify";
 import CancelOrderDialog from "./CancelOrderDialog";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
 import DeleteAddonDialog from "./DeleteAddonDailog";
@@ -160,11 +160,12 @@ export default function MoreOptionButton({
     }
     if (itemType === "promotion") {
       const { isSuccess, message } = await handleActivePromotion({ e, id });
+      addToast({
+        title: message,
+        color: isSuccess ? "success" : "danger",
+      });
       if (isSuccess) {
-        toast.success(message);
         setAvailable(e);
-      } else {
-        toast.error(message);
       }
     }
   };

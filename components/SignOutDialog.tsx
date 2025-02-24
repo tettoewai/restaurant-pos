@@ -24,6 +24,7 @@ export default function SignOutDialog() {
         className="bg-background"
         placement="center"
         isDismissable={false}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Sign out</ModalHeader>

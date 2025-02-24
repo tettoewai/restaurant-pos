@@ -1,12 +1,11 @@
 "use client";
 import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import { changeTable } from "@/app/lib/order/action";
-import { Button, Card, Spinner } from "@heroui/react";
+import { addToast, Button, Card, Spinner } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import QrScanner from "qr-scanner";
 import { useEffect, useRef, useState } from "react";
 import { TbArrowsExchange2 } from "react-icons/tb";
-import { toast } from "react-toastify";
 import useSWR from "swr";
 
 const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
@@ -81,14 +80,20 @@ const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
     if (isSuccess) {
       setChanging(false);
       await new Promise<void>((resolve) => {
-        toast.success(message);
+        addToast({
+          title: message,
+          color: "success",
+        });
         resolve();
       });
       params.set("tableId", String(table.id));
       router.replace(`/order?${params.toString()}`);
     } else {
       setChanging(false);
-      toast.error(message);
+      addToast({
+        title: message,
+        color: "danger",
+      });
     }
   };
   return (

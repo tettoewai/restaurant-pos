@@ -1,9 +1,9 @@
 "use client";
 import { createMenuCategory } from "@/app/lib/backoffice/action";
 import {
+  addToast,
   Button,
   Input,
-  Kbd,
   Modal,
   ModalBody,
   ModalContent,
@@ -13,7 +13,6 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import ShortcutButton from "./ShortCut";
 
 export default function NewMenuCategoryDialog() {
@@ -27,11 +26,12 @@ export default function NewMenuCategoryDialog() {
     const formData = new FormData(form);
     const { isSuccess, message } = await createMenuCategory(formData);
     setIsSubmitting(false);
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
-      toast.success(message);
       onClose();
-    } else {
-      toast.error(message);
     }
   };
 

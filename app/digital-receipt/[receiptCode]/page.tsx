@@ -7,7 +7,6 @@ import Feedback from "@/components/Feedback";
 import { dateToString, formatCurrency, formatReceipt } from "@/function";
 import { Card } from "@heroui/react";
 import { Receipt } from "@prisma/client";
-import { ToastContainer } from "react-toastify";
 
 async function DigitalReceiptPage({
   params,
@@ -93,7 +92,6 @@ async function DigitalReceiptPage({
         </div>
       </Card>
       <Feedback receiptCode={receiptCode} />
-      <ToastContainer position="bottom-right" />
     </div>
   );
 }

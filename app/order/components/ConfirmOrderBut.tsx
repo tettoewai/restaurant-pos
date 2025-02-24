@@ -2,11 +2,10 @@
 import { createOrder } from "@/app/lib/order/action";
 import { OrderContext } from "@/context/OrderContext";
 import { formatCurrency } from "@/function";
-import { Button, Spinner } from "@heroui/react";
+import { Button, Spinner, addToast } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
-import { toast } from "react-toastify";
 
 export default function ConfirmOrderBut({
   tableId,
@@ -55,14 +54,16 @@ export default function ConfirmOrderBut({
       tableId: Number(tableId),
       cartItem: carts,
     });
+    addToast({
+      title: message,
+      color: isSuccess ? "success" : "danger",
+    });
     if (isSuccess) {
       setIsCreating(false);
-      toast.success(message);
       setCarts([]);
       router.push(`/order/active-order?tableId=${tableId}`);
     } else {
       setIsCreating(false);
-      toast.error(message);
     }
   };
 
