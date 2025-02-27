@@ -2,25 +2,23 @@
 import {
   fetchAddonWithIds,
   fetchMenuWithIds,
-  getOrderCountWithDate,
+  getReceiptWithDate,
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
-import { getLocalTimeZone, parseDate } from "@internationalized/date";
+import { formatCurrency } from "@/function";
 import { Card, DateRangePicker } from "@heroui/react";
-import { Order } from "@prisma/client";
+import { getLocalTimeZone, parseDate } from "@internationalized/date";
+import { Receipt } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
 import clsx from "clsx";
 import { useState } from "react";
 import { BiSolidDish } from "react-icons/bi";
 import { BsCash } from "react-icons/bs";
 import { IoFastFood } from "react-icons/io5";
-import { MdOutlinePendingActions } from "react-icons/md";
+import { TbCoinOff, TbTax } from "react-icons/tb";
 import useSWR from "swr";
 import ListTable from "./ListTable";
-import { TbCoinOff } from "react-icons/tb";
 import SalesChart from "./SaleChart";
-import { getTotalOrderPrice } from "@/general";
-import { formatCurrency } from "@/function";
 
 function OrderForDate() {
   const iconClass = "text-white size-6";
@@ -35,42 +33,50 @@ function OrderForDate() {
     typeof window !== "undefined"
       ? localStorage.getItem("isUpdateLocation")
       : null;
-  const { data: totalOrder, isLoading } = useSWR(
+  const { data: receiptData, isLoading } = useSWR(
     [date, isUpdateLocation],
     () =>
-      getOrderCountWithDate(
+      getReceiptWithDate(
         date.start.toDate(getLocalTimeZone()),
         date.end.toDate(getLocalTimeZone())
-      ).then((res) => res),
+      ),
     {
       refreshInterval: 5000,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
     }
   );
-  const sameItemOrder: Order[] = [];
-  totalOrder?.map((item) => {
-    const isExist = sameItemOrder.find((same) => same.itemId === item.itemId);
-    if (!isExist) sameItemOrder.push(item);
+  const sameItemReceipt: Receipt[] = [];
+  receiptData?.map((item) => {
+    const isExist = sameItemReceipt.find((same) => same.itemId === item.itemId);
+    if (!isExist) sameItemReceipt.push(item);
   });
 
-  const grossRevenue = sameItemOrder
-    .filter((item) => !item.isFoc)
-    .reduce((acc, cur) => {
-      const totalPrice = Number(cur.totalPrice);
-      if (isNaN(totalPrice)) {
-        console.warn("Invalid totalPrice found:", cur.totalPrice);
-      }
-      return !isNaN(totalPrice) ? acc + cur.totalPrice : acc;
-    }, 0);
-  const avgOrderVal =
-    sameItemOrder.length > 0 ? grossRevenue / sameItemOrder.length : 0;
-  const pendingOrder = sameItemOrder?.filter(
-    (item) => item.status === "PENDING"
-  );
+  const sameCodeReceipt: Receipt[] = [];
+  receiptData?.map((item) => {
+    const isExist = sameCodeReceipt.find((same) => same.code === item.code);
+    if (!isExist && !item.isFoc) sameCodeReceipt.push(item);
+  });
 
-  const countedMenuOrder: { menuId: number; quantity: number } =
-    sameItemOrder.reduce((acc: any, curr) => {
+  const grossRevenue =
+    receiptData
+      ?.filter((item) => !item.isFoc)
+      .reduce((acc, cur) => {
+        const totalPrice = Number(cur.subTotal);
+        if (isNaN(totalPrice)) {
+          console.warn("Invalid totalPrice found:", totalPrice);
+        }
+        return !isNaN(totalPrice) ? acc + totalPrice : acc;
+      }, 0) || 0;
+
+  const avgOrderVal =
+    sameItemReceipt.length > 0
+      ? grossRevenue / sameItemReceipt.filter((item) => !item.isFoc).length
+      : 0;
+
+  const countedMenuOrder: { menuId: number; quantity: number } = sameItemReceipt
+    .filter((item) => !item.isFoc)
+    .reduce((acc: any, curr) => {
       const quantity = curr.quantity;
       if (!acc[curr.menuId]) {
         acc[curr.menuId] = quantity;
@@ -112,30 +118,30 @@ function OrderForDate() {
     }
   );
 
-  const focOrder = totalOrder?.filter((item) => item.isFoc);
+  const focReceipts = receiptData?.filter((item) => item.isFoc);
+  const focTotalPrice = focReceipts?.reduce((acc, cur) => {
+    if (cur.subTotal) {
+      acc += cur.subTotal;
+    }
+    return acc;
+  }, 0);
 
-  const addonIds = totalOrder
-    ? totalOrder.map((item) => item.addonId).filter((item) => item !== null)
+  const totalTax = sameCodeReceipt.reduce((acc, cur) => {
+    if (cur.tax) {
+      acc += cur.tax;
+    }
+    return acc;
+  }, 0);
+
+  const addonIds = receiptData
+    ? receiptData.map((item) => item.addonId).filter((item) => item !== null)
     : [];
-  const { data: addonData } = useSWR(
-    addonIds?.length ? `addonData-${addonIds}` : null,
-    () => fetchAddonWithIds(addonIds)
-  );
-  const focTotalPrice = getTotalOrderPrice({
-    orders: focOrder,
-    menus,
-    addons: addonData,
-  });
+
   const countStatus = [
-    {
-      name: "Pending Order",
-      icon: <MdOutlinePendingActions className={iconClass} />,
-      count: pendingOrder?.length,
-    },
     {
       name: "Total Order",
       icon: <IoFastFood className={iconClass} />,
-      count: sameItemOrder?.length,
+      count: sameItemReceipt.filter((item) => !item.isFoc)?.length,
     },
     {
       name: "Gross Revenue",
@@ -152,7 +158,12 @@ function OrderForDate() {
       icon: <TbCoinOff className={iconClass} />,
       count:
         (focTotalPrice ? formatCurrency(focTotalPrice) : "") +
-        ` (${focOrder?.length})`,
+        ` (${focReceipts?.length})`,
+    },
+    {
+      name: "Total Tax",
+      icon: <TbTax className={iconClass} />,
+      count: formatCurrency(totalTax),
     },
   ];
   return (
@@ -203,7 +214,8 @@ function OrderForDate() {
                       "text-lg":
                         item.name === "Gross Revenue" ||
                         item.name === "Avg. Order Value" ||
-                        item.name === "Foc Menu",
+                        item.name === "Foc Menu" ||
+                        item.name === "Total Tax",
                     }
                   )}
                 >
@@ -216,7 +228,6 @@ function OrderForDate() {
             </Card>
           )
         )}
-
         <div className="w-full grid grid-cols-1 md:grid-cols-2 mt-2 space-x-0 md:space-x-1 space-y-0 md:space-y-1">
           <div className="w-full">
             {isLoading ? (

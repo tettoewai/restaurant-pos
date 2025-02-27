@@ -73,7 +73,7 @@ export default async function RecentReceipt({
   let subTotal = 0;
 
   const rows = receiptData.map((receipt, index) => {
-    subTotal += receipt.subTotal || 0;
+    subTotal += receipt.isFoc ? 0 : receipt.subTotal;
     const validMenu =
       menus.find((item) => item.id === receipt.menuId)?.name || "";
     const validAddon = addons
@@ -90,7 +90,7 @@ export default async function RecentReceipt({
       menu: validMenu,
       addon: validAddon || "--",
       quantity: receipt.quantity || 0,
-      price: formatCurrency(receipt.subTotal) || 0,
+      price: receipt.isFoc ? 0 : formatCurrency(receipt.subTotal),
     };
   });
 

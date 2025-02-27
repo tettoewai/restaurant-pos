@@ -62,6 +62,7 @@ export function formatReceipt(receipts: Receipt[]) {
       quantity: validReceipt?.quantity,
       addons: validReceipts.map((item) => item.addonId),
       subTotal: validReceipt?.subTotal || 0,
+      isFoc: validReceipt?.isFoc,
     };
   });
 }

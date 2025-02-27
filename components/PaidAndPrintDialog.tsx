@@ -158,13 +158,13 @@ export default function PaidAndPrintDialog({
         0
       );
 
-      const currentTotalPrice = item.isFoc
-        ? 0
-        : currentAddonPrice && validMenu && item.quantity
-        ? (validMenu.price + currentAddonPrice) * item.quantity
-        : validMenu && item.quantity
-        ? validMenu.price * item.quantity
-        : 0;
+      const currentTotalPrice =
+        currentAddonPrice && validMenu && item.quantity
+          ? (validMenu.price + currentAddonPrice) * item.quantity
+          : validMenu && item.quantity
+          ? validMenu.price * item.quantity
+          : 0;
+
       return {
         ...item,
         tax,

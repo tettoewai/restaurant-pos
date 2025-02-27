@@ -929,6 +929,7 @@ export async function createReceipt(paidData: PaidData[]) {
           tax: item.tax as number,
           date: item.date as Date,
           subTotal: item.subTotal,
+          isFoc: item.isFoc,
         };
 
         // Handle addons if present

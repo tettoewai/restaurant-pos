@@ -57,7 +57,7 @@ export default function ReceiptPrintButton({
       receipts.length > 0 && isOpen
         ? `${config.digitalReceiptUrl}/${receipts[0].code}`
         : "",
-    [receipts, isOpen]
+    [receipts[0], isOpen]
   );
 
   const { data: qrCodeData, isLoading: qrCodeLoading } = useSWR(
@@ -157,18 +157,6 @@ export default function ReceiptPrintButton({
                       const validMenu = menuData?.find(
                         (menu) => menu.id === item.menuId
                       );
-
-                      const currentAddonPrice = addonData?.reduce(
-                        (accu, curr) => curr.price + accu,
-                        0
-                      );
-                      const currentTotalPrice = item.isFoc
-                        ? 0
-                        : currentAddonPrice && validMenu && item.quantity
-                        ? (validMenu.price + currentAddonPrice) * item.quantity
-                        : validMenu && item.quantity
-                        ? validMenu.price * item.quantity
-                        : 0;
                       const menuName = item.isFoc
                         ? `${validMenu?.name} (FOC)`
                         : validMenu?.name;
@@ -185,7 +173,13 @@ export default function ReceiptPrintButton({
                             </span>
                           </td>
                           <td className="text-center">{item.quantity}</td>
-                          <td className="text-end">{currentTotalPrice} Ks</td>
+                          <td className="text-end">
+                            {item.isFoc
+                              ? 0
+                              : item.subTotal
+                              ? formatCurrency(item.subTotal)
+                              : 0}
+                          </td>
                         </tr>
                       );
                     })}
@@ -211,10 +205,7 @@ export default function ReceiptPrintButton({
                 <div className="text-center my-4 flex items-center justify-center flex-col">
                   <Image
                     className="mx-auto mb-2"
-                    src={
-                      qrCodeData ||
-                      "https://via.placeholder.com/100x100.png?text=QR+Code"
-                    }
+                    src={qrCodeData || ""}
                     alt="QR Code"
                     width={100}
                     height={100}

@@ -9,7 +9,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { Order } from "@prisma/client";
+import { Receipt } from "@prisma/client";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -37,10 +37,14 @@ ChartJS.register(
 
 const SalesChart = () => {
   const currentYear = new Date().getFullYear();
+  const isUpdateLocation =
+    typeof window !== "undefined"
+      ? localStorage.getItem("isUpdateLocation")
+      : null;
   const [selectedYear, setSelectedYear] = useState(new Set([currentYear]));
   const { data: orders, isLoading } = useSWR(
-    [Array.from(selectedYear)[0]],
-    () => getSalesData(Array.from(selectedYear)[0]).then((res) => res)
+    [Array.from(selectedYear)[0], isUpdateLocation],
+    () => getSalesData(Array.from(selectedYear)[0])
   );
 
   const months = [
@@ -58,15 +62,15 @@ const SalesChart = () => {
     "Dec",
   ];
 
-  const uniqueTotalPrice: Order[] = [];
+  const uniqueTotalPrice: Receipt[] = [];
   orders
     ?.sort((a, b) => a.createdAt.getMonth() - b.createdAt.getMonth())
-    ?.map((item: Order) => {
+    ?.map((item: Receipt) => {
       const isExist = uniqueTotalPrice.find(
         (same) => same.itemId === item.itemId
       );
       const sameSeq = uniqueTotalPrice.find(
-        (seq) => seq.orderSeq === item.orderSeq
+        (seq) => seq.itemId === item.itemId
       );
       if (!isExist && !sameSeq) uniqueTotalPrice.push(item);
     });

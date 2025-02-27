@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import {
   BiCategory,
+  BiChart,
   BiFoodMenu,
   BiSolidCategory,
   BiSolidCategoryAlt,
@@ -33,6 +34,7 @@ import { TbCategoryPlus } from "react-icons/tb";
 import { IoSettings } from "react-icons/io5";
 import Backdrop from "./BackDrop";
 import ShortcutButton from "./ShortCut";
+import { GrDashboard } from "react-icons/gr";
 
 interface Props {
   sideBarOpen: boolean;
@@ -55,7 +57,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Dashboard",
       route: "/backoffice/dashboard",
-      icon: <MdOutlineSpaceDashboard />,
+      icon: <BiChart />,
     },
     {
       name: "Menu category",

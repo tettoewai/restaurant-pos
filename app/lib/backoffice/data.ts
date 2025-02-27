@@ -435,7 +435,7 @@ export async function fetchNotification() {
   }
 }
 
-export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
+export async function getReceiptWithDate(startDate: Date, endDate: Date) {
   noStore();
   const table = await fetchTable();
   const tableId = table.map((item) => item.id);
@@ -446,27 +446,25 @@ export async function getOrderCountWithDate(startDate: Date, endDate: Date) {
     const endOfDay = new Date(startDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const orderCount = await prisma.order.findMany({
+    const receipt = await prisma.receipt.findMany({
       where: {
         createdAt: { gte: startOfDay, lte: endOfDay },
         tableId: { in: tableId },
-        isArchived: false,
       },
     });
 
-    return orderCount;
+    return receipt;
   } else {
     const endOfDate = new Date(endDate);
     endOfDate.setHours(23, 59, 59, 999);
-    const orderCount = await prisma.order.findMany({
+    const receipt = await prisma.receipt.findMany({
       where: {
         createdAt: { gte: startDate, lte: endOfDate },
         tableId: { in: tableId },
-        isArchived: false,
       },
     });
 
-    return orderCount;
+    return receipt;
   }
 }
 
@@ -617,15 +615,17 @@ export async function fetchAddonWithAddonCatIds(addonCatIds: number[]) {
 
 export const getSalesData = async (year: number) => {
   noStore();
+  const table = await fetchTable();
+  const tableId = table.map((item) => item.id);
   const startDate = new Date(year, 0, 1); // January 1st of the given year
   const endDate = new Date(year, 11, 31, 23, 59, 59); // December 31st of the given year
-  const sales = await prisma.order.findMany({
+  const sales = await prisma.receipt.findMany({
     where: {
+      tableId: { in: tableId },
       createdAt: {
         gte: startDate,
         lte: endDate,
       },
-      isArchived: false,
     },
   });
 

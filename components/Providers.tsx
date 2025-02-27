@@ -15,7 +15,7 @@ export const Providers = ({ children }: Props) => {
   return (
     <SessionProvider>
       <HeroUIProvider navigate={router.push}>
-        <ToastProvider toastProps={{ timeout: 5000 }} />
+        <ToastProvider toastProps={{ timeout: 4000 }} />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>

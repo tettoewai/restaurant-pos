@@ -444,7 +444,7 @@ export default function App({ params }: { params: { id: string } }) {
                                 {selected === "complete" ? (
                                   <DropdownItem key="paid">Paid</DropdownItem>
                                 ) : (
-                                  <DropdownItem key="none" className="hidden">
+                                  <DropdownItem key="none1" className="hidden">
                                     None
                                   </DropdownItem>
                                 )}
