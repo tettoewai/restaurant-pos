@@ -20,7 +20,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { IoIosArrowDown } from "react-icons/io";
 import useSWR from "swr";
@@ -35,65 +35,26 @@ ChartJS.register(
   Legend
 );
 
-const SalesChart = () => {
-  const currentYear = new Date().getFullYear();
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
-  const [selectedYear, setSelectedYear] = useState(new Set([currentYear]));
-  const { data: orders, isLoading } = useSWR(
-    [Array.from(selectedYear)[0], isUpdateLocation],
-    () => getSalesData(Array.from(selectedYear)[0])
-  );
-
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "June",
-    "July",
-    "Aug",
-    "Sept",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  const uniqueTotalPrice: Receipt[] = [];
-  orders
-    ?.sort((a, b) => a.createdAt.getMonth() - b.createdAt.getMonth())
-    ?.map((item: Receipt) => {
-      const isExist = uniqueTotalPrice.find(
-        (same) => same.itemId === item.itemId
-      );
-      const sameSeq = uniqueTotalPrice.find(
-        (seq) => seq.itemId === item.itemId
-      );
-      if (!isExist && !sameSeq) uniqueTotalPrice.push(item);
-    });
-
-  const monthlySales = Array(12).fill(0);
-
-  uniqueTotalPrice.map((item) => {
-    const monthIndex = item.createdAt.getMonth();
-    monthlySales[monthIndex] += item.totalPrice;
-  });
-  const data = {
-    labels: months,
-    datasets: [
-      {
-        label: "Total sale",
-        data: monthlySales, // Pass the sales data here
-        borderColor: "rgba(255, 0, 0, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        tension: 0.4,
-      },
-    ],
+const SalesChart = ({
+  selectedYear,
+  setSelectedYear,
+  data,
+  isLoading,
+}: {
+  selectedYear: Set<number>;
+  setSelectedYear: Dispatch<SetStateAction<Set<number>>>;
+  data: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: any[];
+      borderColor: string;
+      backgroundColor: string;
+      tension: number;
+    }[];
   };
-
+  isLoading: boolean;
+}) => {
   const options = {
     responsive: true,
     plugins: {
@@ -103,9 +64,12 @@ const SalesChart = () => {
     },
   };
 
+  const currentYear = new Date().getFullYear();
+
   const handleYearChange = (e: any) => {
     setSelectedYear(e);
   };
+
   const generateYears = (start: number, end: number) => {
     const years = [];
     for (let year = start; year <= end; year++) {

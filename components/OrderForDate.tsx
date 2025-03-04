@@ -1,8 +1,8 @@
 "use client";
 import {
-  fetchAddonWithIds,
   fetchMenuWithIds,
   getReceiptWithDate,
+  getSalesData,
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
 import { formatCurrency } from "@/function";
@@ -17,6 +17,7 @@ import { BsCash } from "react-icons/bs";
 import { IoFastFood } from "react-icons/io5";
 import { TbCoinOff, TbTax } from "react-icons/tb";
 import useSWR from "swr";
+import ExportToExcelBtn from "./ExportToExcelBtn";
 import ListTable from "./ListTable";
 import SalesChart from "./SaleChart";
 
@@ -166,6 +167,79 @@ function OrderForDate() {
       count: formatCurrency(totalTax),
     },
   ];
+
+  // SaleChart
+
+  const currentYear = new Date().getFullYear();
+
+  const [selectedYear, setSelectedYear] = useState(new Set([currentYear]));
+  const { data: orders, isLoading: yearDataLoading } = useSWR(
+    [Array.from(selectedYear)[0], isUpdateLocation],
+    () => getSalesData(Array.from(selectedYear)[0])
+  );
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "June",
+    "July",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const uniqueTotalPrice: Receipt[] = [];
+  orders
+    ?.sort((a, b) => a.createdAt.getMonth() - b.createdAt.getMonth())
+    ?.map((item: Receipt) => {
+      const isExist = uniqueTotalPrice.find(
+        (same) => same.itemId === item.itemId
+      );
+      const sameSeq = uniqueTotalPrice.find(
+        (seq) => seq.itemId === item.itemId
+      );
+      if (!isExist && !sameSeq) uniqueTotalPrice.push(item);
+    });
+
+  const monthlySales = Array(12).fill(0);
+
+  uniqueTotalPrice.map((item) => {
+    const monthIndex = item.createdAt.getMonth();
+    monthlySales[monthIndex] += item.totalPrice;
+  });
+  const data = {
+    labels: months,
+    datasets: [
+      {
+        label: "Total sale",
+        data: monthlySales, // Pass the sales data here
+        borderColor: "rgba(255, 0, 0, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const yearSaleData = monthlySales.map((item, index) => {
+    return { month: months[index], totalSales: item };
+  });
+
+  const saleData = [
+    {
+      totalOrder: sameItemReceipt.filter((item) => !item.isFoc)?.length,
+      grossRevenue,
+      avgOrderVal,
+      focMenu:
+        (focTotalPrice ? formatCurrency(focTotalPrice) : "") +
+        ` (${focReceipts?.length})`,
+      totalTax: formatCurrency(totalTax),
+    },
+  ];
   return (
     <div className="mt-4">
       <div className="flex items-center w-full justify-between">
@@ -178,9 +252,10 @@ function OrderForDate() {
               )
             : "--"}
         </p>
-        <div className="pr-3">
+        <div className="flex items-center space-x-2">
           <DateRangePicker
-            className="max-w-[284px] bg-background rounded-xl"
+            size="sm"
+            className="bg-background rounded-xl"
             label="Date range"
             color="primary"
             value={date}
@@ -188,6 +263,23 @@ function OrderForDate() {
               if (e) setDate({ start: e.start, end: e.end });
             }}
             variant="bordered"
+          />
+          <ExportToExcelBtn
+            sheetsData={[
+              { sheetName: "Sale Data", data: saleData },
+              { sheetName: "Top 5 Most Ordered Data", data: rows },
+              {
+                sheetName: `${Array.from(selectedYear)[0]} Total Sales`,
+                data: yearSaleData,
+              },
+            ]}
+            fileName={`${formatter
+              .formatRange(
+                date.start.toDate(getLocalTimeZone()),
+                date.end.toDate(getLocalTimeZone())
+              )
+              .replace(/[:\\/?*\[\]]/g, "")
+              .substring(0, 31)} - Sale data.xlsx`}
           />
         </div>
       </div>
@@ -240,7 +332,12 @@ function OrderForDate() {
             )}
           </div>
           <div className="w-full">
-            <SalesChart />
+            <SalesChart
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              data={data}
+              isLoading={yearDataLoading}
+            />
           </div>
         </div>
       </div>
