@@ -163,6 +163,7 @@ model Order {
   orderSeq     String
   status       ORDERSTATUS
   totalPrice   Int
+  subTotal     Int?
   tableId      Int
   instruction  String?
   isFoc        Boolean     @default(false)

@@ -16,6 +16,7 @@ import {
 } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
 import PromotionCard from "./components/PromotionCard";
+import CallServiceBtn from "./components/CallServiceBtn";
 
 export const dynamic = "force-dynamic";
 
@@ -127,6 +128,9 @@ const OrderPage = async ({
             <h2>There is no menu!</h2>
           )}
         </div>
+      </div>
+      <div className="fixed bottom-4 right-4">
+        <CallServiceBtn table={table} />
       </div>
     </div>
   );

@@ -266,7 +266,7 @@ export default function MenuForm({
       </div>
 
       <Card className="mt-3 space-y-1 bg-background p-2">
-        <span>Special instruction</span>
+        <span>Special instruction (Optional)</span>
         <Textarea
           variant="bordered"
           color="secondary"

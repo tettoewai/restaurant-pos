@@ -1,32 +1,31 @@
 "use client";
-import {
-  Button,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useDisclosure,
-  Image,
-  Card,
-  Spinner,
-} from "@heroui/react";
-import { Company, Menu, Receipt } from "@prisma/client";
-import { useSearchParams } from "next/navigation";
-import { GrPrint } from "react-icons/gr";
-import PaidPrint from "./PaidPrint";
-import useSWR from "swr";
+import { generateQRCode } from "@/app/lib/backoffice/action";
 import {
   fetchAddonWithIds,
   fetchMenuWithIds,
   fetchSelectedLocation,
 } from "@/app/lib/backoffice/data";
-import { useMemo, useRef } from "react";
-import { dateToString, formatCurrency } from "@/function";
 import { config } from "@/config";
-import { generateQRCode } from "@/app/lib/backoffice/action";
+import { dateToString, formatCurrency } from "@/function";
+
+import {
+  Button,
+  Card,
+  Image,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  useDisclosure,
+} from "@heroui/react";
+import { Company, Receipt } from "@prisma/client";
+import { useMemo, useRef } from "react";
+import { GrPrint } from "react-icons/gr";
 import { useReactToPrint } from "react-to-print";
+import useSWR from "swr";
+import html2canvas from "html2canvas";
 
 export default function ReceiptPrintButton({
   receipts,
@@ -92,6 +91,26 @@ export default function ReceiptPrintButton({
     documentTitle: "Print Receipt",
   });
 
+  const downloadReceipt = async () => {
+    if (!componentRef.current) return;
+
+    const canvas = await html2canvas(componentRef.current, {
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      windowWidth: document.documentElement.offsetWidth,
+      windowHeight: document.documentElement.scrollHeight,
+    });
+
+    const image = canvas.toDataURL("image/jpeg", 1.0);
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = `${receipts[0].code} Receipt ${dateToString({
+      date: receipts[0].date,
+      type: "DMY",
+    })}`;
+    link.click();
+  };
+
   return (
     <>
       <Button isIconOnly variant="light" onPress={onOpen}>
@@ -117,7 +136,12 @@ export default function ReceiptPrintButton({
                 ref={componentRef}
                 shadow="none"
                 radius="none"
-                className="w-[320px] p-4 text-sm font-mono text-black overflow-y-scroll scrollbar-hide"
+                className="w-[320px] p-4 text-sm font-mono text-black bg-white"
+                style={{
+                  overflow: "visible",
+                  height: "auto",
+                  marginTop: "300px",
+                }}
               >
                 <div>#{receipts[0].code}</div>
                 <div className="text-center border-b pb-4 mb-4">
@@ -234,6 +258,12 @@ export default function ReceiptPrintButton({
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
             >
               Print
+            </Button>
+            <Button
+              onPress={() => downloadReceipt()}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+            >
+              Image
             </Button>
           </ModalFooter>
         </ModalContent>

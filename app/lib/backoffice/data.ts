@@ -435,36 +435,39 @@ export async function fetchNotification() {
   }
 }
 
-export async function getReceiptWithDate(startDate: Date, endDate: Date) {
+export async function getOrderWithDate(startDate: Date, endDate: Date) {
   noStore();
-  const table = await fetchTable();
-  const tableId = table.map((item) => item.id);
-  if (startDate.getTime() === endDate.getTime()) {
-    const startOfDay = new Date(startDate);
-    startOfDay.setHours(0, 0, 0, 0);
+  try {
+    const table = await fetchTable();
+    const tableId = table.map((item) => item.id);
+    if (startDate.getTime() === endDate.getTime()) {
+      const startOfDay = new Date(startDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(startDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      const order = await prisma.order.findMany({
+        where: {
+          createdAt: { gte: startOfDay, lte: endOfDay },
+          tableId: { in: tableId },
+        },
+      });
 
-    const endOfDay = new Date(startDate);
-    endOfDay.setHours(23, 59, 59, 999);
+      return order;
+    } else {
+      const endOfDate = new Date(endDate);
+      endOfDate.setHours(23, 59, 59, 999);
+      const order = await prisma.order.findMany({
+        where: {
+          createdAt: { gte: startDate, lte: endOfDate },
+          tableId: { in: tableId },
+        },
+      });
 
-    const receipt = await prisma.receipt.findMany({
-      where: {
-        createdAt: { gte: startOfDay, lte: endOfDay },
-        tableId: { in: tableId },
-      },
-    });
-
-    return receipt;
-  } else {
-    const endOfDate = new Date(endDate);
-    endOfDate.setHours(23, 59, 59, 999);
-    const receipt = await prisma.receipt.findMany({
-      where: {
-        createdAt: { gte: startDate, lte: endOfDate },
-        tableId: { in: tableId },
-      },
-    });
-
-    return receipt;
+      return order;
+    }
+  } catch (error) {
+    console.error("Database error for notification", error);
+    throw new Error("Failed to fetch order data.");
   }
 }
 
@@ -637,7 +640,7 @@ export async function fetchRecentReceipt() {
   try {
     const tableIds = (await fetchTable()).map((item) => item.id);
     return await prisma.receipt.findMany({
-      where: { tableId: { in: tableIds } },
+      where: { tableId: { in: tableIds } },orderBy:{id:"desc"}
     });
   } catch (error) {
     console.error("Database Error:", error);

@@ -30,13 +30,11 @@ const LocationButton = ({ prevData }: Props) => {
         (position) => {
           const { latitude, longitude } = position.coords;
           latitude && longitude && setLocation({ latitude, longitude });
-          console.log(position.coords);
           setLoading(false);
         },
         (err) => {
           setError(err.message);
           setLoading(false);
-          console.log(err.message);
         }
       );
     } else {

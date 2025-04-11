@@ -16,6 +16,7 @@ export interface CartItem {
   quantity: number;
   instruction?: string;
   isFoc?: boolean;
+  subTotal?: number;
 }
 
 // Define the shape of the context value

@@ -1,6 +1,6 @@
 "use client";
 import { createOrder } from "@/app/lib/order/action";
-import { OrderContext } from "@/context/OrderContext";
+import { CartItem, OrderContext } from "@/context/OrderContext";
 import { formatCurrency } from "@/function";
 import { Button, Spinner, addToast } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
@@ -17,9 +17,6 @@ export default function ConfirmOrderBut({
   addons: Addon[];
 }) {
   const { carts, setCarts } = useContext(OrderContext);
-  const validAddons = carts.map((item) => item.addons);
-  const uniqueAddons = Array.from(new Set(validAddons.flat()));
-
   const router = useRouter();
 
   const [isCreating, setIsCreating] = useState(false);
@@ -50,9 +47,25 @@ export default function ConfirmOrderBut({
 
   const handleConfirmOrder = async () => {
     setIsCreating(true);
+    const cartWithSubTotal = carts.reduce((acc: CartItem[], cur) => {
+      const addonPrice = addons
+        .filter((item) => cur.addons.find((id) => item.id === id))
+        .reduce((acc, cur) => {
+          return acc + cur.price;
+        }, 0);
+      const currentMenu = menus.find((item) => item.id === cur.menuId);
+      const subTotal =
+        addonPrice && currentMenu
+          ? (currentMenu.price + addonPrice) * cur.quantity
+          : currentMenu
+          ? currentMenu.price * cur.quantity
+          : 0;
+      acc.push({ ...cur, subTotal });
+      return acc;
+    }, []);
     const { isSuccess, message } = await createOrder({
       tableId: Number(tableId),
-      cartItem: carts,
+      cartItem: cartWithSubTotal,
     });
     addToast({
       title: message,
@@ -83,7 +96,7 @@ export default function ConfirmOrderBut({
         onPress={handleConfirmOrder}
         disabled={isCreating}
       >
-        {isCreating ? <Spinner color="primary" size="sm" /> : "Confirm Order"}
+        {isCreating ? <Spinner color="white" size="sm" /> : "Confirm Order"}
       </Button>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { OrderContext } from "@/context/OrderContext";
-import { Button, Card } from "@heroui/react";
+import { Button, Card, Spinner } from "@heroui/react";
 import { Menu } from "@prisma/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useContext } from "react";
@@ -31,9 +31,16 @@ export default function Cart() {
       addons,
     }));
 
-  const { data, error } = useSWR([carts], fetchMenuAddon);
+  const { data, error, isLoading } = useSWR("data", fetchMenuAddon);
 
   const router = useRouter();
+
+  if (isLoading)
+    return (
+      <div className="w-full flex justify-center items-center h-80">
+        <Spinner variant="wave" label="Data is loading ..." />
+      </div>
+    );
 
   return (
     <div className="px-2 pb-20">
@@ -54,22 +61,27 @@ export default function Cart() {
                 const validMenu = data.menus.find(
                   (menu) => menu.id === item.menuId
                 ) as Menu;
-                return (
-                  <MenuForCart
-                    itemId={item.id}
-                    key={item.id}
-                    menu={validMenu}
-                    addons={data?.addons}
-                    carts={carts}
-                    setCarts={setCarts}
-                    tableId={tableId}
-                  />
-                );
+                if (validMenu) {
+                  return (
+                    <MenuForCart
+                      itemId={item.id}
+                      key={item.id}
+                      menu={validMenu}
+                      addons={data?.addons}
+                      carts={carts}
+                      setCarts={setCarts}
+                      tableId={tableId}
+                    />
+                  );
+                }
               })}
           </div>
         ) : (
           <div className="flex items-center justify-center mt-36">
-            <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
+            <Card
+              shadow="none"
+              className="bg-background flex flex-col items-center justify-center w-4/5 p-4"
+            >
               <BsCartX className="size-12 text-primary mb-4" />
               <span>Hungry?</span>
               <span className="text-sm text-center mt-3">

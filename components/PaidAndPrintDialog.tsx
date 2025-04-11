@@ -35,6 +35,7 @@ import { useReactToPrint } from "react-to-print";
 import { config } from "@/config";
 import { OrderData } from "@/general";
 import useSWR from "swr";
+import ImagePrintPaidReceipt from "./ImagePrintPaidReceipt";
 
 interface Props {
   menus: Menu[] | undefined;
@@ -50,6 +51,12 @@ export default function PaidAndPrintDialog({
   tableId,
 }: Props) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const {
+    isOpen: printImageIsOpen,
+    onOpen: printImageOnOpen,
+    onOpenChange: printImageOnOpenChange,
+    onClose: printImageOnClose,
+  } = useDisclosure();
   const componentRef = useRef<HTMLDivElement>(null);
 
   const printReceipt = useReactToPrint({
@@ -59,12 +66,13 @@ export default function PaidAndPrintDialog({
   const { paid, setPaid } = useContext(BackOfficeContext);
   const receiptCode = paid.length > 0 ? paid[0].receiptCode : undefined;
 
-  useEffect(() => {
-    // Close the dialog if paid.length is less than 1
-    if (paid.length < 1 && isOpen) {
-      onClose();
-    }
-  }, [paid, isOpen, onClose]);
+  // useEffect(() => {
+  //   // Close the dialog if paid.length is less than 1
+  //   if (paid.length < 1 && isOpen) {
+  //     onClose();
+  //   }
+  // }, [paid, isOpen, onClose]);
+
   const columns = [
     {
       key: "key",
@@ -188,10 +196,7 @@ export default function PaidAndPrintDialog({
       color: isSuccess ? "success" : "danger",
     });
     if (isSuccess) {
-      printReceipt();
-      setPaid([]);
-      onClose();
-    } else {
+      printImageOnOpen();
     }
   };
   return (
@@ -226,6 +231,7 @@ export default function PaidAndPrintDialog({
         backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
+        onClose={onClose}
         className="bg-background overflow-y-scroll"
         placement="center"
         size="full"
@@ -271,11 +277,26 @@ export default function PaidAndPrintDialog({
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
               isDisabled={isLoading}
             >
-              {isLoading ? <Spinner color="white" /> : "Confirm and Print"}
+              {isLoading ? <Spinner color="white" /> : "Confirm"}
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
+      <ImagePrintPaidReceipt
+        isOpen={printImageIsOpen}
+        onOpenChange={printImageOnOpenChange}
+        receiptCode={receiptCode}
+        componentRef={componentRef}
+        onClose={printImageOnClose}
+        onPaidClose={onClose}
+        tableId={tableId}
+        menus={menus}
+        addons={addons}
+        setTaxRate={setTaxRate}
+        taxRate={taxRate}
+        subTotal={subTotal}
+        qrCodeImage={qrCodeData}
+      />
     </div>
   );
 }

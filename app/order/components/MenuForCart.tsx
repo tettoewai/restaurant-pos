@@ -38,7 +38,7 @@ export default function MenuForCart({
     (accumulator, current) => accumulator + current.price,
     0
   );
-  const menuPrice =
+  const subTotal =
     addonPrice && menu
       ? (menu.price + addonPrice) * validCart.quantity
       : menu
@@ -79,7 +79,7 @@ export default function MenuForCart({
         </div>
         <div className="flex flex-col space-y-1 h-full  w-5/12 items-start justify-center">
           <div className="space-y-3 mb-4 w-full">
-            <span className="font-semibold">{menu.name}</span>
+            <span className="font-semibold">{menu?.name}</span>
             <div className="flex">
               <p className="text-xs text-wrap truncate ...">
                 {validAddons?.map((item) => item.name).join(", ")}
@@ -104,7 +104,7 @@ export default function MenuForCart({
         </div>
         <div className="flex items-center justify-center mr-1">
           <MdAttachMoney className="text-xl text-primary" />
-          <span className="text-xs">{formatCurrency(menuPrice)}</span>
+          <span className="text-xs">{formatCurrency(subTotal)}</span>
         </div>
       </div>
     </Card>

@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { Button } from "@heroui/react";
 import { PiExportThin } from "react-icons/pi";
+import { RiFileExcel2Line } from "react-icons/ri";
 
 const exportToExcel = (
   sheetsData: {
@@ -49,11 +50,9 @@ export default function ExportToExcelBtn({
     <Button
       radius="sm"
       color="primary"
-      fullWidth
-      startContent={<PiExportThin className="size-5" />}
+      isIconOnly
+      startContent={<RiFileExcel2Line className="size-5" />}
       onPress={() => exportToExcel(sheetsData, fileName)}
-    >
-      Export to Excel
-    </Button>
+    ></Button>
   );
 }

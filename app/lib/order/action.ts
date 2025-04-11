@@ -1,7 +1,7 @@
 "use server";
 import { CartItem } from "@/context/OrderContext";
 import { prisma } from "@/db";
-import { ORDERSTATUS } from "@prisma/client";
+import { ORDERSTATUS, Table } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import {
@@ -80,6 +80,7 @@ export const createOrder = async ({
                 tableId,
                 instruction: item.instruction,
                 isFoc: item.isFoc,
+                subTotal: item.subTotal,
               },
             });
           })
@@ -97,6 +98,7 @@ export const createOrder = async ({
             tableId,
             instruction: item.instruction,
             isFoc: item.isFoc,
+            subTotal: item.subTotal,
           },
         });
       }
@@ -362,6 +364,25 @@ export async function setKnowCanceledOrder(id: number) {
     console.error(error);
     return {
       message: "Something went wrong while seeing canceled order!",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function callService(table: Table) {
+  if (!table) return { message: "Table is not provided.", isSuccess: false };
+  try {
+    await prisma.notification.create({
+      data: { tableId: table.id, message: `Calling from ${table.name}` },
+    });
+    return {
+      message: "Called successfully. Please wait a second ❤️.",
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong!",
       isSuccess: false,
     };
   }

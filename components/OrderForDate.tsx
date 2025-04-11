@@ -1,14 +1,14 @@
 "use client";
 import {
   fetchMenuWithIds,
-  getReceiptWithDate,
+  getOrderWithDate,
   getSalesData,
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
 import { formatCurrency } from "@/function";
 import { Card, DateRangePicker } from "@heroui/react";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
-import { Receipt } from "@prisma/client";
+import { Order, ORDERSTATUS, Receipt } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
 import clsx from "clsx";
 import { useState } from "react";
@@ -34,10 +34,10 @@ function OrderForDate() {
     typeof window !== "undefined"
       ? localStorage.getItem("isUpdateLocation")
       : null;
-  const { data: receiptData, isLoading } = useSWR(
+  const { data: orderData, isLoading } = useSWR(
     [date, isUpdateLocation],
     () =>
-      getReceiptWithDate(
+      getOrderWithDate(
         date.start.toDate(getLocalTimeZone()),
         date.end.toDate(getLocalTimeZone())
       ),
@@ -47,20 +47,21 @@ function OrderForDate() {
       revalidateOnReconnect: true,
     }
   );
-  const sameItemReceipt: Receipt[] = [];
-  receiptData?.map((item) => {
-    const isExist = sameItemReceipt.find((same) => same.itemId === item.itemId);
-    if (!isExist) sameItemReceipt.push(item);
+  const sameItemOrder: Order[] = [];
+  orderData?.map((item) => {
+    const isExist = sameItemOrder.find((same) => same.itemId === item.itemId);
+    if (!isExist) sameItemOrder.push(item);
   });
 
-  const sameCodeReceipt: Receipt[] = [];
-  receiptData?.map((item) => {
-    const isExist = sameCodeReceipt.find((same) => same.code === item.code);
-    if (!isExist && !item.isFoc) sameCodeReceipt.push(item);
-  });
+  // const sameCodeReceipt: Order[] = [];
+  // orderData?.map((item) => {
+  //   const isExist = sameCodeReceipt.find((same) => same.code === item.code);
+  //   if (!isExist && !item.isFoc) sameCodeReceipt.push(item);
+  // });
 
   const grossRevenue =
-    receiptData
+    orderData
+      ?.filter((item) => !item.isFoc)
       ?.filter((item) => !item.isFoc)
       .reduce((acc, cur) => {
         const totalPrice = Number(cur.subTotal);
@@ -71,11 +72,11 @@ function OrderForDate() {
       }, 0) || 0;
 
   const avgOrderVal =
-    sameItemReceipt.length > 0
-      ? grossRevenue / sameItemReceipt.filter((item) => !item.isFoc).length
+    sameItemOrder.length > 0
+      ? grossRevenue / sameItemOrder?.filter((item) => !item.isFoc).length
       : 0;
 
-  const countedMenuOrder: { menuId: number; quantity: number } = sameItemReceipt
+  const countedMenuOrder: { menuId: number; quantity: number } = sameItemOrder
     .filter((item) => !item.isFoc)
     .reduce((acc: any, curr) => {
       const quantity = curr.quantity;
@@ -87,9 +88,8 @@ function OrderForDate() {
 
       return acc;
     }, {});
-
   const sortedOrder = Object.entries(countedMenuOrder)
-    .slice(0, 5)
+    .slice(0, 8)
     .sort(([keyA, valueA], [keyB, valueB]) => valueB - valueA) // Sort by value in descending order
     .reduce((acc: { menuId: number; quantity: number }[], [key, value]) => {
       acc.push({ menuId: Number(key), quantity: value });
@@ -112,6 +112,8 @@ function OrderForDate() {
     },
     { key: "count", label: "Count" },
   ];
+
+  // top 8 table data
   const rows: { key: number; name: string; count: number }[] = sortedOrder.map(
     (item, index) => {
       const menu = menus?.find((o) => o.id === item.menuId);
@@ -119,7 +121,7 @@ function OrderForDate() {
     }
   );
 
-  const focReceipts = receiptData?.filter((item) => item.isFoc);
+  const focReceipts = orderData?.filter((item) => item.isFoc);
   const focTotalPrice = focReceipts?.reduce((acc, cur) => {
     if (cur.subTotal) {
       acc += cur.subTotal;
@@ -127,22 +129,29 @@ function OrderForDate() {
     return acc;
   }, 0);
 
-  const totalTax = sameCodeReceipt.reduce((acc, cur) => {
-    if (cur.tax) {
-      acc += cur.tax;
-    }
-    return acc;
-  }, 0);
+  // const totalTax = sameCodeReceipt.reduce((acc, cur) => {
+  //   if (cur.tax) {
+  //     acc += cur.tax;
+  //   }
+  //   return acc;
+  // }, 0);
 
-  const addonIds = receiptData
-    ? receiptData.map((item) => item.addonId).filter((item) => item !== null)
+  const addonIds = orderData
+    ? orderData.map((item) => item.addonId).filter((item) => item !== null)
     : [];
 
   const countStatus = [
     {
+      name: "Pending Order",
+      icon: <IoFastFood className={iconClass} />,
+      count: sameItemOrder.filter(
+        (item) => !item.isFoc && item.status === ORDERSTATUS.PENDING
+      )?.length,
+    },
+    {
       name: "Total Order",
       icon: <IoFastFood className={iconClass} />,
-      count: sameItemReceipt.filter((item) => !item.isFoc)?.length,
+      count: sameItemOrder.filter((item) => !item.isFoc)?.length,
     },
     {
       name: "Gross Revenue",
@@ -164,7 +173,7 @@ function OrderForDate() {
     {
       name: "Total Tax",
       icon: <TbTax className={iconClass} />,
-      count: formatCurrency(totalTax),
+      count: formatCurrency(0),
     },
   ];
 
@@ -217,7 +226,7 @@ function OrderForDate() {
     datasets: [
       {
         label: "Total sale",
-        data: monthlySales, // Pass the sales data here
+        data: monthlySales,
         borderColor: "rgba(255, 0, 0, 1)",
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         tension: 0.4,
@@ -231,13 +240,13 @@ function OrderForDate() {
 
   const saleData = [
     {
-      totalOrder: sameItemReceipt.filter((item) => !item.isFoc)?.length,
+      totalOrder: sameItemOrder.filter((item) => !item.isFoc)?.length,
       grossRevenue,
       avgOrderVal,
       focMenu:
         (focTotalPrice ? formatCurrency(focTotalPrice) : "") +
         ` (${focReceipts?.length})`,
-      totalTax: formatCurrency(totalTax),
+      totalTax: formatCurrency(0),
     },
   ];
   return (
@@ -267,7 +276,7 @@ function OrderForDate() {
           <ExportToExcelBtn
             sheetsData={[
               { sheetName: "Sale Data", data: saleData },
-              { sheetName: "Top 5 Most Ordered Data", data: rows },
+              { sheetName: "Top 8 Most Ordered Data", data: rows },
               {
                 sheetName: `${Array.from(selectedYear)[0]} Total Sales`,
                 data: yearSaleData,
@@ -326,7 +335,7 @@ function OrderForDate() {
               <TableSkeleton />
             ) : (
               <>
-                <h2>Top 5 Most Ordered Menus</h2>
+                <h2>Top 8 Most Ordered Menus</h2>
                 <ListTable columns={columns} rows={rows} />
               </>
             )}

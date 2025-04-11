@@ -38,13 +38,15 @@ export default async function MenuPage({
 
   const menuPrice = menu && formatCurrency(menu.price);
 
+  if (!menu) return <h1>There is no menu.</h1>;
+
   return (
     <div>
       <div className="pb-24 mt-2">
         <Card className="mb-3 max-h-80 bg-background">
           <div className="flex justify-center items-center overflow-hidden rounded-md w-full object-contain">
             <Image
-              src={menu?.assetUrl || "/default-menu.png"}
+              src={menu.assetUrl || "/default-menu.png"}
               alt="menu-image"
               width={1080}
               height={1080}
@@ -53,8 +55,8 @@ export default async function MenuPage({
             />
           </div>
           <div className="mt-2 flex flex-col mb-2 ml-2">
-            <h2 className="text-primary text-lg">{menu?.name}</h2>
-            <span className="text-sm">{menu?.description}</span>
+            <h2 className="text-primary text-lg">{menu.name}</h2>
+            <span className="text-sm">{menu.description}</span>
             <span className="text-lg mt-2">{menuPrice}</span>
           </div>
         </Card>
@@ -62,7 +64,7 @@ export default async function MenuPage({
           <MenuForm
             addon={addon}
             addonCategory={validAddonCategory}
-            menuId={menuId}
+            menuId={menu.id}
             order={order}
           />
         </Suspense>

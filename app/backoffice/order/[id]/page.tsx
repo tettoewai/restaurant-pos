@@ -16,26 +16,26 @@ import QuantityDialog from "@/components/QuantityDialog";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice, OrderData } from "@/general";
-import { useDisclosure } from "@heroui/react";
+import { Badge } from "@heroui/badge";
+import { Button } from "@heroui/button";
 import {
   Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
   DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
 } from "@heroui/dropdown";
-import { User } from "@heroui/user";
+import { Spinner, useDisclosure } from "@heroui/react";
 import {
   Table,
   TableBody,
-  TableHeader,
-  TableColumn,
-  TableRow,
   TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@heroui/table";
-import { Button } from "@heroui/button";
-import { Badge } from "@heroui/badge";
-import { addToast } from "@heroui/toast";
 import { Tab, Tabs } from "@heroui/tabs";
+import { addToast } from "@heroui/toast";
+import { User } from "@heroui/user";
 import { ORDERSTATUS } from "@prisma/client";
 import clsx from "clsx";
 import { nanoid } from "nanoid";
@@ -51,7 +51,6 @@ export default function App({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (tableId) {
-      console.log(tableId);
       setNotiReadWithTableId(tableId);
     }
   }, [tableId]);
@@ -62,15 +61,15 @@ export default function App({ params }: { params: { id: string } }) {
     }
   }, [tableId, isUpdateLocation, params]);
 
-  const { data: table } = useSWR(
+  const { data: table, isLoading: tableIsLoading } = useSWR(
     tableId ? [tableId, isUpdateLocation, params] : null,
     () => checkTableLocation(tableId).then((res) => res)
   );
 
   const {
-    data = [],
+    data,
     error,
-    isLoading,
+    isLoading: orderIsLoading,
   } = useSWR(
     table && table.id ? [table.id, isUpdateLocation] : null,
     () => fetchOrderWithTableId(tableId).then((res) => res),
@@ -95,32 +94,41 @@ export default function App({ params }: { params: { id: string } }) {
   } = useDisclosure();
 
   const menuIds = data?.map((item) => item.menuId) as number[];
-  const { data: menus } = useSWR(menuIds.length > 0 ? [menuIds] : null, () =>
-    fetchMenuWithIds(menuIds).then((res) => res)
+  const { data: menus, isLoading: menuIsLoading } = useSWR(
+    menuIds && menuIds.length > 0 ? [menuIds] : null,
+    () => fetchMenuWithIds(menuIds).then((res) => res)
   );
   const addonIds = data
-    ?.map((item) => item.addonId)
-    .filter((addon) => addon !== null);
-  const { data: addons = [] } = useSWR(
-    addonIds.length > 0 ? [addonIds] : null,
+    ? data.map((item) => item.addonId).filter((addon) => addon !== null)
+    : [];
+  const { data: addons, isLoading: addonIsLoading } = useSWR(
+    addonIds && addonIds?.length > 0 ? [addonIds] : null,
     () => fetchAddonWithIds(addonIds).then((res) => res)
   );
 
   const addonCatIds =
-    addons.length > 0 ? addons.map((item) => item.addonCategoryId) : [];
+    addons && addons.length > 0
+      ? addons.map((item) => item.addonCategoryId)
+      : [];
 
-  const { data: addonCategory = [] } = useSWR(
-    addonCatIds.length > 0 ? [addons] : null,
+  const { data: addonCategory, isLoading: addonCategoryIsLoading } = useSWR(
+    addonCatIds && addonCatIds.length > 0 ? [addons] : null,
     () => fetchAddonCategoryWithIds(addonCatIds).then((res) => res)
   );
 
-  const orderData = formatOrder(data);
+  const orderData = data ? formatOrder(data) : [];
+
+  const [statusChanging, setStatusChanging] = useState([
+    { id: "", isLoading: false },
+  ]);
 
   const { paid, setPaid } = useContext(BackOfficeContext);
 
   const receiptCode = useMemo(
     () =>
-      paid.length > 0 && paid[0].receiptCode ? paid[0].receiptCode : nanoid(6),
+      paid && paid.length > 0 && paid[0].receiptCode
+        ? paid[0].receiptCode
+        : nanoid(6),
     [paid]
   );
 
@@ -161,12 +169,17 @@ export default function App({ params }: { params: { id: string } }) {
       .filter((order) => order !== null)
       .filter((item) => Number(item.quantity) > 0);
   }, [paid, orderData]);
-  const handleStatusChange = async (status: string, itemId: string) => {
-    if (status === "cancel") return cancelOnOpen();
 
+  const handleStatusChange = async (status: string, id: string) => {
+    if (status === "cancel") return cancelOnOpen();
+    setStatusChanging((prev) => {
+      return prev.some((item) => item.id === id)
+        ? prev.map((item) => (item.id === id ? { id, isLoading: true } : item))
+        : [...prev, { id, isLoading: true }];
+    });
     const { message, isSuccess } = await updateOrderStatus({
       orderStatus: status,
-      itemId,
+      itemId: id,
     });
 
     if (isSuccess) {
@@ -175,6 +188,9 @@ export default function App({ params }: { params: { id: string } }) {
     } else {
       addToast({ title: message, color: "danger" });
     }
+    setStatusChanging((prev) =>
+      prev.map((item) => (item.id === id ? { id, isLoading: false } : item))
+    );
   };
 
   const addToPaid = (item: OrderData, isDialog?: boolean) => {
@@ -247,10 +263,39 @@ export default function App({ params }: { params: { id: string } }) {
     menus: menus,
     addons: addons,
   });
-  if (!table && isLoading) return <span>There is no table ordered!</span>;
+
   const completedOrder = unpaidOrderData.filter(
     (item) => item.status === "COMPLETE"
   );
+
+  if (
+    tableIsLoading ||
+    orderIsLoading ||
+    menuIsLoading ||
+    addonIsLoading ||
+    addonCategoryIsLoading
+  )
+    return (
+      <div className="w-full h-72 flex justify-center items-center">
+        <Spinner
+          variant="wave"
+          label={`${
+            tableIsLoading
+              ? "Table"
+              : orderIsLoading
+              ? "Order"
+              : menuIsLoading
+              ? "Menu"
+              : addonIsLoading
+              ? "Addon"
+              : addonCategoryIsLoading
+              ? "Adddon Category"
+              : ""
+          } is loading ...`}
+        />
+      </div>
+    );
+  if (!table) return <span>There is no table ordered!</span>;
 
   return (
     <div className="flex w-full flex-col relative">
@@ -299,7 +344,9 @@ export default function App({ params }: { params: { id: string } }) {
             >
               <div className="p-1 w-full h-full overflow-auto">
                 <div className="w-full flex justify-end">
-                  {selected === "complete" && completedOrder.length > 0 ? (
+                  {selected === "complete" &&
+                  completedOrder &&
+                  completedOrder.length > 0 ? (
                     <Button
                       color="primary"
                       className="mb-2"
@@ -329,12 +376,12 @@ export default function App({ params }: { params: { id: string } }) {
                       const addonIds: number[] = item.addons
                         ? JSON.parse(item.addons)
                         : [];
-                      const validAddon = addons.filter((addon) =>
+                      const validAddon = addons?.filter((addon) =>
                         addonIds.includes(addon.id)
                       );
 
-                      const addonCatAddon = validAddon.map((addon) => {
-                        const validAddonCat = addonCategory.find(
+                      const addonCatAddon = validAddon?.map((addon) => {
+                        const validAddonCat = addonCategory?.find(
                           (addonCat) => addonCat.id === addon.addonCategoryId
                         );
 
@@ -361,7 +408,7 @@ export default function App({ params }: { params: { id: string } }) {
                           </TableCell>
                           <TableCell align="left" className="min-w-40">
                             <span className="text-wrap">
-                              {addonCatAddon.length
+                              {addonCatAddon?.length
                                 ? addonCatAddon.join(", ")
                                 : "--"}
                             </span>
@@ -373,6 +420,12 @@ export default function App({ params }: { params: { id: string } }) {
                                 <Button
                                   endContent={<IoIosArrowDropdown />}
                                   size="sm"
+                                  isDisabled={
+                                    statusChanging.find(
+                                      (statusItem) =>
+                                        statusItem.id === item.itemId
+                                    )?.isLoading
+                                  }
                                   variant="light"
                                   color={
                                     item.status === "PENDING"
@@ -382,13 +435,20 @@ export default function App({ params }: { params: { id: string } }) {
                                       : "success"
                                   }
                                 >
-                                  {item.status &&
+                                  {statusChanging.find(
+                                    (statusItem) =>
+                                      statusItem.id === item.itemId
+                                  )?.isLoading ? (
+                                    <Spinner variant="wave" className="mb-4" />
+                                  ) : (
+                                    item.status &&
                                     item.status.charAt(0).toUpperCase() +
-                                      item.status.slice(1)}
+                                      item.status.slice(1)
+                                  )}
                                 </Button>
                               </DropdownTrigger>
                               <DropdownMenu
-                                aria-label="Static Actions"
+                                aria-label="Status"
                                 onAction={async (e: any) => {
                                   const status = String(e);
                                   setItemId(item.itemId);
