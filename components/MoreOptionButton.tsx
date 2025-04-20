@@ -184,7 +184,7 @@ export default function MoreOptionButton({
             onPress={onUpdateOpen}
             href={
               itemType === "activeOrder"
-                ? `/order/${orderData?.menuId}?tableId=${tableId}&orderId=${orderData?.itemId}`
+                ? `/order/${orderData?.menu?.id}?tableId=${tableId}&orderId=${orderData?.itemId}`
                 : itemType === "promotion"
                 ? `/backoffice/promotion/${id}`
                 : ""

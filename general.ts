@@ -37,8 +37,8 @@ export function useLocation(shouldFetch: boolean) {
 
 export interface OrderData {
   itemId: string;
-  addons?: string;
-  menuId: number | undefined;
+  addons?: Addon[];
+  menu: Menu | undefined;
   quantity: number | undefined;
   status: $Enums.ORDERSTATUS | undefined;
   totalPrice: number | undefined;
@@ -55,7 +55,15 @@ export interface PaidData extends OrderData {
   date?: Date;
 }
 
-export function formatOrder(orders: Order[]): OrderData[] {
+export function formatOrder({
+  orders,
+  menus,
+  addons,
+}: {
+  orders: Order[];
+  menus: Menu[];
+  addons?: Addon[];
+}): OrderData[] {
   const uniqueItem: string[] = [];
   orders.map((item) => {
     const isExist = uniqueItem.find((orderId) => orderId === item.itemId);
@@ -64,20 +72,20 @@ export function formatOrder(orders: Order[]): OrderData[] {
   const orderData = uniqueItem.map((uniqueOrder, index) => {
     const validItems = orders.filter((item) => item.itemId === uniqueOrder);
     const validItem = orders.find((item) => item.itemId === uniqueOrder);
-    const menuId = validItem?.menuId;
+    const menu = menus.find((item) => item.id === validItem?.menuId);
     const quantity = validItem && validItem.quantity - validItem.paidQuantity;
     const status = validItem?.status;
     const totalPrice = validItem?.totalPrice;
     const instruction = validItem?.instruction;
     const isFoc = Boolean(validItem?.isFoc);
-    const addons = validItems
+    const addonIds = validItems
       .map((item) => item.addonId)
       .filter((item) => item !== null);
-    if (addons.length > 0) {
+    if (addonIds && addonIds.length > 0 && addons && addons.length) {
       return {
         itemId: uniqueOrder,
-        addons: JSON.stringify(addons),
-        menuId,
+        addons: addons.filter((item) => addonIds.includes(item.id)),
+        menu,
         quantity,
         status,
         totalPrice,
@@ -87,7 +95,7 @@ export function formatOrder(orders: Order[]): OrderData[] {
     } else {
       return {
         itemId: uniqueOrder,
-        menuId,
+        menu,
         quantity,
         status,
         totalPrice,
@@ -111,22 +119,16 @@ export const weekday = [
 
 export const getTotalOrderPrice = ({
   orders,
-  menus,
-  addons,
 }: {
   orders: OrderData[] | undefined;
-  menus: Menu[] | undefined;
-  addons?: Addon[];
 }) => {
-  if (!orders || !menus) return 0;
+  if (!orders) return 0;
   return orders.reduce((total, order) => {
-    const menu = menus.find((item) => order.menuId === item.id);
-    const menuPrice = menu?.price || 0;
-    const unpaidAddon = order.addons ? JSON.parse(order.addons) : [];
+    const menuPrice = order.menu?.price || 0;
     const addonPrices =
-      addons
-        ?.filter((item) => unpaidAddon.includes(item.id))
-        .reduce((accu, curr) => (curr.price || 0) + accu, 0) || 0;
+      order.addons && order.addons.length
+        ? order.addons.reduce((accu, curr) => (curr.price || 0) + accu, 0)
+        : 0;
     const orderTotal =
       menuPrice && order.quantity
         ? (menuPrice + addonPrices) * order.quantity

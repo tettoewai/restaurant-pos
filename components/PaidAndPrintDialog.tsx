@@ -38,18 +38,11 @@ import useSWR from "swr";
 import ImagePrintPaidReceipt from "./ImagePrintPaidReceipt";
 
 interface Props {
-  menus: Menu[] | undefined;
-  addons: Addon[] | undefined;
   addonCategory: AddonCategory[] | undefined;
   tableId: number;
 }
 
-export default function PaidAndPrintDialog({
-  menus,
-  addons,
-  addonCategory,
-  tableId,
-}: Props) {
+export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const {
     isOpen: printImageIsOpen,
@@ -66,12 +59,12 @@ export default function PaidAndPrintDialog({
   const { paid, setPaid } = useContext(BackOfficeContext);
   const receiptCode = paid.length > 0 ? paid[0].receiptCode : undefined;
 
-  // useEffect(() => {
-  //   // Close the dialog if paid.length is less than 1
-  //   if (paid.length < 1 && isOpen) {
-  //     onClose();
-  //   }
-  // }, [paid, isOpen, onClose]);
+  useEffect(() => {
+    // Close the dialog if paid.length is less than 1
+    if (paid.length < 1 && isOpen) {
+      onClose();
+    }
+  }, [paid, isOpen, onClose]);
 
   const columns = [
     {
@@ -88,10 +81,7 @@ export default function PaidAndPrintDialog({
   ];
 
   const rows = paid.map((item, index) => {
-    const validMenu = menus?.find((menu) => item.menuId === menu.id);
-    const addonIds: number[] = item.addons ? JSON.parse(item.addons) : [];
-    const validAddon = addons?.filter((addon) => addonIds.includes(addon.id));
-    const addonCatAddon = validAddon?.map((addon) => {
+    const addonCatAddon = item.addons?.map((addon) => {
       const validAddonCat = addonCategory?.find(
         (addonCat) => addonCat.id === addon.addonCategoryId
       );
@@ -100,7 +90,7 @@ export default function PaidAndPrintDialog({
     });
     return {
       key: index + 1,
-      menu: item.isFoc ? `${validMenu?.name} (FOC)` : validMenu?.name,
+      menu: item.isFoc ? `${item.menu?.name} (FOC)` : item.menu?.name,
       addon: addonCatAddon?.length ? addonCatAddon.join(", ") : "--",
       quantity: item.quantity,
       action: (
@@ -122,17 +112,16 @@ export default function PaidAndPrintDialog({
   const subTotal = paid
     .filter((item) => !item.isFoc)
     .reduce((accu, curr) => {
-      const validMenu = menus?.find((item) => item.id === curr.menuId);
-      const paidAddons: number[] = curr.addons ? JSON.parse(curr.addons) : [];
-      const paidAddonPrices = addons
-        ?.filter((item) => paidAddons.includes(item.id))
-        .reduce((accu, curr) => curr.price + accu, 0);
+      const paidAddonPrices =
+        curr.addons && curr.addons.length
+          ? curr.addons.reduce((accu, curr) => curr.price + accu, 0)
+          : 0;
       if (!curr.quantity) return 0;
       const totalPrice =
-        paidAddonPrices && validMenu
-          ? (validMenu.price + paidAddonPrices) * curr.quantity + accu
-          : validMenu
-          ? validMenu.price * curr.quantity + accu
+        paidAddonPrices && curr.menu
+          ? (curr.menu.price + paidAddonPrices) * curr.quantity + accu
+          : curr.menu
+          ? curr.menu.price * curr.quantity + accu
           : 0;
       return totalPrice;
     }, 0);
@@ -149,28 +138,23 @@ export default function PaidAndPrintDialog({
     [paid]
   );
 
-  const { data: qrCodeData } = useSWR(
+  const { data: qrCodeData, isLoading: qrCodeIsLoading } = useSWR(
     receiptUrl ? `qrCodeData -${receiptUrl}` : null,
     () => generateQRCode(receiptUrl)
   );
 
   useEffect(() => {
     const updatedPaid = paid.map((item) => {
-      const validMenu = menus?.find((menu) => menu.id === item.menuId);
-      const paidAddons: number[] = item.addons ? JSON.parse(item.addons) : [];
-      const validAddon = addons?.filter((addon) =>
-        paidAddons.includes(addon.id)
-      );
-      const currentAddonPrice = validAddon?.reduce(
-        (accu, curr) => curr.price + accu,
-        0
-      );
+      const currentAddonPrice =
+        item.addons && item.addons.length
+          ? item.addons.reduce((accu, curr) => curr.price + accu, 0)
+          : 0;
 
       const currentTotalPrice =
-        currentAddonPrice && validMenu && item.quantity
-          ? (validMenu.price + currentAddonPrice) * item.quantity
-          : validMenu && item.quantity
-          ? validMenu.price * item.quantity
+        currentAddonPrice && item.menu && item.quantity
+          ? (item.menu.price + currentAddonPrice) * item.quantity
+          : item.menu && item.quantity
+          ? item.menu.price * item.quantity
           : 0;
 
       return {
@@ -183,7 +167,7 @@ export default function PaidAndPrintDialog({
       };
     });
     setPaid(updatedPaid);
-  }, [tax, total, receiptUrl]);
+  }, [tax, total, receiptUrl, tableId]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -246,22 +230,24 @@ export default function PaidAndPrintDialog({
               <div className="w-full md:w-2/3">
                 <ListTable columns={columns} rows={rows} />
               </div>
-              <div className="w-fit max-w-fit md:w-[320px] h-[450px] overflow-x-scroll border-2 border-gray-500 rounded-lg border-dashed scrollbar-hide">
-                {isOpen ? (
-                  <PaidPrint
-                    tableId={tableId}
-                    receiptCode={receiptCode}
-                    menus={menus}
-                    addons={addons}
-                    componentRef={componentRef}
-                    setTaxRate={setTaxRate}
-                    taxRate={taxRate}
-                    subTotal={subTotal}
-                    qrCodeImage={qrCodeData}
-                    paid={paid}
-                  />
-                ) : null}
-              </div>
+              {qrCodeIsLoading ? (
+                <Spinner variant="wave" label="Qr Loading ..." />
+              ) : (
+                <div className="w-fit max-w-fit md:w-[320px] h-[450px] overflow-x-scroll border-2 border-gray-500 rounded-lg border-dashed scrollbar-hide">
+                  {isOpen ? (
+                    <PaidPrint
+                      tableId={tableId}
+                      receiptCode={receiptCode}
+                      componentRef={componentRef}
+                      setTaxRate={setTaxRate}
+                      taxRate={taxRate}
+                      subTotal={subTotal}
+                      qrCodeImage={qrCodeData}
+                      paid={paid}
+                    />
+                  ) : null}
+                </div>
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
@@ -290,8 +276,6 @@ export default function PaidAndPrintDialog({
         onClose={printImageOnClose}
         onPaidClose={onClose}
         tableId={tableId}
-        menus={menus}
-        addons={addons}
         setTaxRate={setTaxRate}
         taxRate={taxRate}
         subTotal={subTotal}

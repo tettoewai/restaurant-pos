@@ -56,7 +56,7 @@ export default function ReceiptPrintButton({
       receipts.length > 0 && isOpen
         ? `${config.digitalReceiptUrl}/${receipts[0].code}`
         : "",
-    [receipts[0], isOpen]
+    [isOpen, receipts]
   );
 
   const { data: qrCodeData, isLoading: qrCodeLoading } = useSWR(

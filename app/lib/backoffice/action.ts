@@ -923,7 +923,7 @@ export async function createReceipt(paidData: PaidData[]) {
           itemId: item.itemId,
           code: item.receiptCode,
           tableId: item.tableId,
-          menuId: item.menuId as number,
+          menuId: item.menu?.id as number,
           totalPrice: item.totalPrice as number,
           quantity: item.quantity as number,
           tax: item.tax as number,
@@ -934,13 +934,12 @@ export async function createReceipt(paidData: PaidData[]) {
 
         // Handle addons if present
         if (item.addons?.length) {
-          const addons = JSON.parse(item.addons) as number[];
           await Promise.all(
-            addons.map((addonId) =>
+            item.addons.map((addon) =>
               prisma.receipt.create({
                 data: {
                   ...baseData,
-                  addonId: addonId,
+                  addonId: addon.id,
                 },
               })
             )
@@ -973,6 +972,14 @@ export async function setPaidWithQuantity(item: PaidData[]) {
           isSuccess: false,
         };
       }
+      // overPaid is for protect bug sometime occur
+      const overPaid =
+        currentOrder[0].paidQuantity + data.quantity > currentOrder[0].quantity;
+      if (overPaid)
+        return {
+          message: "Something went worng with over paid.",
+          isSuccess: false,
+        };
 
       const isPaid =
         currentOrder[0].paidQuantity + data.quantity ===

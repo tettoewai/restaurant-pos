@@ -13,10 +13,10 @@ export default function UserProfile() {
           <div className="m-1 h-full flex items-center justify-center">
             <Avatar src={data.image || ""} />
           </div>
-          <div className="flex flex-col h-full justify-center">
+          {/* <div className="flex flex-col h-full justify-center">
             <p className="text-sm">{data.name}</p>
             <p className="text-sm">{data.email}</p>
-          </div>
+          </div> */}
         </>
       ) : null}
     </div>

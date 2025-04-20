@@ -25,8 +25,6 @@ interface Props {
   receiptCode?: string;
   componentRef: RefObject<HTMLDivElement>;
   tableId: number;
-  menus: Menu[] | undefined;
-  addons: Addon[] | undefined;
   subTotal: number;
   taxRate: number;
   setTaxRate: Dispatch<SetStateAction<number>>;
@@ -40,8 +38,6 @@ export default function ImagePrintPaidReceipt({
   receiptCode,
   componentRef,
   tableId,
-  menus,
-  addons,
   subTotal,
   taxRate,
   setTaxRate,
@@ -77,7 +73,8 @@ export default function ImagePrintPaidReceipt({
     link.click();
   };
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (e?: any) => {
+    e?.preventDefault();
     onClose();
     onPaidClose();
     setPaid([]);
@@ -87,12 +84,10 @@ export default function ImagePrintPaidReceipt({
     <Modal
       backdrop="blur"
       isOpen={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          // Modal is closing
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
           handleCloseDialog();
         }
-        onOpenChange();
       }}
       className="bg-background"
       placement="center"
@@ -107,14 +102,13 @@ export default function ImagePrintPaidReceipt({
             <PaidPrint
               tableId={tableId}
               receiptCode={receiptCode}
-              menus={menus}
-              addons={addons}
               componentRef={componentRef}
               setTaxRate={setTaxRate}
               taxRate={taxRate}
               subTotal={subTotal}
               qrCodeImage={qrCodeImage}
               paid={paid}
+              isPrint
             />
           </div>
         </ModalBody>

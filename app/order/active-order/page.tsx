@@ -71,11 +71,7 @@ function ActiveOrder() {
     }
   });
 
-  const orderData =
-    filteredOrders && filteredOrders?.length > 0
-      ? formatOrder(filteredOrders)
-      : [];
-  const menuIds = orderData
+  const menuIds = filteredOrders
     ?.map((item) => item.menuId)
     .reduce((acc: number[], id) => {
       if (id && !acc.includes(id)) {
@@ -83,12 +79,11 @@ function ActiveOrder() {
       }
       return acc;
     }, []);
-  const itemAddon = orderData?.map((item) =>
-    item.addons ? JSON.parse(item.addons) : []
-  );
-  const uniqueAddons: number[] = Array.from(new Set(itemAddon?.flat())).filter(
-    (item) => item !== 0
-  );
+  const addonIds = filteredOrders
+    .map((item) => item.addonId)
+    .filter((item) => item !== null);
+  const uniqueAddons: number[] =
+    addonIds && addonIds.length ? Array.from(new Set(addonIds?.flat())) : [];
 
   const {
     data: menus,
@@ -99,19 +94,24 @@ function ActiveOrder() {
   );
 
   const {
+    data: addons,
+    error: addonError,
+    isLoading: addonLoading,
+  } = useSWR([filteredOrders], () =>
+    uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
+  );
+
+  const orderData =
+    filteredOrders && filteredOrders?.length > 0 && menus && menus.length > 0
+      ? formatOrder({ orders: filteredOrders, menus, addons })
+      : [];
+
+  const {
     data: promotions,
     error: promotionError,
     isLoading: promotionLoading,
   } = useSWR(tableId ? [`promotions-${tableId}`] : null, () =>
     fetchPromotionWithTableId(tableId)
-  );
-
-  const {
-    data: addons,
-    error: addonError,
-    isLoading: addonLoading,
-  } = useSWR([orderData], () =>
-    uniqueAddons.length ? fetchAddonWithIds(uniqueAddons) : Promise.resolve([])
   );
 
   const promotionIds = promotions ? promotions.map((item) => item.id) : [];
@@ -140,8 +140,6 @@ function ActiveOrder() {
 
   const totalPrice = getTotalOrderPrice({
     orders: orderDataForTotalPrice,
-    menus,
-    addons,
   });
 
   const confirmedOrder = orderDataForTotalPrice.filter(
@@ -151,23 +149,24 @@ function ActiveOrder() {
   );
   const confirmedTotalPrice = getTotalOrderPrice({
     orders: confirmedOrder,
-    menus,
-    addons,
   });
 
   const menuOrderData = orderData.reduce(
     (
       acc: Record<number, { menuId: number; quantity: number }>,
-      { menuId, quantity, status }
+      { menu, quantity, status }
     ) => {
       if (status === ORDERSTATUS.PENDING || status === ORDERSTATUS.CANCELED) {
         return acc;
       }
-      if (menuId && !acc[menuId]) {
-        acc[menuId] = { menuId, quantity: 0 };
+      if (menu && !acc[menu.id]) {
+        acc[menu.id] = { menuId: menu.id, quantity: 0 };
       }
-      if (menuId && quantity) {
-        acc[menuId] = { menuId, quantity: acc[menuId].quantity + quantity };
+      if (menu && menu.id && quantity) {
+        acc[menu.id] = {
+          menuId: menu.id,
+          quantity: acc[menu.id].quantity + quantity,
+        };
       }
       return acc;
     },
@@ -267,20 +266,11 @@ function ActiveOrder() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
             {orderData.map((item) => {
-              const validMenu = menus?.find(
-                (mennu) => mennu.id === item.menuId
-              );
-              const addonIds: number[] = item.addons
-                ? JSON.parse(item.addons)
-                : [];
-              const validAddon = addons?.filter((addon) =>
-                addonIds.includes(addon.id)
-              );
               const unseenCanceledOrder =
                 canceledOrderData &&
                 canceledOrderData.length &&
                 canceledOrderData.find((order) => order.itemId === item.itemId);
-              if (!validMenu) return null;
+              if (!item.menu) return null;
               return (
                 <div key={item.itemId}>
                   {orderLoading &&
@@ -310,7 +300,7 @@ function ActiveOrder() {
                         {item.status === "PENDING" && !item.isFoc ? (
                           <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
                             <MoreOptionButton
-                              id={validMenu.id}
+                              id={item.menu.id}
                               itemType="activeOrder"
                               orderData={item}
                               tableId={tableId}
@@ -319,7 +309,7 @@ function ActiveOrder() {
                         ) : null}
 
                         <Image
-                          src={validMenu.assetUrl || "/default-menu.png"}
+                          src={item.menu.assetUrl || "/default-menu.png"}
                           alt="menu"
                           width={500}
                           height={500}
@@ -328,29 +318,31 @@ function ActiveOrder() {
                       </div>
                       <div className="px-1 flex justify-between flex-col h-1/2 mb-2">
                         <div className="flex justify-between mt-1">
-                          <span>{validMenu.name}</span>
+                          <span>{item.menu.name}</span>
                           <span className="size-6 text-white rounded-full bg-primary text-center">
                             {item.quantity}
                           </span>
                         </div>
                         <div className="text-xs font-thin mt-1">
-                          {validAddon?.map((addon) => {
-                            const validAddonCat =
-                              addonCategory &&
-                              addonCategory.find(
-                                (addonCat) =>
-                                  addonCat.id === addon.addonCategoryId
-                              );
-                            return (
-                              <div
-                                key={addon.id}
-                                className="flex justify-between"
-                              >
-                                <span>{validAddonCat?.name}</span>
-                                <span>{addon.name}</span>
-                              </div>
-                            );
-                          })}
+                          {item.addons && item.addons.length > 0
+                            ? item.addons?.map((addon) => {
+                                const validAddonCat =
+                                  addonCategory &&
+                                  addonCategory.find(
+                                    (addonCat) =>
+                                      addonCat.id === addon.addonCategoryId
+                                  );
+                                return (
+                                  <div
+                                    key={addon.id}
+                                    className="flex justify-between"
+                                  >
+                                    <span>{validAddonCat?.name}</span>
+                                    <span>{addon.name}</span>
+                                  </div>
+                                );
+                              })
+                            : ""}
                         </div>
                         <div className="text-sm font-thin mt-1 flex justify-between items-center">
                           <span>Status :</span>

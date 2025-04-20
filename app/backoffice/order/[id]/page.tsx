@@ -116,7 +116,10 @@ export default function App({ params }: { params: { id: string } }) {
     () => fetchAddonCategoryWithIds(addonCatIds).then((res) => res)
   );
 
-  const orderData = data ? formatOrder(data) : [];
+  const orderData = useMemo(
+    () => (data && menus ? formatOrder({ orders: data, menus, addons }) : []),
+    [addons, data, menus]
+  );
 
   const [statusChanging, setStatusChanging] = useState([
     { id: "", isLoading: false },
@@ -136,8 +139,8 @@ export default function App({ params }: { params: { id: string } }) {
 
   const [quantityDialogData, setQuantityDialogData] = useState<OrderData>({
     itemId: "",
-    addons: "",
-    menuId: 0,
+    addons: [],
+    menu: undefined,
     quantity: 0,
     status: "COMPLETE",
     totalPrice: 0,
@@ -260,8 +263,6 @@ export default function App({ params }: { params: { id: string } }) {
 
   const totalUnpidPrice = getTotalOrderPrice({
     orders: unpaidOrderData.filter((item) => !item.isFoc),
-    menus: menus,
-    addons: addons,
   });
 
   const completedOrder = unpaidOrderData.filter(
@@ -308,12 +309,7 @@ export default function App({ params }: { params: { id: string } }) {
         </span>
       ) : null}
       <div className="absolute mt-1.5 top-8 right-2.5 md:top-1 md:right-2">
-        <PaidAndPrintDialog
-          menus={menus}
-          addons={addons}
-          addonCategory={addonCategory}
-          tableId={tableId}
-        />
+        <PaidAndPrintDialog addonCategory={addonCategory} tableId={tableId} />
       </div>
       <Tabs
         aria-label="Options"
@@ -371,16 +367,7 @@ export default function App({ params }: { params: { id: string } }) {
                   </TableHeader>
                   <TableBody emptyContent="There is no order yet">
                     {filteredUnpaidOrders.map((item, index) => {
-                      const validMenu =
-                        menus && menus.find((menu) => menu.id === item.menuId);
-                      const addonIds: number[] = item.addons
-                        ? JSON.parse(item.addons)
-                        : [];
-                      const validAddon = addons?.filter((addon) =>
-                        addonIds.includes(addon.id)
-                      );
-
-                      const addonCatAddon = validAddon?.map((addon) => {
+                      const addonCatAddon = item.addons?.map((addon) => {
                         const validAddonCat = addonCategory?.find(
                           (addonCat) => addonCat.id === addon.addonCategoryId
                         );
@@ -394,13 +381,13 @@ export default function App({ params }: { params: { id: string } }) {
                             <User
                               avatarProps={{
                                 radius: "sm",
-                                src: validMenu?.assetUrl || "/default-menu.png",
+                                src: item.menu?.assetUrl || "/default-menu.png",
                               }}
                               description={item.instruction}
                               name={
                                 item.isFoc
-                                  ? `${validMenu?.name} (FOC)`
-                                  : validMenu?.name
+                                  ? `${item.menu?.name} (FOC)`
+                                  : item.menu?.name
                               }
                             >
                               {item.instruction}

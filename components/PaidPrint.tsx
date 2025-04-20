@@ -6,7 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import { dateToString } from "@/function";
 import { PaidData } from "@/general";
-import { Card, Input } from "@heroui/react";
+import { baseStyles, Card, Input } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
 import { Dispatch, RefObject, SetStateAction } from "react";
@@ -15,27 +15,25 @@ import useSWR from "swr";
 interface Props {
   tableId: number;
   receiptCode?: string;
-  menus: Menu[] | undefined;
-  addons: Addon[] | undefined;
   componentRef: RefObject<HTMLDivElement>;
   subTotal: number;
   taxRate: number;
   setTaxRate: Dispatch<SetStateAction<number>>;
   qrCodeImage: string | null | undefined;
   paid?: PaidData[];
+  isPrint?: boolean;
 }
 
 function PaidPrint({
   tableId,
   receiptCode,
-  menus,
-  addons,
   componentRef,
   subTotal,
   taxRate,
   setTaxRate,
   qrCodeImage,
   paid,
+  isPrint,
 }: Props) {
   const { data: company } = useSWR("company", () =>
     fetchCompany().then((res) => res)
@@ -88,34 +86,27 @@ function PaidPrint({
         </thead>
         <tbody>
           {paid?.map((item, index) => {
-            const validMenu = menus?.find((menu) => menu.id === item.menuId);
-            const paidAddons: number[] = item.addons
-              ? JSON.parse(item.addons)
-              : [];
-            const validAddon = addons?.filter((addon) =>
-              paidAddons.includes(addon.id)
-            );
-            const currentAddonPrice = validAddon?.reduce(
-              (accu, curr) => curr.price + accu,
-              0
-            );
+            const currentAddonPrice =
+              item.addons && item.addons.length
+                ? item.addons?.reduce((accu, curr) => curr.price + accu, 0)
+                : 0;
             const currentTotalPrice = item.isFoc
               ? 0
-              : currentAddonPrice && validMenu && item.quantity
-              ? (validMenu.price + currentAddonPrice) * item.quantity
-              : validMenu && item.quantity
-              ? validMenu.price * item.quantity
+              : currentAddonPrice && item.menu && item.quantity
+              ? (item.menu.price + currentAddonPrice) * item.quantity
+              : item.menu && item.quantity
+              ? item.menu.price * item.quantity
               : 0;
             const menuName = item.isFoc
-              ? `${validMenu?.name} (FOC)`
-              : validMenu?.name;
+              ? `${item.menu?.name} (FOC)`
+              : item.menu?.name;
             return (
               <tr className="border-b" key={index}>
                 <td className="text-wrap max-w-28">
                   <span>
-                    {validAddon && validAddon.length > 0
+                    {item.addons && item.addons.length > 0
                       ? menuName +
-                        `(${validAddon?.map((item) => item.name).join(", ")})`
+                        `(${item.addons?.map((item) => item.name).join(", ")})`
                       : menuName}
                   </span>
                 </td>
@@ -133,13 +124,12 @@ function PaidPrint({
       </div>
 
       {/* Tax rate input controlled by user */}
-      <div className="flex justify-between py-1 border-b mb-2">
-        <span className="flex items-center">
-          Tax :
-          <Input
-            variant="bordered"
+      <div className="flex justify-between border-b mb-2">
+        <span className="flex items-center space-x-1">
+          <span className="mr-1 text-nowrap">Tax :</span>
+          <input
             type="number"
-            color="primary"
+            disabled={isPrint}
             value={String(taxRate)}
             onChange={(e) => {
               const value = Number(e.target.value);
@@ -147,15 +137,13 @@ function PaidPrint({
                 setTaxRate(value);
               }
             }}
-            className="w-fit ml-1 hide-in-print"
             min={0}
             max={100}
-            endContent={
-              <div className="pointer-events-none flex items-center">
-                <span className="text-default-400 text-small">%</span>
-              </div>
-            }
+            className="bg-white p-3"
           />
+          <div className="pointer-events-none flex items-center">
+            <span className="text-default-400 text-small">%</span>
+          </div>
         </span>
         <span>{tax.toFixed(2)} Ks</span>
       </div>

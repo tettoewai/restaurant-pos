@@ -52,26 +52,32 @@ export default function QuantityDialog({
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">Paid Quantity</ModalHeader>
         <ModalBody className="items-center">
-          <div className="flex space-x-1">
-            <button
-              onClick={() =>
+          <div className="flex space-x-2 justify-center items-center">
+            <Button
+              isIconOnly
+              variant="flat"
+              isDisabled={quantityDialogData.quantity === 1}
+              onPress={() =>
                 quantityDialogData.quantity &&
                 handleQuatity(quantityDialogData.quantity - 1)
               }
             >
               <CiCircleMinus className="size-7 text-primary" />
-            </button>
+            </Button>
             <div className="px-5 py-3 rounded-md flex justify-center items-center text-lg h-full bg-gray-200 dark:bg-gray-900">
               {quantityDialogData.quantity}
             </div>
-            <button
-              onClick={() =>
+            <Button
+              variant="flat"
+              isIconOnly
+              isDisabled={quantityDialogData.quantity === prevQuantity}
+              onPress={() =>
                 quantityDialogData.quantity &&
                 handleQuatity(quantityDialogData.quantity + 1)
               }
             >
               <CiCirclePlus className="size-7 text-primary" />
-            </button>
+            </Button>
           </div>
         </ModalBody>
         <ModalFooter>
