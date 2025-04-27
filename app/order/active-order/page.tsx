@@ -31,7 +31,7 @@ function ActiveOrder() {
   const tableId = Number(searchParams.get("tableId"));
   const router = useRouter();
   const {
-    data: orders = [],
+    data: orders,
     error: orderError,
     isLoading: orderLoading,
   } = useSWR<Order[]>([tableId], () => fetchOrder(tableId).then((res) => res), {
@@ -40,9 +40,12 @@ function ActiveOrder() {
     revalidateOnReconnect: true,
   });
 
-  const { data: promotionUsage = [] } = useSWR(
+  const { data: promotionUsage } = useSWR(
     orders && tableId && orders.length ? "promotionUsage" : null,
-    () => fetchPromotionUsage({ tableId, orderSeq: orders[0].orderSeq })
+    () =>
+      orders && orders.length
+        ? fetchPromotionUsage({ tableId, orderSeq: orders[0].orderSeq })
+        : Promise.resolve([])
   );
 
   const canceledOrder = orders
@@ -80,7 +83,7 @@ function ActiveOrder() {
       return acc;
     }, []);
   const addonIds = filteredOrders
-    .map((item) => item.addonId)
+    ?.map((item) => item.addonId)
     .filter((item) => item !== null);
   const uniqueAddons: number[] =
     addonIds && addonIds.length ? Array.from(new Set(addonIds?.flat())) : [];
@@ -89,8 +92,8 @@ function ActiveOrder() {
     data: menus,
     error: menuError,
     isLoading: menuLoading,
-  } = useSWR(menuIds.length > 0 ? [menuIds] : null, () =>
-    fetchMenuWithIds(menuIds)
+  } = useSWR(menuIds && menuIds.length > 0 ? [menuIds] : null, () =>
+    menuIds && menuIds.length ? fetchMenuWithIds(menuIds) : Promise.resolve([])
   );
 
   const {
@@ -220,7 +223,7 @@ function ActiveOrder() {
     focData?.focMenu
       .map((item) => item.menuId)
       .reduce((acc: number[], id) => {
-        if (!acc.includes(id) && !menuIds.includes(id)) {
+        if (!acc.includes(id) && !menuIds?.includes(id)) {
           acc.push(id);
         }
         return acc;

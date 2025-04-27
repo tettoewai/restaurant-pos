@@ -115,7 +115,7 @@ export function calculateApplicablePromotions({
     }
   >;
   totalPrice?: number;
-  promotionUsage: PromotionUsage[];
+  promotionUsage: PromotionUsage[] | undefined;
 }) {
   return promotions
     ?.filter((promotion) => {
@@ -141,9 +141,12 @@ export function calculateApplicablePromotions({
         // check required quantity
         const applicableMenuPromotion = currentMenuPromo.filter((item) => {
           // check promotion usage and if usage add required
-          const promotionUsageTime = promotionUsage.filter(
-            (promoUsage) => promoUsage.promotionId === item.promotionId
-          ).length;
+          const promotionUsageTime =
+            promotionUsage && promotionUsage.length
+              ? promotionUsage.filter(
+                  (promoUsage) => promoUsage.promotionId === item.promotionId
+                ).length
+              : 0;
           const requiredQuantity =
             promotionUsageTime > 0
               ? item.quantity_required +
@@ -160,11 +163,13 @@ export function calculateApplicablePromotions({
         );
       }
       // check totalPrice
-      const totalPricePromotionUsage = promotionUsage.filter(
+      const totalPricePromotionUsage = promotionUsage?.filter(
         (item) => item.promotionId === promotion.id
       );
       const requiredTotalPrice =
-        totalPricePromotionUsage.length > 0 && promotion.totalPrice
+        totalPricePromotionUsage &&
+        totalPricePromotionUsage.length > 0 &&
+        promotion.totalPrice
           ? promotion.totalPrice +
             promotion.totalPrice * totalPricePromotionUsage.length
           : promotion.totalPrice

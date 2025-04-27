@@ -120,6 +120,55 @@ export async function fetchOrder(tableId: number) {
   }
 }
 
+export async function fetchLastPaidOrder(tableId: number) {
+  noStore();
+  try {
+    const lastOrderSeq = await prisma.order.findFirst({
+      orderBy: { createdAt: "desc" },
+      select: { orderSeq: true },
+    });
+    if (!lastOrderSeq) {
+      return;
+    }
+    const lastOrderWithSameSeq = await prisma.order.findMany({
+      where: { orderSeq: lastOrderSeq.orderSeq, paidQuantity: { gt: 0 } },
+      select: { itemId: true },
+    });
+    return lastOrderWithSameSeq;
+  } catch (error) {
+    console.error("Error in fetchLastOrder:", error);
+    throw new Error("Failed to fetch last Order data.");
+  }
+}
+
+//for order
+export async function fetchReceiptWithItemId({
+  itemIds,
+}: {
+  itemIds: string[];
+}) {
+  if (!itemIds) return;
+
+  noStore();
+
+  try {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000); // 30 minutes ago
+
+    return await prisma.receipt.findMany({
+      where: {
+        itemId: { in: itemIds },
+        userKnown: false,
+        createdAt: {
+          gte: thirtyMinutesAgo, // Filter records created in the last 30 minutes
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error in fetchReceiptWithItemId:", error);
+    throw new Error("Failed to fetch receipt data.");
+  }
+}
+
 export async function fetchPromotionUsage({
   tableId,
   orderSeq,

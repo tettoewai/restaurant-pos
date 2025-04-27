@@ -252,6 +252,23 @@ export async function updateOrder(formData: FormData) {
   }
 }
 
+export async function setKnownReceipt(code: string) {
+  if (!code) return;
+  try {
+    await prisma.receipt.updateMany({
+      where: { code },
+      data: { userKnown: true },
+    });
+    return { message: "Viewed receipt", isSuccess: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Something went wrong!",
+      isSuccess: false,
+    };
+  }
+}
+
 export async function candelOrder(itemId: string) {
   if (!itemId) return { message: "Missing required fields", isSuccess: false };
   try {

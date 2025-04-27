@@ -196,6 +196,7 @@ model Receipt {
   id         Int      @id @default(autoincrement())
   code       String
   tableId    Int
+  orderSeq   String?
   itemId     String
   addonId    Int?
   menuId     Int
@@ -203,7 +204,8 @@ model Receipt {
   totalPrice Int
   quantity   Int
   tax        Float
-   isFoc     Boolean  @default(false)
+  isFoc      Boolean  @default(false)
+  userKnown  Boolean  @default(false)
   date       DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

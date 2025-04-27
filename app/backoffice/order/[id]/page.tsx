@@ -53,7 +53,7 @@ export default function App({ params }: { params: { id: string } }) {
     if (tableId) {
       setNotiReadWithTableId(tableId);
     }
-  }, [tableId]);
+  }, [tableId, tabs]);
 
   useEffect(() => {
     if (tableId) {

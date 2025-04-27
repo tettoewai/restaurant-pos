@@ -2,6 +2,7 @@ import OrderContextProvider from "@/context/OrderContext";
 import TopBarOrder from "./components/TopBarOrder";
 import CheckLocation from "./components/CheckLocation";
 import { Suspense } from "react";
+import DownloadReceiptOrder from "./components/DownloadReceiptOrder";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,6 +19,9 @@ function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+      <Suspense>
+        <DownloadReceiptOrder />
+      </Suspense>
     </OrderContextProvider>
   );
 }

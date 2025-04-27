@@ -15,8 +15,8 @@ import {
   fetchPromotionWithTableId,
 } from "../lib/order/data";
 import { MenuLoading } from "../ui/skeletons";
-import PromotionCard from "./components/PromotionCard";
 import CallServiceBtn from "./components/CallServiceBtn";
+import PromotionCard from "./components/PromotionCard";
 
 export const dynamic = "force-dynamic";
 
