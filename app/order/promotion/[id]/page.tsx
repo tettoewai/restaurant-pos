@@ -6,7 +6,6 @@ import {
 import { fetchFocMenuWithPromotiionId } from "@/app/lib/order/data";
 import {
   checkPromotionDuration,
-  checkTimeInDuration,
   convert12Hour,
   formatCurrency,
 } from "@/function";
@@ -20,7 +19,6 @@ import {
 } from "@heroui/react";
 import NextImage from "next/image";
 import GetPromotion from "../../components/GetPromotion";
-import { weekday } from "@/general";
 
 const PromotionPage = async ({ params }: { params: { id: string } }) => {
   const promotionId = Number(params.id);

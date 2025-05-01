@@ -3,6 +3,13 @@ import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewAddonDialog from "@/components/NewAddonDailog";
 import { Suspense } from "react";
+import { baseMetadata } from "@/app/lib/baseMetadata";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `Addon | ${baseMetadata.title}`,
+};
 
 const Addon = async () => {
   const [addon, addonCategory] = await Promise.all([

@@ -8,13 +8,15 @@ import { NewPromtionButton } from "@/components/Buttons";
 import ListTable from "@/components/ListTable";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { convert12Hour, dateToString, formatCurrency } from "@/function";
-import {
-  Chip,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@heroui/react";
+import { Chip, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
 import { DISCOUNT } from "@prisma/client";
+import { baseMetadata } from "@/app/lib/baseMetadata";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `Promotion | ${baseMetadata.title}`,
+};
 
 async function PromotionPage() {
   const promotion = await fetchPromotion();

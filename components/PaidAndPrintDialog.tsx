@@ -183,6 +183,13 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
       printImageOnOpen();
     }
   };
+
+  const handleCloseDialog = (e?: any) => {
+    e?.preventDefault();
+    onClose();
+    console.log("Paid Dialog is closed.");
+  };
+
   return (
     <div className="relative">
       <Badge
@@ -214,7 +221,11 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
       <Modal
         backdrop="blur"
         isOpen={isOpen}
-        onOpenChange={onOpenChange}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleCloseDialog();
+          }
+        }}
         onClose={onClose}
         className="bg-background overflow-y-scroll"
         placement="center"

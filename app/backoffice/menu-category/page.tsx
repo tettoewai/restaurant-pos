@@ -6,6 +6,13 @@ import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";
 import { Suspense } from "react";
+import { baseMetadata } from "@/app/lib/baseMetadata";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `Menu Category | ${baseMetadata.title}`,
+};
 
 const MenuCateogory = async () => {
   const [menuCategory, disableLocationMenuCategory] = await Promise.all([

@@ -6,6 +6,13 @@ import Link from "next/link";
 import { HiOutlineReceiptRefund } from "react-icons/hi2";
 import { IoIosArrowForward } from "react-icons/io";
 import { VscAccount } from "react-icons/vsc";
+import { baseMetadata } from "@/app/lib/baseMetadata";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `Setting | ${baseMetadata.title}`,
+};
 
 function page() {
   const itemClass =

@@ -157,7 +157,7 @@ export default function DownloadReceiptOrder() {
     if (isPaid) {
       onOpen();
     }
-  }, [isPaid,onOpen]);
+  }, [isPaid, onOpen]);
 
   const downloadReceipt = async () => {
     if (
@@ -262,119 +262,123 @@ export default function DownloadReceiptOrder() {
             menuIsLoading ? (
               <Spinner size="sm" />
             ) : (
-              <div
-                ref={componentRef}
-                className="w-[320px] p-4 text-sm font-mono text-black bg-white h-fit rounded-md overflow-x-auto"
-              >
-                <div>#{validReceiptData.code}</div>
-                <div className="text-center border-b pb-4 mb-4">
-                  <h2 className="font-bold text-lg">{company?.name}</h2>
-                  {location && (
-                    <p className="text-gray-500">
-                      {location.street +
-                        ", " +
-                        location.township +
-                        ", " +
-                        location.city}
+              <div className="w-full flex justify-center items-center bg-green-100 rounded-md">
+                <Card
+                  ref={componentRef}
+                  shadow="none"
+                  radius="none"
+                  className="w-[320px] bg-white pt-44 text-sm font-mono text-black border-none"
+                >
+                  <div>#{validReceiptData.code}</div>
+                  <div className="text-center border-b pb-4 mb-4">
+                    <h2 className="font-bold text-lg">{company?.name}</h2>
+                    {location && (
+                      <p className="text-gray-500">
+                        {location.street +
+                          ", " +
+                          location.township +
+                          ", " +
+                          location.city}
+                      </p>
+                    )}
+                    <p className="text-gray-500">Tel: +123-456-789</p>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Table:</span>
+                    <span>{table?.name}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Date:</span>
+                    <span>
+                      {dateToString({
+                        date: validReceiptData.receipts[0].date,
+                        type: "DMY",
+                      })}
+                    </span>
+                  </div>
+
+                  <table className="w-full text-left mb-4">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-1">Item</th>
+                        <th className="py-1">Qty</th>
+                        <th className="py-1">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {validReceiptData.receipts.map((item: Receipt, index) => {
+                        const validMenu = menuData?.find(
+                          (menu) => menu.id === item.menuId
+                        );
+                        const menuName = item.isFoc
+                          ? `${validMenu?.name} (FOC)`
+                          : validMenu?.name;
+                        return (
+                          <tr className="border-b" key={index}>
+                            <td className="text-wrap max-w-28">
+                              <span>
+                                {addonData && addonData.length > 0
+                                  ? menuName +
+                                    `(${addonData
+                                      ?.map((item) => item.name)
+                                      .join(", ")})`
+                                  : menuName}
+                              </span>
+                            </td>
+                            <td className="text-center">{item.quantity}</td>
+                            <td className="text-end">
+                              {item.isFoc
+                                ? 0
+                                : item.subTotal
+                                ? formatCurrency(item.subTotal)
+                                : 0}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+
+                  <div className="flex justify-between py-1 border-t border-b mb-2">
+                    <span>Sub Total:</span>
+                    <span>{formatCurrency(subTotal)}</span>
+                  </div>
+
+                  {/* Tax rate input controlled by user */}
+                  <div className="flex justify-between py-1 border-b mb-2">
+                    <span className="flex items-center">Tax :</span>
+                    <span>
+                      {formatCurrency(validReceiptData.receipts[0].tax)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between py-1 border-b mb-2 font-bold">
+                    <span>Total:</span>
+                    <span>
+                      {formatCurrency(validReceiptData.receipts[0].totalPrice)}
+                    </span>
+                  </div>
+
+                  <div className="text-center my-4 flex items-center justify-center flex-col">
+                    {qrCodeData ? (
+                      <Image
+                        className="mx-auto mb-2"
+                        src={qrCodeData || ""}
+                        alt="QR Code"
+                        width={100}
+                        height={100}
+                      />
+                    ) : null}
+                    <p className="text-xs text-gray-500">
+                      Scan for digital receipt or feedback
                     </p>
-                  )}
-                  <p className="text-gray-500">Tel: +123-456-789</p>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span>Table:</span>
-                  <span>{table?.name}</span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span>Date:</span>
-                  <span>
-                    {dateToString({
-                      date: validReceiptData.receipts[0].date,
-                      type: "DMY",
-                    })}
-                  </span>
-                </div>
+                  </div>
 
-                <table className="w-full text-left mb-4">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="py-1">Item</th>
-                      <th className="py-1">Qty</th>
-                      <th className="py-1">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {validReceiptData.receipts.map((item: Receipt, index) => {
-                      const validMenu = menuData?.find(
-                        (menu) => menu.id === item.menuId
-                      );
-                      const menuName = item.isFoc
-                        ? `${validMenu?.name} (FOC)`
-                        : validMenu?.name;
-                      return (
-                        <tr className="border-b" key={index}>
-                          <td className="text-wrap max-w-28">
-                            <span>
-                              {addonData && addonData.length > 0
-                                ? menuName +
-                                  `(${addonData
-                                    ?.map((item) => item.name)
-                                    .join(", ")})`
-                                : menuName}
-                            </span>
-                          </td>
-                          <td className="text-center">{item.quantity}</td>
-                          <td className="text-end">
-                            {item.isFoc
-                              ? 0
-                              : item.subTotal
-                              ? formatCurrency(item.subTotal)
-                              : 0}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-
-                <div className="flex justify-between py-1 border-t border-b mb-2">
-                  <span>Sub Total:</span>
-                  <span>{formatCurrency(subTotal)}</span>
-                </div>
-
-                {/* Tax rate input controlled by user */}
-                <div className="flex justify-between py-1 border-b mb-2">
-                  <span className="flex items-center">Tax :</span>
-                  <span>
-                    {formatCurrency(validReceiptData.receipts[0].tax)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between py-1 border-b mb-2 font-bold">
-                  <span>Total:</span>
-                  <span>
-                    {formatCurrency(validReceiptData.receipts[0].totalPrice)}
-                  </span>
-                </div>
-
-                <div className="text-center my-4 flex items-center justify-center flex-col">
-                  {qrCodeData ? (
-                    <Image
-                      className="mx-auto mb-2"
-                      src={qrCodeData || ""}
-                      alt="QR Code"
-                      width={100}
-                      height={100}
-                    />
-                  ) : null}
-                  <p className="text-xs text-gray-500">
-                    Scan for digital receipt or feedback
-                  </p>
-                </div>
-
-                <div className="text-center text-gray-600 text-xs">
-                  <p>Thank you for your purchase!</p>
-                  <p>Please come again.</p>
-                </div>
+                  <div className="text-center text-gray-600 text-xs">
+                    <p>Thank you for your purchase!</p>
+                    <p>Please come again.</p>
+                  </div>
+                </Card>
               </div>
             )}
           </ModalBody>

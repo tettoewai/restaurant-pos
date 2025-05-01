@@ -17,8 +17,15 @@ import {
 import { MenuLoading } from "../ui/skeletons";
 import CallServiceBtn from "./components/CallServiceBtn";
 import PromotionCard from "./components/PromotionCard";
+import { Metadata } from "next";
+import { baseMetadata } from "../lib/baseMetadata";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `${baseMetadata.title} | Order`,
+};
 
 const OrderPage = async ({
   searchParams,

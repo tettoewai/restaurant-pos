@@ -3,6 +3,13 @@ import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewLocationDialog from "@/components/NewLocationDailog";
 import { Suspense } from "react";
+import { baseMetadata } from "@/app/lib/baseMetadata";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `Location | ${baseMetadata.title}`,
+};
 
 export default async function Location() {
   const location = await fetchLocation();

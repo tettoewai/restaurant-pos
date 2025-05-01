@@ -19,7 +19,6 @@ import {
   checkMenuRequiredAddonCat,
   dateToString,
 } from "@/function";
-import { parseDate, parseTime } from "@internationalized/date";
 import {
   Accordion,
   AccordionItem,
@@ -35,6 +34,7 @@ import {
   TimeInput,
   useDisclosure,
 } from "@heroui/react";
+import { parseDate, parseTime } from "@internationalized/date";
 import { DISCOUNT } from "@prisma/client";
 import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
@@ -350,7 +350,7 @@ export default function App({ params }: { params: { id: string } }) {
     }
   };
 
-  if (!data) return;
+  if (!data) return <div>There is no data.</div>;
 
   return (
     <div className="bg-background p-2 rounded-md flex justify-center items-center">

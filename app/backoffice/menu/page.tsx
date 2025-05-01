@@ -8,6 +8,13 @@ import { MenuLoading } from "@/app/ui/skeletons";
 import MenuCard from "@/components/MenuCard";
 import NewMenuDialog from "@/components/NewMenuDailog";
 import { Suspense } from "react";
+import { baseMetadata } from "@/app/lib/baseMetadata";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: `Menu | ${baseMetadata.title}`,
+};
 
 const Menu = async () => {
   const menus = await fetchMenu();

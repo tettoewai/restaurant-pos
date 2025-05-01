@@ -25,6 +25,7 @@ import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import FocPromotion from "../components/FocPromotion";
 import NoticeCancelDialog from "../components/NoticeCancelDialog";
+import Head from "next/head";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();
@@ -249,161 +250,175 @@ function ActiveOrder() {
   }
 
   return (
-    <div className="pb-3">
-      {orderData && orderData.length > 0 ? (
-        <div className="p-1 w-full">
-          <div className="flex justify-between w-full p-1 mt-1">
-            <span>Your orders</span>
-            {totalPrice ? (
-              <span>
-                Total price:{" "}
-                {totalPrice && discountedPrice
-                  ? `${totalPrice}-${discountedPrice} = ${formatCurrency(
-                      totalPrice - discountedPrice
-                    )}`
-                  : totalPrice
-                  ? formatCurrency(totalPrice)
-                  : null}
-              </span>
-            ) : null}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
-            {orderData.map((item) => {
-              const unseenCanceledOrder =
-                canceledOrderData &&
-                canceledOrderData.length &&
-                canceledOrderData.find((order) => order.itemId === item.itemId);
-              if (!item.menu) return null;
-              return (
-                <div key={item.itemId}>
-                  {orderLoading &&
-                  menuLoading &&
-                  addonLoading &&
-                  addonCatLoading &&
-                  promotionLoading ? (
-                    <MenuLoading />
-                  ) : (
-                    <Card
-                      className={clsx("w-[11em] h-60 bg-background relative", {
-                        "border-primary border-1": item.isFoc,
-                      })}
-                    >
-                      {item.isFoc ? (
-                        <div className="w-12 h-12 -scale-x-100 absolute right-0 top-0">
-                          <Image
-                            src="/ribbon_cornor.png"
-                            alt="ribbon cornor"
-                            width={1080}
-                            height={1080}
-                            className="w-full h-full"
-                          />
-                        </div>
-                      ) : null}
-                      <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
-                        {item.status === "PENDING" && !item.isFoc ? (
-                          <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
-                            <MoreOptionButton
-                              id={item.menu.id}
-                              itemType="activeOrder"
-                              orderData={item}
-                              tableId={tableId}
+    <>
+      <Head>
+        <title>Order | Restaurant POS</title>
+        <meta
+          name="description"
+          content="Order food online with ease. Our restaurant system lets customers browse menus, place orders, and track them in real-time."
+        />
+      </Head>
+      <div className="pb-3">
+        {orderData && orderData.length > 0 ? (
+          <div className="p-1 w-full">
+            <div className="flex justify-between w-full p-1 mt-1">
+              <span>Your orders</span>
+              {totalPrice ? (
+                <span>
+                  Total price:{" "}
+                  {totalPrice && discountedPrice
+                    ? `${totalPrice}-${discountedPrice} = ${formatCurrency(
+                        totalPrice - discountedPrice
+                      )}`
+                    : totalPrice
+                    ? formatCurrency(totalPrice)
+                    : null}
+                </span>
+              ) : null}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 w-full mt-4">
+              {orderData.map((item) => {
+                const unseenCanceledOrder =
+                  canceledOrderData &&
+                  canceledOrderData.length &&
+                  canceledOrderData.find(
+                    (order) => order.itemId === item.itemId
+                  );
+                if (!item.menu) return null;
+                return (
+                  <div key={item.itemId}>
+                    {orderLoading &&
+                    menuLoading &&
+                    addonLoading &&
+                    addonCatLoading &&
+                    promotionLoading ? (
+                      <MenuLoading />
+                    ) : (
+                      <Card
+                        className={clsx(
+                          "w-[11em] h-60 bg-background relative",
+                          {
+                            "border-primary border-1": item.isFoc,
+                          }
+                        )}
+                      >
+                        {item.isFoc ? (
+                          <div className="w-12 h-12 -scale-x-100 absolute right-0 top-0">
+                            <Image
+                              src="/ribbon_cornor.png"
+                              alt="ribbon cornor"
+                              width={1080}
+                              height={1080}
+                              className="w-full h-full"
                             />
                           </div>
                         ) : null}
-
-                        <Image
-                          src={item.menu.assetUrl || "/default-menu.png"}
-                          alt="menu"
-                          width={500}
-                          height={500}
-                          className=" w-full h-auto object-contain"
-                        />
-                      </div>
-                      <div className="px-1 flex justify-between flex-col h-1/2 mb-2">
-                        <div className="flex justify-between mt-1">
-                          <span>{item.menu.name}</span>
-                          <span className="size-6 text-white rounded-full bg-primary text-center">
-                            {item.quantity}
-                          </span>
-                        </div>
-                        <div className="text-xs font-thin mt-1">
-                          {item.addons && item.addons.length > 0
-                            ? item.addons?.map((addon) => {
-                                const validAddonCat =
-                                  addonCategory &&
-                                  addonCategory.find(
-                                    (addonCat) =>
-                                      addonCat.id === addon.addonCategoryId
-                                  );
-                                return (
-                                  <div
-                                    key={addon.id}
-                                    className="flex justify-between"
-                                  >
-                                    <span>{validAddonCat?.name}</span>
-                                    <span>{addon.name}</span>
-                                  </div>
-                                );
-                              })
-                            : ""}
-                        </div>
-                        <div className="text-sm font-thin mt-1 flex justify-between items-center">
-                          <span>Status :</span>
-                          <span
-                            className={clsx(
-                              "font-bold flex items-center justify-center",
-                              {
-                                "text-red-500": item.status === "PENDING",
-                                "text-green-500": item.status === "COMPLETE",
-                                "text-orange-500": item.status === "COOKING",
-                                "text-gray-500": item.status === "CANCELED",
-                              }
-                            )}
-                          >
-                            {item.status}
-                            {unseenCanceledOrder &&
-                            !unseenCanceledOrder.userKnow ? (
-                              <NoticeCancelDialog
-                                id={unseenCanceledOrder.id}
-                                reason={unseenCanceledOrder.reason}
+                        <div className="h-1/2 w-full overflow-hidden flex items-center justify-center">
+                          {item.status === "PENDING" && !item.isFoc ? (
+                            <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
+                              <MoreOptionButton
+                                id={item.menu.id}
+                                itemType="activeOrder"
+                                orderData={item}
                                 tableId={tableId}
-                                canceledOrder={canceledOrder}
                               />
-                            ) : null}
-                          </span>
+                            </div>
+                          ) : null}
+
+                          <Image
+                            src={item.menu.assetUrl || "/default-menu.png"}
+                            alt="menu"
+                            width={500}
+                            height={500}
+                            className=" w-full h-auto object-contain"
+                          />
                         </div>
-                      </div>
-                    </Card>
-                  )}
-                </div>
-              );
-            })}
+                        <div className="px-1 flex justify-between flex-col h-1/2 mb-2">
+                          <div className="flex justify-between mt-1">
+                            <span>{item.menu.name}</span>
+                            <span className="size-6 text-white rounded-full bg-primary text-center">
+                              {item.quantity}
+                            </span>
+                          </div>
+                          <div className="text-xs font-thin mt-1">
+                            {item.addons && item.addons.length > 0
+                              ? item.addons?.map((addon) => {
+                                  const validAddonCat =
+                                    addonCategory &&
+                                    addonCategory.find(
+                                      (addonCat) =>
+                                        addonCat.id === addon.addonCategoryId
+                                    );
+                                  return (
+                                    <div
+                                      key={addon.id}
+                                      className="flex justify-between"
+                                    >
+                                      <span>{validAddonCat?.name}</span>
+                                      <span>{addon.name}</span>
+                                    </div>
+                                  );
+                                })
+                              : ""}
+                          </div>
+                          <div className="text-sm font-thin mt-1 flex justify-between items-center">
+                            <span>Status :</span>
+                            <span
+                              className={clsx(
+                                "font-bold flex items-center justify-center",
+                                {
+                                  "text-red-500": item.status === "PENDING",
+                                  "text-green-500": item.status === "COMPLETE",
+                                  "text-orange-500": item.status === "COOKING",
+                                  "text-gray-500": item.status === "CANCELED",
+                                }
+                              )}
+                            >
+                              {item.status}
+                              {unseenCanceledOrder &&
+                              !unseenCanceledOrder.userKnow ? (
+                                <NoticeCancelDialog
+                                  id={unseenCanceledOrder.id}
+                                  reason={unseenCanceledOrder.reason}
+                                  tableId={tableId}
+                                  canceledOrder={canceledOrder}
+                                />
+                              ) : null}
+                            </span>
+                          </div>
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-center mt-36 w-full">
-          <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
-            <BsCartX className="size-12 text-primary mb-4" />
-            <span>Hungry?</span>
-            <span className="text-sm">You have not ordered anything!</span>
-            <Button
-              className="bg-primary mt-4 text-white"
-              onPress={() => router.push(`/order?tableId=${tableId}`)}
-            >
-              Browse
-            </Button>
-          </Card>
-        </div>
-      )}
-      {focPromotions.length > 0 && focData && allMenus && (
-        <FocPromotion
-          focPromotions={focPromotions}
-          focData={focData}
-          allMenus={allMenus}
-          tableId={tableId}
-        />
-      )}
-    </div>
+        ) : (
+          <div className="flex items-center justify-center mt-36 w-full">
+            <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
+              <BsCartX className="size-12 text-primary mb-4" />
+              <span>Hungry?</span>
+              <span className="text-sm">You have not ordered anything!</span>
+              <Button
+                className="bg-primary mt-4 text-white"
+                onPress={() => router.push(`/order?tableId=${tableId}`)}
+              >
+                Browse
+              </Button>
+            </Card>
+          </div>
+        )}
+        {focPromotions.length > 0 && focData && allMenus && (
+          <FocPromotion
+            focPromotions={focPromotions}
+            focData={focData}
+            allMenus={allMenus}
+            tableId={tableId}
+          />
+        )}
+      </div>
+    </>
   );
 }
 
