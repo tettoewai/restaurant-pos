@@ -262,12 +262,12 @@ export default function DownloadReceiptOrder() {
             menuIsLoading ? (
               <Spinner size="sm" />
             ) : (
-              <div className="w-full flex justify-center items-center bg-green-100 rounded-md">
+              <div className="w-full pt-44 flex justify-center items-center rounded-md">
                 <Card
                   ref={componentRef}
                   shadow="none"
                   radius="none"
-                  className="w-[320px] bg-white pt-44 text-sm font-mono text-black border-none"
+                  className="w-[320px] p-2 pb-1 bg-white text-sm font-mono text-black border-none"
                 >
                   <div>#{validReceiptData.code}</div>
                   <div className="text-center border-b pb-4 mb-4">

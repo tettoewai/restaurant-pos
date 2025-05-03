@@ -272,9 +272,13 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
             <Button
               onPress={() => handlePaidAndPrint()}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              isDisabled={isLoading}
+              isDisabled={isLoading || qrCodeIsLoading}
             >
-              {isLoading ? <Spinner color="white" /> : "Confirm"}
+              {isLoading || qrCodeIsLoading ? (
+                <Spinner color="white" />
+              ) : (
+                "Confirm"
+              )}
             </Button>
           </ModalFooter>
         </ModalContent>
