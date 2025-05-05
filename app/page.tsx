@@ -74,7 +74,14 @@ export default function Home() {
         </NextUiLink>
         <NextUiLink
           as={Link}
-          className="bg-orange-300 m-2 rounded-md p-2 px-2 text-white"
+          className="bg-white m-2 rounded-md p-2 px-2 text-red-500"
+          href={`/warehouse`}
+        >
+          Warehouse
+        </NextUiLink>
+        <NextUiLink
+          as={Link}
+          className="bg-orange-600 m-2 rounded-md p-2 px-2 text-white"
           href={`/order?tableId=1`}
         >
           Order

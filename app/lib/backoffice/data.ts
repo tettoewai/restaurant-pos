@@ -1,6 +1,13 @@
 "use server";
 import { prisma } from "@/db";
-import { ORDERSTATUS } from "@prisma/client";
+import {
+  MovementSource,
+  MovementType,
+  ORDERSTATUS,
+  POStatus,
+  Unit,
+  UnitCategory,
+} from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -702,6 +709,121 @@ export async function createDefaultData({ email, name }: Props) {
     ];
     const newAddon = await prisma.$transaction(
       newAddonData.map((addon) => prisma.addon.create({ data: addon }))
+    );
+
+    // WMS Default data
+
+    const warehouse = await prisma.warehouse.create({
+      data: { name: "Default warehouse", locationId: newLocation.id },
+    });
+
+    const newSuppliers = [
+      {
+        name: "Shwe Rice Co.",
+        phone: "091234556789",
+        email: "example@gmail.com",
+        address: "...",
+      },
+      {
+        name: "City Mart",
+        phone: "091234556789",
+        email: "example@gmail.com",
+        address: "...",
+      },
+      {
+        name: "Aye Aye Eggs",
+        phone: "091234556789",
+        email: "example@gmail.com",
+        address: "...",
+      },
+    ];
+
+    const suppliers = await prisma.$transaction(
+      newSuppliers.map((item) => prisma.supplier.create({ data: item }))
+    );
+
+    const newWarehouseItems = [
+      {
+        name: "ကြက်ဥ",
+        unit: Unit.UNIT,
+        unitCategory: UnitCategory.COUNT,
+        threshold: 20,
+      },
+      {
+        name: "ဆီ",
+        unit: Unit.L,
+        unitCategory: UnitCategory.VOLUME,
+        threshold: 5,
+      },
+      {
+        name: "ကြက်သား",
+        unit: Unit.VISS,
+        unitCategory: UnitCategory.MASS,
+        threshold: 2,
+      },
+    ];
+    const warehouseItems = await prisma.$transaction(
+      newWarehouseItems.map((item) =>
+        prisma.warehouseItem.create({ data: item })
+      )
+    );
+    const newPurchaseOrders = suppliers.map((item) => {
+      return {
+        supplierId: item.id,
+        status: POStatus.RECEIVED,
+        warehouseId: warehouse.id,
+      };
+    });
+
+    const purchaseOrders = await prisma.$transaction(
+      newPurchaseOrders.map((item) =>
+        prisma.purchaseOrder.create({ data: item })
+      )
+    );
+
+    const newPurchaseOrderItems = purchaseOrders.map((item, index) => {
+      return {
+        purchaseOrderId: item.id,
+        itemId: warehouseItems[index].id,
+        quantity: 10 * index,
+        unitPrice: 2000 * index,
+      };
+    });
+
+    await prisma.$transaction(
+      newPurchaseOrderItems.map((item) =>
+        prisma.purchaseOrderItem.create({ data: item })
+      )
+    );
+
+    const newStockMovements = warehouseItems.map((item, index) => {
+      return {
+        itemId: item.id,
+        type: MovementType.IN,
+        quantity: 20,
+        reference: `PO-${purchaseOrders[index].id}`,
+        note: `Product from ${purchaseOrders[index].supplierId}`,
+        warehouseId: warehouse.id,
+        source: MovementSource.PURCHASE_ORDER,
+      };
+    });
+    await prisma.$transaction(
+      newStockMovements.map((item) =>
+        prisma.stockMovement.create({ data: item })
+      )
+    );
+    const newWarehouseStock = warehouseItems.map((item, index) => {
+      return {
+        itemId: item.id,
+        quantity: 20,
+        warehouseId: warehouse.id,
+      };
+    });
+
+    await prisma.$transaction(
+      newWarehouseStock.map((item) =>
+        prisma.warehouseStock.create({ data: item })
+      )
     );
   } catch (error) {
     console.error("Database Error:", error);

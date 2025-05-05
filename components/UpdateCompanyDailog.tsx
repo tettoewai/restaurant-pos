@@ -44,6 +44,10 @@ export default function UpdateCompanyDialog() {
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const { isSuccess, message } = await updateCompany(formData);
+    localStorage.setItem(
+      "isUpdateCompany",
+      isUpdateCompany === "false" ? "true" : "false"
+    );
     setIsSubmitting(false);
     addToast({
       title: message,

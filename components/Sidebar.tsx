@@ -5,40 +5,28 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import {
-  BiCategory,
-  BiChart,
-  BiFoodMenu,
-  BiSolidCategory,
-  BiSolidCategoryAlt,
-  BiSolidFoodMenu,
-} from "react-icons/bi";
-import {
-  IoFastFood,
-  IoFastFoodOutline,
-  IoSettingsOutline,
-} from "react-icons/io5";
+import { BiCategory, BiChart, BiFoodMenu } from "react-icons/bi";
+import { GiMeal } from "react-icons/gi";
+import { IoFastFoodOutline, IoSettingsOutline } from "react-icons/io5";
+import { LuGitCompareArrows } from "react-icons/lu";
 
+import { ImBullhorn } from "react-icons/im";
+import { IoIosPeople } from "react-icons/io";
 import {
-  MdLocationOn,
+  MdFoodBank,
+  MdOutlineInventory,
   MdOutlineLocationOn,
   MdOutlineRestaurantMenu,
-  MdOutlineSpaceDashboard,
   MdOutlineTableBar,
-  MdRestaurantMenu,
-  MdSpaceDashboard,
-  MdTableBar,
 } from "react-icons/md";
-import { ImBullhorn } from "react-icons/im";
-import { TbCategoryPlus } from "react-icons/tb";
-import { IoSettings } from "react-icons/io5";
+import { TbCategoryPlus, TbShoppingCartDollar } from "react-icons/tb";
 import Backdrop from "./BackDrop";
 import ShortcutButton from "./ShortCut";
-import { GrDashboard } from "react-icons/gr";
 
 interface Props {
   sideBarOpen: boolean;
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
+  isFromWarehouse?: boolean;
 }
 
 interface SideBarItem {
@@ -47,8 +35,12 @@ interface SideBarItem {
   icon: JSX.Element;
 }
 
-export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
-  const sideBarItem: SideBarItem[] = [
+export default function Sidebar({
+  sideBarOpen,
+  setSideBarOpen,
+  isFromWarehouse,
+}: Props) {
+  const backOfficeSidebar = [
     {
       name: "Order",
       route: "/backoffice/order",
@@ -97,6 +89,43 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     },
   ];
 
+  const warehouseSidebar = [
+    {
+      name: "Warehouse",
+      route: "/warehouse",
+      icon: <MdOutlineInventory />,
+    },
+    {
+      name: "Warehouse Item",
+      route: "/warehouse/warehouse-item",
+      icon: <MdFoodBank />,
+    },
+    {
+      name: "Ingredient",
+      route: "/warehouse/item-ingredient",
+      icon: <GiMeal />,
+    },
+    {
+      name: "Supplier",
+      route: "/warehouse/supplier",
+      icon: <IoIosPeople />,
+    },
+    {
+      name: "Purchase Order",
+      route: "/warehouse/purchase-order",
+      icon: <TbShoppingCartDollar />,
+    },
+    {
+      name: "Stock Movement",
+      route: "/warehouse/stock-movement",
+      icon: <LuGitCompareArrows />,
+    },
+  ];
+
+  const sideBarItem: SideBarItem[] = isFromWarehouse
+    ? warehouseSidebar
+    : backOfficeSidebar;
+
   const pathName = usePathname();
   const router = useRouter();
 
@@ -105,9 +134,9 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
         className={clsx(
-          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll scrollbar-hide 2xl:w-52 pb-[20px]",
+          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll text-medium scrollbar-hide 2xl:w-52",
           {
-            "w-52": sideBarOpen,
+            "w-64": sideBarOpen,
             "w-0 lg:w-16 2xl:w-52": !sideBarOpen,
           }
         )}

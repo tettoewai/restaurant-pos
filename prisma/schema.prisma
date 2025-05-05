@@ -39,6 +39,7 @@ model Location {
   company                      Company                        @relation(fields: [companyId], references: [id])
   tables                       Table[]
   Promotion                    Promotion[]
+  Warehouse                    Warehouse[]
 }
 
 model MenuCategory {
@@ -78,6 +79,7 @@ model Menu {
   PromotionMenu        PromotionMenu[]
   FocMenu              FocMenu[]
   FocMenuAddonCategory FocMenuAddonCategory[]
+  MenuItemIngredient   MenuItemIngredient[]
 }
 
 model DisabledLocationMenu {
@@ -308,4 +310,148 @@ model CanceledOrder {
   userKnow  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Warehouse Management System
+
+model Supplier {
+  id            Int             @id @default(autoincrement())
+  name          String
+  phone         String?
+  email         String?
+  address       String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  PurchaseOrder PurchaseOrder[]
+}
+
+model Warehouse {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  locationId            Int
+  location              Location                @relation(fields: [locationId], references: [id])
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  WarehouseStock        WarehouseStock[]
+  PurchaseOrder         PurchaseOrder[]
+  DisabledWarehouseItem DisabledWarehouseItem[]
+  StockMovement         StockMovement[]
+}
+
+model PurchaseOrder {
+  id                Int                 @id @default(autoincrement())
+  supplierId        Int
+  status            POStatus
+  warehouseId       Int
+  warehouse         Warehouse           @relation(fields: [warehouseId], references: [id])
+  supplier          Supplier            @relation(fields: [supplierId], references: [id])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  PurchaseOrderItem PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  itemId          Int
+  quantity        Int
+  unitPrice       Float
+  prucheseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  warehouseItem   WarehouseItem @relation(fields: [itemId], references: [id])
+}
+
+model WarehouseItem {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  unit                  Unit // Stored unit type
+  unitCategory          UnitCategory
+  threshold             Float // minimum quantity before alert
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  StockMovement         StockMovement[]
+  MenuItemIngredient    MenuItemIngredient[]
+  PurchaseOrderItem     PurchaseOrderItem[]
+  WarehouseStock        WarehouseStock[]
+  DisabledWarehouseItem DisabledWarehouseItem[]
+}
+
+model DisabledWarehouseItem {
+  id            Int           @id @default(autoincrement())
+  warehouseId   Int
+  itemId        Int
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+}
+
+model WarehouseStock {
+  id            Int           @id @default(autoincrement())
+  itemId        Int
+  quantity      Int
+  warehouseId   Int
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+}
+
+model StockMovement {
+  id            Int           @id @default(autoincrement())
+  itemId        Int
+  type          MovementType // 'IN' or 'OUT'
+  quantity      Int
+  reference     String? // optional reference (e.g. PO number or order ID)
+  note          String?
+  warehouseId    Int
+  source        MovementSource
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+  createdAt     DateTime      @default(now())
+
+  // NEW: point back to the “parent” movement (if this is a reversal)
+  parentId      Int?          
+  parent        StockMovement?  @relation("Correction", fields: [parentId], references: [id])
+  corrections   StockMovement[] @relation("Correction")
+}
+
+model MenuItemIngredient {
+  id            Int           @id @default(autoincrement())
+  menuId        Int
+  itemId        Int
+  quantity      Float // Stored in base unit (g or ml)
+  menu          Menu          @relation(fields: [menuId], references: [id])
+  warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+}
+
+enum POStatus {
+  PENDING
+  RECEIVED
+  CANCELLED
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+enum MovementSource {
+  MANUAL
+  PURCHASE_ORDER
+  CUSTOMER_ORDER
+}
+
+enum UnitCategory {
+  MASS
+  VOLUME
+  COUNT
+}
+
+enum Unit {
+  G
+  KG
+  ML
+  L
+  VISS
+  LB
+  OZ
+  GAL
+  DOZ
+  UNIT // for pieces
 }
