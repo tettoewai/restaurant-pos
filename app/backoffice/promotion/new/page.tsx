@@ -14,7 +14,9 @@ import {
   Button,
   Checkbox,
   DateRangePicker,
+  Form,
   Input,
+  NumberInput,
   Select,
   SelectItem,
   Spinner,
@@ -97,24 +99,25 @@ export default function App() {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    const totalPrice = formData.get("totalPrice");
+    const data = Object.fromEntries(formData);
+    console.log(data);
+    const totalPrice = Number(data.totalPrice);
     menuQty &&
       menuQty.length > 0 &&
       !totalPrice &&
       formData.set("menuQty", JSON.stringify(menuQty));
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const discountAmount = Number(formData.get("discount_amount"));
-    const startDate = formData.get("start_date") as string;
-    const endDate = formData.get("end_date") as string;
+    const name = data.name as string;
+    const description = data.description as string;
+    const discountAmount = Number(data.discount_amount);
+    const startDate = data.start_date as string;
+    const endDate = data.end_date as string;
     promotionImage && formData.append("image", promotionImage);
-    const priority = formData.get("priority");
+    const priority = Number(data.priority);
 
     if (isFoc) {
       formData.set("discount_type", "foc");
       formData.set("focMenu", JSON.stringify(focMenu));
     }
-
     const discountType = formData.get("discount_type");
     const conditions = [];
     const isValid = Boolean(
@@ -258,7 +261,7 @@ export default function App() {
       <div className="my-1 mb-3">
         <span className="font-semibold">New Promotion</span>
       </div>
-      <form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit}>
         <div>
           <div className="w-full grid grid-cols-1 sm:grid-cols-2">
             <div className="w-full pb-1 sm:pb-0">
@@ -280,15 +283,14 @@ export default function App() {
             </div>
 
             <div className="flex space-x-1 justify-end w-full">
-              <Input
+              <NumberInput
                 size="sm"
                 name="priority"
                 label="Priority"
                 variant="bordered"
                 required
-                type="number"
                 isRequired
-                defaultValue="1"
+                defaultValue={1}
                 min={1}
               />
               <Input
@@ -324,12 +326,11 @@ export default function App() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 w-full space-x-0 sm:space-x-1 space-y-1 sm:space-y-0 mt-1">
               {!isFoc ? (
-                <Input
+                <NumberInput
                   size="sm"
                   name="discount_amount"
                   label="Discount amount"
                   variant="bordered"
-                  type="number"
                   min={1}
                   fullWidth
                   endContent={
@@ -398,9 +399,8 @@ export default function App() {
                         </SelectItem>
                       ))}
                     </Select>
-                    <Input
+                    <NumberInput
                       size="sm"
-                      type="number"
                       variant="bordered"
                       label="Select"
                       className="w-1/5"
@@ -408,16 +408,16 @@ export default function App() {
                       max={item.menuId.length}
                       required
                       isRequired
-                      value={String(item.quantity)}
+                      value={item.quantity}
                       onChange={(e) => {
                         const updatedFocMenu = focMenu.map((foc) => {
                           if (
                             foc.id === item.id &&
-                            item.menuId.length >= Number(e.target.value)
+                            item.menuId.length >= Number(e)
                           ) {
                             return {
                               ...foc,
-                              quantity: Number(e.target.value),
+                              quantity: Number(e),
                             };
                           } else {
                             return foc;
@@ -539,9 +539,8 @@ export default function App() {
                           );
                         })}
                       </Select>
-                      <Input
+                      <NumberInput
                         size="sm"
-                        type="number"
                         variant="bordered"
                         label="Qty"
                         className="w-1/5"
@@ -549,7 +548,7 @@ export default function App() {
                         max={100}
                         required
                         isRequired
-                        value={String(item.quantity)}
+                        value={item.quantity}
                         onChange={(e) => {
                           const updatedMenuQty = menuQty.map((menuqty) => {
                             if (menuqty.id !== item.id) {
@@ -557,7 +556,7 @@ export default function App() {
                             } else {
                               return {
                                 ...menuqty,
-                                quantity: Number(e.target.value),
+                                quantity: Number(e),
                               };
                             }
                           });
@@ -742,7 +741,7 @@ export default function App() {
             )}
           </Button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }

@@ -8,17 +8,19 @@ datasource db {
 }
 
 model Company {
-  id             Int            @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   name           String
   street         String
   township       String
   city           String
-  isArchived     Boolean        @default(false)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  locations      Location[]
-  menuCategories MenuCategory[]
+  isArchived     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  Locations      Location[]
+  MenuCategories MenuCategory[]
+  Supplier       Supplier[]
   User           User[]
+  WarehouseItem  WarehouseItem[]
 }
 
 model Location {
@@ -30,16 +32,26 @@ model Location {
   latitude                     String?
   longitude                    String?
   companyId                    Int
-  isSelected                   Boolean                        @default(false)
   isArchived                   Boolean                        @default(false)
   createdAt                    DateTime                       @default(now())
   updatedAt                    DateTime                       @updatedAt
-  disabledLocationMenu         DisabledLocationMenu[]
-  disabledLocationMenuCategory DisabledLocationMenuCategory[]
+  DisabledLocationMenu         DisabledLocationMenu[]
+  DisabledLocationMenuCategory DisabledLocationMenuCategory[]
   company                      Company                        @relation(fields: [companyId], references: [id])
-  tables                       Table[]
   Promotion                    Promotion[]
+  SelectedLocation             SelectedLocation[]
+  Tables                       Table[]
   Warehouse                    Warehouse[]
+
+  @@index([companyId])
+}
+
+model SelectedLocation {
+  id         Int      @id @default(autoincrement())
+  locationId Int
+  userId     Int
+  location   Location @relation(fields: [locationId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 model MenuCategory {
@@ -51,7 +63,9 @@ model MenuCategory {
   updatedAt                    DateTime                       @updatedAt
   disabledLocationMenuCategory DisabledLocationMenuCategory[]
   company                      Company                        @relation(fields: [companyId], references: [id])
-  menuCategoryMenu             MenuCategoryMenu[]
+  MenuCategoryMenu             MenuCategoryMenu[]
+
+  @@index([companyId])
 }
 
 model DisabledLocationMenuCategory {
@@ -72,14 +86,14 @@ model Menu {
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   disabledLocationMenu DisabledLocationMenu[]
-  menuAddonCategory    MenuAddonCategory[]
-  menuCategoryMenu     MenuCategoryMenu[]
-  Order                Order[]
-  Receipt              Receipt[]
-  PromotionMenu        PromotionMenu[]
   FocMenu              FocMenu[]
   FocMenuAddonCategory FocMenuAddonCategory[]
+  MenuAddonCategory    MenuAddonCategory[]
+  MenuCategoryMenu     MenuCategoryMenu[]
   MenuItemIngredient   MenuItemIngredient[]
+  Order                Order[]
+  PromotionMenu        PromotionMenu[]
+  Receipt              Receipt[]
 }
 
 model DisabledLocationMenu {
@@ -105,9 +119,9 @@ model AddonCategory {
   isArchived           Boolean                @default(false)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  addons               Addon[]
-  menuAddonCategory    MenuAddonCategory[]
+  Addons               Addon[]
   FocMenuAddonCategory FocMenuAddonCategory[]
+  menuAddonCategory    MenuAddonCategory[]
 }
 
 model MenuAddonCategory {
@@ -127,9 +141,10 @@ model Addon {
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   addonCategory        AddonCategory          @relation(fields: [addonCategoryId], references: [id])
+  FocMenuAddonCategory FocMenuAddonCategory[]
   Order                Order[]
   Receipt              Receipt[]
-  FocMenuAddonCategory FocMenuAddonCategory[]
+  AddonIngredient      AddonIngredient[]
 }
 
 model Table {
@@ -139,20 +154,29 @@ model Table {
   isArchived     Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  orders         Order[]
-  location       Location         @relation(fields: [locationId], references: [id])
   Notification   Notification[]
-  Receipt        Receipt[]
+  Orders         Order[]
   PromotionUsage PromotionUsage[]
+  Receipt        Receipt[]
+  location       Location         @relation(fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
-  name      String?
-  image     String?
-  companyId Int
-  company   Company @relation(fields: [companyId], references: [id])
+  id                       Int                        @id @default(autoincrement())
+  email                    String                     @unique
+  name                     String?
+  image                    String?
+  companyId                Int
+  SelectedLocation         SelectedLocation[]
+  SelectedWarehouse        SelectedWarehouse[]
+  company                  Company                    @relation(fields: [companyId], references: [id])
+  AuditLog                 AuditLog[]
+  PurchaseOrderHistory     PurchaseOrderHistory[]
+  PurchaseOrderItemHistory PurchaseOrderItemHistory[]
+
+  @@index([companyId])
 }
 
 model Order {
@@ -163,26 +187,18 @@ model Order {
   quantity     Int
   paidQuantity Int         @default(0)
   orderSeq     String
-  status       ORDERSTATUS
   totalPrice   Int
-  subTotal     Int?
   tableId      Int
   instruction  String?
   isFoc        Boolean     @default(false)
   isArchived   Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  subTotal     Int?
+  status       OrderStatus
   addon        Addon?      @relation(fields: [addonId], references: [id])
   menu         Menu        @relation(fields: [menuId], references: [id])
   table        Table       @relation(fields: [tableId], references: [id])
-}
-
-enum ORDERSTATUS {
-  PENDING
-  COOKING
-  COMPLETE
-  PAID
-  CANCELED
 }
 
 model Notification {
@@ -198,22 +214,22 @@ model Receipt {
   id         Int      @id @default(autoincrement())
   code       String
   tableId    Int
-  orderSeq   String?
   itemId     String
   addonId    Int?
   menuId     Int
-  subTotal   Int?
   totalPrice Int
   quantity   Int
   tax        Float
-  isFoc      Boolean  @default(false)
-  userKnown  Boolean  @default(false)
   date       DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  subTotal   Int?
+  isFoc      Boolean  @default(false)
+  userKnown  Boolean  @default(false)
+  orderSeq   String?
+  addon      Addon?   @relation(fields: [addonId], references: [id])
   menu       Menu     @relation(fields: [menuId], references: [id])
   table      Table    @relation(fields: [tableId], references: [id])
-  addon      Addon?   @relation(fields: [addonId], references: [id])
 }
 
 model Rating {
@@ -228,12 +244,11 @@ model Promotion {
   id                   Int                    @id @default(autoincrement())
   name                 String
   description          String
-  discount_type        DISCOUNT
   discount_value       Int?
   totalPrice           Int?
   start_date           DateTime
   end_date             DateTime
-  locationId           Int?
+  locationId           Int
   is_active            Boolean                @default(true)
   conditions           Json?
   priority             Int                    @default(1)
@@ -242,17 +257,14 @@ model Promotion {
   isArchived           Boolean                @default(false)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  location             Location?              @relation(fields: [locationId], references: [id])
-  PromotionMenu        PromotionMenu[]
+  discount_type        DiscountType
   FocCategory          FocCategory[]
   FocMenuAddonCategory FocMenuAddonCategory[]
+  location             Location               @relation(fields: [locationId], references: [id])
+  PromotionMenu        PromotionMenu[]
   PromotionUsage       PromotionUsage[]
-}
 
-enum DISCOUNT {
-  PERCENTAGE
-  FIXED_AMOUNT
-  FOCMENU
+  @@index([locationId])
 }
 
 model PromotionMenu {
@@ -260,8 +272,8 @@ model PromotionMenu {
   promotionId       Int
   menuId            Int
   quantity_required Int
-  promotion         Promotion @relation(fields: [promotionId], references: [id])
   menu              Menu      @relation(fields: [menuId], references: [id])
+  promotion         Promotion @relation(fields: [promotionId], references: [id])
 }
 
 model FocCategory {
@@ -276,8 +288,8 @@ model FocMenu {
   id            Int         @id @default(autoincrement())
   menuId        Int
   focCategoryId Int
-  menu          Menu        @relation(fields: [menuId], references: [id])
   focCategory   FocCategory @relation(fields: [focCategoryId], references: [id])
+  menu          Menu        @relation(fields: [menuId], references: [id])
 }
 
 model FocMenuAddonCategory {
@@ -286,9 +298,9 @@ model FocMenuAddonCategory {
   addonCategoryId Int
   addonId         Int
   promotionId     Int
-  menu            Menu          @relation(fields: [menuId], references: [id])
   addonCategory   AddonCategory @relation(fields: [addonCategoryId], references: [id])
   addon           Addon         @relation(fields: [addonId], references: [id])
+  menu            Menu          @relation(fields: [menuId], references: [id])
   promotion       Promotion     @relation(fields: [promotionId], references: [id])
 }
 
@@ -297,10 +309,10 @@ model PromotionUsage {
   promotionId Int
   tableId     Int
   orderSeq    String
-  table       Table     @relation(fields: [tableId], references: [id])
-  promotion   Promotion @relation(fields: [promotionId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  promotion   Promotion @relation(fields: [promotionId], references: [id])
+  table       Table     @relation(fields: [tableId], references: [id])
 }
 
 model CanceledOrder {
@@ -312,42 +324,61 @@ model CanceledOrder {
   updatedAt DateTime @updatedAt
 }
 
-// Warehouse Management System
-
 model Supplier {
   id            Int             @id @default(autoincrement())
   name          String
   phone         String?
   email         String?
   address       String?
+  isArchived    Boolean         @default(false)
+  companyId     Int
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   PurchaseOrder PurchaseOrder[]
+  company       Company         @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
 }
 
 model Warehouse {
   id                    Int                     @id @default(autoincrement())
   name                  String
   locationId            Int
-  location              Location                @relation(fields: [locationId], references: [id])
+  isArchived            Boolean                 @default(false)
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
-  WarehouseStock        WarehouseStock[]
-  PurchaseOrder         PurchaseOrder[]
   DisabledWarehouseItem DisabledWarehouseItem[]
+  PurchaseOrder         PurchaseOrder[]
+  SelectedWarehouse     SelectedWarehouse[]
   StockMovement         StockMovement[]
+  location              Location                @relation(fields: [locationId], references: [id])
+  WarehouseStock        WarehouseStock[]
+
+  @@index([locationId])
+}
+
+model SelectedWarehouse {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  warehouseId Int
+  user        User      @relation(fields: [userId], references: [id])
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 }
 
 model PurchaseOrder {
-  id                Int                 @id @default(autoincrement())
-  supplierId        Int
-  status            POStatus
-  warehouseId       Int
-  warehouse         Warehouse           @relation(fields: [warehouseId], references: [id])
-  supplier          Supplier            @relation(fields: [supplierId], references: [id])
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  PurchaseOrderItem PurchaseOrderItem[]
+  id                       Int                        @id @default(autoincrement())
+  code                     String                     @unique
+  supplierId               Int
+  status                   POStatus
+  warehouseId              Int
+  isEdited                 Boolean                    @default(false)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  supplier                 Supplier                   @relation(fields: [supplierId], references: [id])
+  warehouse                Warehouse                  @relation(fields: [warehouseId], references: [id])
+  PurchaseOrderItem        PurchaseOrderItem[]
+  PurchaseOrderHistory     PurchaseOrderHistory[]
+  PurchaseOrderItemHistory PurchaseOrderItemHistory[]
 }
 
 model PurchaseOrderItem {
@@ -356,68 +387,128 @@ model PurchaseOrderItem {
   itemId          Int
   quantity        Int
   unitPrice       Float
-  prucheseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
   warehouseItem   WarehouseItem @relation(fields: [itemId], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
 model WarehouseItem {
   id                    Int                     @id @default(autoincrement())
   name                  String
-  unit                  Unit // Stored unit type
+  unit                  Unit
   unitCategory          UnitCategory
-  threshold             Float // minimum quantity before alert
+  companyId             Int
+  threshold             Float
+  isArchived            Boolean                 @default(false)
   createdAt             DateTime                @default(now())
   updatedAt             DateTime                @updatedAt
-  StockMovement         StockMovement[]
+  DisabledWarehouseItem DisabledWarehouseItem[]
   MenuItemIngredient    MenuItemIngredient[]
   PurchaseOrderItem     PurchaseOrderItem[]
+  StockMovement         StockMovement[]
+  company               Company                 @relation(fields: [companyId], references: [id])
   WarehouseStock        WarehouseStock[]
-  DisabledWarehouseItem DisabledWarehouseItem[]
+  AddonIngredient       AddonIngredient[]
+
+  @@index([companyId])
 }
 
 model DisabledWarehouseItem {
   id            Int           @id @default(autoincrement())
   warehouseId   Int
   itemId        Int
-  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
   warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
 }
 
 model WarehouseStock {
   id            Int           @id @default(autoincrement())
-  itemId        Int
+  itemId        Int           @unique
   quantity      Int
   warehouseId   Int
-  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
   warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  @@unique([itemId, warehouseId], name: "itemId_warehouseId")
 }
 
 model StockMovement {
-  id            Int           @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   itemId        Int
-  type          MovementType // 'IN' or 'OUT'
+  type          MovementType
   quantity      Int
-  reference     String? // optional reference (e.g. PO number or order ID)
+  reference     String?
   note          String?
-  warehouseId    Int
+  warehouseId   Int
   source        MovementSource
-  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
-  warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
-  createdAt     DateTime      @default(now())
-
-  // NEW: point back to the “parent” movement (if this is a reversal)
-  parentId      Int?          
+  createdAt     DateTime        @default(now())
+  parentId      Int?
+  warehouseItem WarehouseItem   @relation(fields: [itemId], references: [id])
   parent        StockMovement?  @relation("Correction", fields: [parentId], references: [id])
   corrections   StockMovement[] @relation("Correction")
+  warehouse     Warehouse       @relation(fields: [warehouseId], references: [id])
 }
 
 model MenuItemIngredient {
   id            Int           @id @default(autoincrement())
   menuId        Int
   itemId        Int
-  quantity      Float // Stored in base unit (g or ml)
-  menu          Menu          @relation(fields: [menuId], references: [id])
+  quantity      Float
   warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+  menu          Menu          @relation(fields: [menuId], references: [id])
+}
+
+model AddonIngredient {
+  id            Int           @id @default(autoincrement())
+  addonId       Int
+  itemId        Int
+  menuId        Int?
+  extraQty      Float
+  addon         Addon         @relation(fields: [addonId], references: [id])
+  warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  action     String // e.g., "UPDATE_PO", "CREATE_PO", "DELETE_PO"
+  targetType String // e.g., "PurchaseOrder"
+  targetId   Int // e.g., PurchaseOrder.id
+  changes    Json? // e.g., { status: { old: "PENDING", new: "RECEIVED" } }
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model PurchaseOrderHistory {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  snapshot        Json
+  updatedById     Int
+  createdAt       DateTime      @default(now())
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  updatedBy       User          @relation(fields: [updatedById], references: [id])
+}
+
+model PurchaseOrderItemHistory {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  snapshot        Json
+  updatedById     Int
+  createdAt       DateTime      @default(now())
+  updatedBy       User          @relation(fields: [updatedById], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  COOKING
+  COMPLETE
+  PAID
+  CANCELED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FOCMENU
 }
 
 enum POStatus {
@@ -453,5 +544,5 @@ enum Unit {
   OZ
   GAL
   DOZ
-  UNIT // for pieces
+  UNIT
 }

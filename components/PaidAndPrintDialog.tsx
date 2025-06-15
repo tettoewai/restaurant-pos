@@ -3,8 +3,10 @@ import {
   generateQRCode,
   setPaidWithQuantity,
 } from "@/app/lib/backoffice/action";
+import { config } from "@/config";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
 import {
+  addToast,
   Badge,
   Button,
   Modal,
@@ -15,27 +17,16 @@ import {
   Spinner,
   Tooltip,
   useDisclosure,
-  addToast,
 } from "@heroui/react";
-import { Addon, AddonCategory, Menu } from "@prisma/client";
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { AddonCategory } from "@prisma/client";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { PiHandCoinsFill } from "react-icons/pi";
 import { RxCross2 } from "react-icons/rx";
-import ListTable from "./ListTable";
-import PaidPrint from "./PaidPrint";
 import { useReactToPrint } from "react-to-print";
-import { config } from "@/config";
-import { OrderData } from "@/general";
 import useSWR from "swr";
 import ImagePrintPaidReceipt from "./ImagePrintPaidReceipt";
+import ListTable from "./ListTable";
+import PaidPrint from "./PaidPrint";
 
 interface Props {
   addonCategory: AddonCategory[] | undefined;
@@ -43,7 +34,7 @@ interface Props {
 }
 
 export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: printImageIsOpen,
     onOpen: printImageOnOpen,
@@ -52,10 +43,10 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
   } = useDisclosure();
   const componentRef = useRef<HTMLDivElement>(null);
 
-  const printReceipt = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: "Print Receipt",
-  });
+  // const printReceipt = useReactToPrint({
+  //   content: () => componentRef.current,
+  //   documentTitle: "Print Receipt",
+  // });
   const { paid, setPaid } = useContext(BackOfficeContext);
   const receiptCode = paid.length > 0 ? paid[0].receiptCode : undefined;
 

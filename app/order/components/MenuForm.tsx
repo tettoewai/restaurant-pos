@@ -12,7 +12,6 @@ import {
   Textarea,
 } from "@heroui/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
-import clsx from "clsx";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
@@ -222,9 +221,9 @@ export default function MenuForm({
           return (
             <Suspense key={item.id} fallback={<AddonCatSkeleton />}>
               <Card
-                className={clsx("p-3 border bg-background", {
-                  "border-primary": item.isRequired,
-                })}
+                className={`p-3 border bg-background ${
+                  item.isRequired ? "border-primary" : ""
+                }`}
               >
                 <div className="flex justify-between mb-2">
                   <span className="text-lg">{item.name}</span>

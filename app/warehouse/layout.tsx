@@ -23,7 +23,7 @@ const Layout = ({ children }: Props) => {
     createDefaultData({ email: userEmail, name: userName });
   }
   return (
-    <div className="bg-gray-200 dark:bg-gray-950 h-dvh select-none">
+    <div className="bg-gray-200 dark:bg-gray-950 h-dvh">
       <div className="p-1  w-full">
         <TopBar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
       </div>

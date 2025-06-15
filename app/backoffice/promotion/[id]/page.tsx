@@ -26,7 +26,9 @@ import {
   Button,
   Checkbox,
   DateRangePicker,
+  Form,
   Input,
+  NumberInput,
   Select,
   SelectItem,
   Spinner,
@@ -35,7 +37,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { parseDate, parseTime } from "@internationalized/date";
-import { DISCOUNT } from "@prisma/client";
+import { DiscountType } from "@prisma/client";
 import { TimeValue } from "@react-types/datepicker";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -147,7 +149,7 @@ export default function App({ params }: { params: { id: string } }) {
     if (data?.imageUrl) {
       setPrevImage(data.imageUrl);
     }
-    setIsFoc(data?.discount_type === DISCOUNT.FOCMENU ? true : false);
+    setIsFoc(data?.discount_type === DiscountType.FOCMENU ? true : false);
 
     const prevFocMenu =
       focData &&
@@ -182,18 +184,19 @@ export default function App({ params }: { params: { id: string } }) {
     const conditions: any = [];
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
-    const totalPrice = formData.get("totalPrice");
+    const data = Object.fromEntries(formData);
+    const totalPrice = Number(data.totalPrice);
     menuQty &&
       menuQty.length &&
       !totalPrice &&
       formData.set("menuQty", JSON.stringify(menuQty));
     formData.set("id", String(id));
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const discountAmount = Number(formData.get("discount_amount"));
-    const startDate = formData.get("start_date") as string;
-    const endDate = formData.get("end_date") as string;
-    const priority = formData.get("priority");
+    const name = data.name as string;
+    const description = data.description as string;
+    const discountAmount = Number(data.discount_amount);
+    const startDate = data.start_date as string;
+    const endDate = data.end_date as string;
+    const priority = Number(data.priority);
 
     promotionImage && formData.append("image", promotionImage);
     if (isFoc) {
@@ -369,7 +372,7 @@ export default function App({ params }: { params: { id: string } }) {
       {isLoading || promotionMenuLoading ? (
         <Spinner size="sm" />
       ) : (
-        <form onSubmit={handleSubmit} className="w-full">
+        <Form onSubmit={handleSubmit} className="w-full">
           <span className="mb-4 font-semibold">Update Pomotion</span>
           <div className="my-2">
             <div className="w-full grid grid-cols-1 sm:grid-cols-2">
@@ -391,15 +394,14 @@ export default function App({ params }: { params: { id: string } }) {
                 </Select>
               </div>
               <div className="flex space-x-1 justify-end w-full">
-                <Input
+                <NumberInput
                   size="sm"
                   name="priority"
                   label="Priority"
                   variant="bordered"
                   required
-                  type="number"
                   isRequired
-                  defaultValue={String(data.priority)}
+                  defaultValue={data.priority}
                   min={1}
                 />
                 <Input
@@ -424,14 +426,11 @@ export default function App({ params }: { params: { id: string } }) {
                   defaultValue={data?.name}
                 />
                 {!isFoc ? (
-                  <Input
+                  <NumberInput
                     name="discount_amount"
                     label="Discount amount"
                     variant="bordered"
-                    defaultValue={
-                      data.discount_value ? String(data.discount_value) : ""
-                    }
-                    type="number"
+                    defaultValue={data.discount_value || undefined}
                     endContent={
                       <div className="flex items-center h-full">
                         <label className="sr-only" htmlFor="discount_type">
@@ -521,9 +520,8 @@ export default function App({ params }: { params: { id: string } }) {
                           </SelectItem>
                         ))}
                       </Select>
-                      <Input
+                      <NumberInput
                         size="sm"
-                        type="number"
                         variant="bordered"
                         label="Select"
                         className="w-1/5"
@@ -531,16 +529,16 @@ export default function App({ params }: { params: { id: string } }) {
                         max={item.menuId.length}
                         required
                         isRequired
-                        value={String(item.quantity)}
+                        value={item.quantity}
                         onChange={(e) => {
                           const updatedFocMenu = focMenu.map((foc) => {
                             if (
                               foc.id === item.id &&
-                              item.menuId.length >= Number(e.target.value)
+                              item.menuId.length >= Number(e)
                             ) {
                               return {
                                 ...foc,
-                                quantity: Number(e.target.value),
+                                quantity: Number(e),
                               };
                             } else {
                               return foc;
@@ -668,9 +666,8 @@ export default function App({ params }: { params: { id: string } }) {
                               </SelectItem>
                             )}
                           </Select>
-                          <Input
+                          <NumberInput
                             size="sm"
-                            type="number"
                             variant="bordered"
                             label="Qty"
                             className="w-1/5"
@@ -678,7 +675,7 @@ export default function App({ params }: { params: { id: string } }) {
                             max={100}
                             required
                             isRequired
-                            value={String(item.quantity)}
+                            value={item.quantity}
                             onChange={(e) => {
                               const updatedMenuQty = menuQty.map((menuqty) => {
                                 if (menuqty.id !== item.id) {
@@ -686,7 +683,7 @@ export default function App({ params }: { params: { id: string } }) {
                                 } else {
                                   return {
                                     ...menuqty,
-                                    quantity: Number(e.target.value),
+                                    quantity: Number(e),
                                   };
                                 }
                               });
@@ -888,7 +885,7 @@ export default function App({ params }: { params: { id: string } }) {
               )}
             </Button>
           </div>
-        </form>
+        </Form>
       )}
     </div>
   );

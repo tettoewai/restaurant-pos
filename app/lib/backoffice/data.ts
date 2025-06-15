@@ -3,11 +3,12 @@ import { prisma } from "@/db";
 import {
   MovementSource,
   MovementType,
-  ORDERSTATUS,
+  OrderStatus,
   POStatus,
   Unit,
   UnitCategory,
 } from "@prisma/client";
+import { nanoid } from "nanoid";
 import { getServerSession } from "next-auth";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -20,12 +21,14 @@ export async function fetchUser() {
   try {
     const session = await getServerSession();
     const email = session?.user?.email;
-    if (!email) return;
+    if (!email) return null;
+
     const user = await prisma.user.findUnique({ where: { email } });
     return user;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch user data.");
+    // Avoid throwing inside build step
+    return null;
   }
 }
 
@@ -38,7 +41,7 @@ export async function fetchCompany() {
     return comapny;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch company data.");
+    return null;
   }
 }
 export async function fetchMenuCategory() {
@@ -295,7 +298,7 @@ export async function fetchTable() {
     const selectedLocation = await fetchSelectedLocation();
     const table = await prisma.table.findMany({
       where: {
-        locationId: selectedLocation?.id,
+        locationId: selectedLocation?.locationId,
         isArchived: false,
       },
       orderBy: { id: "asc" },
@@ -323,7 +326,7 @@ export async function checkTableLocation(id: number) {
   try {
     const selectedLocation = await fetchSelectedLocation();
     const table = await prisma.table.findFirst({
-      where: { id, locationId: selectedLocation?.id },
+      where: { id, locationId: selectedLocation?.locationId },
     });
     return table;
   } catch (error) {
@@ -345,11 +348,24 @@ export async function fetchTableWithIds(ids: number[]) {
 
 export async function fetchSelectedLocation() {
   try {
-    const companyId = (await fetchCompany())?.id;
-    const selectedLocation = await prisma.location.findFirst({
-      where: { isSelected: true, companyId },
+    const user = await fetchUser();
+    return await prisma.selectedLocation.findFirst({
+      where: { userId: user?.id },
     });
-    return selectedLocation;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch selected location data.");
+  }
+}
+
+export async function fetchSelectedLocationData() {
+  try {
+    const user = await fetchUser();
+    const location = await prisma.selectedLocation.findFirst({
+      where: { userId: user?.id },
+    });
+    if (!user || !location) return;
+    return await prisma.location.findUnique({ where: { id: location.id } });
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch selected location data.");
@@ -361,7 +377,7 @@ export async function fetchDisableLocationMenu() {
   try {
     const selectedLocation = await fetchSelectedLocation();
     const disabledLocationMenu = await prisma.disabledLocationMenu.findMany({
-      where: { locationId: selectedLocation?.id },
+      where: { locationId: selectedLocation?.locationId },
     });
     return disabledLocationMenu;
   } catch (error) {
@@ -376,7 +392,7 @@ export async function fetchDisableLocationMenuCat() {
     const selectedLocation = await fetchSelectedLocation();
     const disabledLocationMenuCat =
       await prisma.disabledLocationMenuCategory.findMany({
-        where: { locationId: selectedLocation?.id },
+        where: { locationId: selectedLocation?.locationId },
       });
     return disabledLocationMenuCat;
   } catch (error) {
@@ -393,7 +409,7 @@ export async function fetchOrder() {
     const order = await prisma.order.findMany({
       where: {
         tableId: { in: tableId },
-        status: { notIn: [ORDERSTATUS.PAID] },
+        status: { notIn: [OrderStatus.PAID] },
         isArchived: false,
       },
       orderBy: { id: "desc" },
@@ -414,7 +430,7 @@ export async function fetchOrderWithTableId(tableId: number) {
       where: {
         tableId,
         isArchived: false,
-        status: { not: ORDERSTATUS.PAID },
+        status: { not: OrderStatus.PAID },
       },
       orderBy: { createdAt: "asc" },
     });
@@ -647,7 +663,8 @@ export async function fetchRecentReceipt() {
   try {
     const tableIds = (await fetchTable()).map((item) => item.id);
     return await prisma.receipt.findMany({
-      where: { tableId: { in: tableIds } },orderBy:{id:"desc"}
+      where: { tableId: { in: tableIds } },
+      orderBy: { id: "desc" },
     });
   } catch (error) {
     console.error("Database Error:", error);
@@ -667,7 +684,7 @@ export async function createDefaultData({ email, name }: Props) {
         city: "Default City",
       },
     });
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: { email, name, companyId: newCompany.id },
     });
     const newLocation = await prisma.location.create({
@@ -677,10 +694,12 @@ export async function createDefaultData({ email, name }: Props) {
         township: "Default township",
         city: "Default city",
         companyId: newCompany.id,
-        isSelected: true,
       },
     });
-    const newTable = await prisma.table.create({
+    await prisma.selectedLocation.create({
+      data: { userId: newUser.id, locationId: newLocation.id },
+    });
+    await prisma.table.create({
       data: {
         name: "Default table",
         locationId: newLocation.id,
@@ -692,13 +711,13 @@ export async function createDefaultData({ email, name }: Props) {
     const newMenu = await prisma.menu.create({
       data: { name: "Default menu", price: 1000 },
     });
-    const newMenuCategoryMenu = await prisma.menuCategoryMenu.create({
+    await prisma.menuCategoryMenu.create({
       data: { menuId: newMenu.id, menuCategoryId: newMenuCategory.id },
     });
     const newAddonCategory = await prisma.addonCategory.create({
       data: { name: "Default addon category" },
     });
-    const newMenuAddonCategory = await prisma.menuAddonCategory.create({
+    await prisma.menuAddonCategory.create({
       data: { menuId: newMenu.id, addonCategoryId: newAddonCategory.id },
     });
 
@@ -707,7 +726,7 @@ export async function createDefaultData({ email, name }: Props) {
       { name: "Addon2", addonCategoryId: newAddonCategory.id },
       { name: "Addon3", addonCategoryId: newAddonCategory.id },
     ];
-    const newAddon = await prisma.$transaction(
+    const addons = await prisma.$transaction(
       newAddonData.map((addon) => prisma.addon.create({ data: addon }))
     );
 
@@ -717,24 +736,31 @@ export async function createDefaultData({ email, name }: Props) {
       data: { name: "Default warehouse", locationId: newLocation.id },
     });
 
+    await prisma.selectedWarehouse.create({
+      data: { userId: newUser.id, warehouseId: warehouse.id },
+    });
+
     const newSuppliers = [
       {
         name: "Shwe Rice Co.",
         phone: "091234556789",
         email: "example@gmail.com",
         address: "...",
+        companyId: newCompany.id,
       },
       {
         name: "City Mart",
         phone: "091234556789",
         email: "example@gmail.com",
         address: "...",
+        companyId: newCompany.id,
       },
       {
         name: "Aye Aye Eggs",
         phone: "091234556789",
         email: "example@gmail.com",
         address: "...",
+        companyId: newCompany.id,
       },
     ];
 
@@ -748,18 +774,21 @@ export async function createDefaultData({ email, name }: Props) {
         unit: Unit.UNIT,
         unitCategory: UnitCategory.COUNT,
         threshold: 20,
+        companyId: newCompany.id,
       },
       {
         name: "ဆီ",
         unit: Unit.L,
         unitCategory: UnitCategory.VOLUME,
         threshold: 5,
+        companyId: newCompany.id,
       },
       {
         name: "ကြက်သား",
         unit: Unit.VISS,
         unitCategory: UnitCategory.MASS,
         threshold: 2,
+        companyId: newCompany.id,
       },
     ];
     const warehouseItems = await prisma.$transaction(
@@ -767,8 +796,48 @@ export async function createDefaultData({ email, name }: Props) {
         prisma.warehouseItem.create({ data: item })
       )
     );
+    const menuItemIngredients = [
+      { menuId: newMenu.id, itemId: warehouseItems[0].id, quantity: 1 },
+      { menuId: newMenu.id, itemId: warehouseItems[1].id, quantity: 250 },
+      { menuId: newMenu.id, itemId: warehouseItems[2].id, quantity: 300 },
+    ];
+
+    await prisma.$transaction(
+      menuItemIngredients.map((item) =>
+        prisma.menuItemIngredient.create({ data: item })
+      )
+    );
+
+    const newAddonIngredients = [
+      {
+        addonId: addons[0].id,
+        menuId: newMenu.id,
+        itemId: warehouseItems[0].id,
+        extraQty: 1,
+      },
+      {
+        addonId: addons[0].id,
+        menuId: newMenu.id,
+        itemId: warehouseItems[1].id,
+        extraQty: 200,
+      },
+      {
+        addonId: addons[2].id,
+        menuId: newMenu.id,
+        itemId: warehouseItems[0].id,
+        extraQty: 3,
+      },
+    ];
+
+    await prisma.$transaction(
+      newAddonIngredients.map((item) =>
+        prisma.addonIngredient.create({ data: item })
+      )
+    );
+
     const newPurchaseOrders = suppliers.map((item) => {
       return {
+        code: nanoid(6),
         supplierId: item.id,
         status: POStatus.RECEIVED,
         warehouseId: warehouse.id,
@@ -785,8 +854,8 @@ export async function createDefaultData({ email, name }: Props) {
       return {
         purchaseOrderId: item.id,
         itemId: warehouseItems[index].id,
-        quantity: 10 * index,
-        unitPrice: 2000 * index,
+        quantity: 30,
+        unitPrice: 500,
       };
     });
 
@@ -812,7 +881,7 @@ export async function createDefaultData({ email, name }: Props) {
         prisma.stockMovement.create({ data: item })
       )
     );
-    const newWarehouseStock = warehouseItems.map((item, index) => {
+    const newWarehouseStock = warehouseItems.map((item) => {
       return {
         itemId: item.id,
         quantity: 20,

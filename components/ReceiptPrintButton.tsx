@@ -3,7 +3,7 @@ import { generateQRCode } from "@/app/lib/backoffice/action";
 import {
   fetchAddonWithIds,
   fetchMenuWithIds,
-  fetchSelectedLocation,
+  fetchSelectedLocationData,
 } from "@/app/lib/backoffice/data";
 import { config } from "@/config";
 import { dateToString, formatCurrency } from "@/function";
@@ -21,11 +21,11 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Company, Receipt } from "@prisma/client";
+import html2canvas from "html2canvas";
 import { useMemo, useRef } from "react";
 import { GrPrint } from "react-icons/gr";
 import { useReactToPrint } from "react-to-print";
 import useSWR from "swr";
-import html2canvas from "html2canvas";
 
 export default function ReceiptPrintButton({
   receipts,
@@ -65,7 +65,7 @@ export default function ReceiptPrintButton({
   );
 
   const { data: location } = useSWR(isOpen ? "location" : null, () =>
-    fetchSelectedLocation()
+    fetchSelectedLocationData()
   );
 
   const subTotal = receipts

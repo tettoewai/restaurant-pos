@@ -8,9 +8,8 @@ import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
 import { formatCurrency } from "@/function";
 import { Card, DateRangePicker } from "@heroui/react";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
-import { Order, ORDERSTATUS, Receipt } from "@prisma/client";
+import { Order, OrderStatus, Receipt } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
-import clsx from "clsx";
 import { useState } from "react";
 import { BiSolidDish } from "react-icons/bi";
 import { BsCash } from "react-icons/bs";
@@ -145,7 +144,7 @@ function OrderForDate() {
       name: "Pending Order",
       icon: <IoFastFood className={iconClass} />,
       count: sameItemOrder.filter(
-        (item) => !item.isFoc && item.status === ORDERSTATUS.PENDING
+        (item) => !item.isFoc && item.status === OrderStatus.PENDING
       )?.length,
     },
     {
@@ -309,16 +308,14 @@ function OrderForDate() {
               </div>
               <div className="w-1/2 sm:w-full h-2/5 mt-0 sm:mt-3 flex items-center justify-center">
                 <h1
-                  className={clsx(
-                    "mt-2 ml-2 text-5xl text-primary text-center",
-                    {
-                      "text-lg":
-                        item.name === "Gross Revenue" ||
-                        item.name === "Avg. Order Value" ||
-                        item.name === "Foc Menu" ||
-                        item.name === "Total Tax",
-                    }
-                  )}
+                  className={`mt-2 ml-2 text-5xl text-primary text-center ${
+                    item.name === "Gross Revenue" ||
+                    item.name === "Avg. Order Value" ||
+                    item.name === "Foc Menu" ||
+                    item.name === "Total Tax"
+                      ? "text-lg"
+                      : ""
+                  }`}
                 >
                   {item.name === "Gross Revenue" ||
                   item.name === "Avg. Order Value"

@@ -5,7 +5,7 @@ import {
   fetchAddonWithIds,
   fetchCompany,
   fetchMenuWithIds,
-  fetchSelectedLocation,
+  fetchSelectedLocationData,
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import { setKnownReceipt } from "@/app/lib/order/action";
@@ -21,8 +21,6 @@ import {
   Button,
   Card,
   cn,
-  code,
-  HTMLHeroUIProps,
   Modal,
   ModalBody,
   ModalContent,
@@ -148,7 +146,7 @@ export default function DownloadReceiptOrder() {
   );
 
   const { data: location } = useSWR(isOpen ? "location" : null, () =>
-    fetchSelectedLocation()
+    fetchSelectedLocationData()
   );
 
   const [selectedReceipt, setSelectedReceipt] = useState("");

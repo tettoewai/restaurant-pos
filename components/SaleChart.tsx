@@ -1,5 +1,4 @@
 "use client";
-import { getSalesData } from "@/app/lib/backoffice/data";
 import { ChartSkeleton } from "@/app/ui/skeletons";
 import {
   Button,
@@ -9,7 +8,6 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { Receipt } from "@prisma/client";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -20,10 +18,9 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { Line } from "react-chartjs-2";
 import { IoIosArrowDown } from "react-icons/io";
-import useSWR from "swr";
 
 ChartJS.register(
   CategoryScale,

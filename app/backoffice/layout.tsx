@@ -14,7 +14,6 @@ interface Props {
 }
 const Layout = ({ children }: Props) => {
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
-  const { setTheme, resolvedTheme } = useTheme();
   const { data } = useSession();
   const userEmail = data?.user?.email;
   const userName = data?.user?.name;
@@ -25,7 +24,7 @@ const Layout = ({ children }: Props) => {
   }
   return (
     <BackOfficeContextProvider>
-      <div className="bg-gray-200 dark:bg-gray-950 h-dvh select-none">
+      <div className="bg-gray-200 dark:bg-gray-950 h-dvh">
         <div className="p-1  w-full">
           <TopBar sideBarOpen={sideBarOpen} setSideBarOpen={setSideBarOpen} />
         </div>

@@ -5,10 +5,10 @@ import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoScreenFull, GoScreenNormal } from "react-icons/go";
-import { MdDarkMode, MdLightMode } from "react-icons/md";
+import { MdDarkMode, MdEdit, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
 import ShortcutButton from "./ShortCut";
-import Link from "next/link";
+import { PurchaseOrder } from "@prisma/client";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
@@ -108,6 +108,19 @@ export function NewPromtionButton() {
         letter="O"
       />
       New Promotion
+    </Button>
+  );
+}
+
+export function EditPOButton({ item }: { item: PurchaseOrder }) {
+  const router = useRouter();
+  return (
+    <Button
+      isIconOnly
+      variant="light"
+      onPress={() => router.push(`/warehouse/purchase-order/${item.id}`)}
+    >
+      <MdEdit className="size-5" />
     </Button>
   );
 }

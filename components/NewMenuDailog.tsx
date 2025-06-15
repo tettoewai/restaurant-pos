@@ -4,12 +4,14 @@ import { createMenu } from "@/app/lib/backoffice/action";
 import {
   addToast,
   Button,
+  Form,
   Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
   useDisclosure,
 } from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
@@ -62,7 +64,6 @@ export default function NewMenuDialog({ menuCategory }: Props) {
       color: isSuccess ? "success" : "danger",
     });
     if (isSuccess) {
-      
       closeModal();
     }
   };
@@ -84,12 +85,13 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         placement="center"
         isDismissable={false}
         scrollBehavior="inside"
+        onClose={() => closeModal()}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Create Menu</ModalHeader>
 
-          <form ref={formRef} onSubmit={handleSubmit}>
-            <ModalBody>
+          <Form ref={formRef} onSubmit={handleSubmit}>
+            <ModalBody className="w-full">
               <Input
                 name="name"
                 label="Name"
@@ -97,14 +99,10 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                 isRequired
                 autoFocus
               />
-              <Input
-                type="number"
+              <NumberInput
                 name="price"
                 label="Price"
                 variant="bordered"
-                endContent={
-                  <span className="text-default-400 text-small">Kyats</span>
-                }
                 isRequired
               />
               <MultipleSelector
@@ -131,10 +129,10 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                 <FileDropZone onDrop={(files) => setMenuImage(files[0])} />
               )}
             </ModalBody>
-            <ModalFooter>
+            <ModalFooter className="w-full">
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                onPress={onClose}
+                onPress={() => closeModal()}
                 isDisabled={isSubmitting}
               >
                 Cancel
@@ -147,7 +145,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                 {isSubmitting ? <Spinner color="white" /> : <span>Create</span>}
               </Button>
             </ModalFooter>
-          </form>
+          </Form>
         </ModalContent>
       </Modal>
     </div>

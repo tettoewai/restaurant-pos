@@ -1,3 +1,4 @@
+"use client";
 import { deleteMenu } from "@/app/lib/backoffice/action";
 import {
   addToast,

@@ -20,7 +20,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
   const { data } = useSWR(`company${isUpdateCompany}`, () => fetchCompany());
   return (
     <div className="top-bar z-30">
-      <div className="content bg-background flex items-center">
+      <div className="content bg-background flex items-center px-2">
         <div className="flex items-center space-x-0 sm:space-x-2">
           <button
             type="button"
@@ -64,11 +64,11 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
           </div>
         </div>
         <div className="flex justify-between space-x-2 items-center">
-          <h1>{data?.name}</h1>
+          <h1 className="truncate">{data?.name}</h1>
           <LocationToggle />
         </div>
 
-        <div className="flex h-full items-center space-x-1 mr-1">
+        <div className=" h-full items-center space-x-1 mr-1 hidden md:flex">
           <FullScreenButton />
           <NotificationFeed />
           <ModeButton />

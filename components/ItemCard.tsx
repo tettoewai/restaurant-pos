@@ -3,7 +3,6 @@ import {
   fetchAddonCategory,
   fetchAddonWithAddonCat,
   fetchDisableLocationMenuCat,
-  fetchLocation,
   fetchMenu,
   fetchMenuAddonCategory,
   fetchTableWithId,
@@ -16,12 +15,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@heroui/react";
-import { Table } from "@prisma/client";
-import clsx from "clsx";
+import { Supplier, Table, Warehouse, WarehouseItem } from "@prisma/client";
 import Image from "next/image";
 import { BiSolidCategoryAlt } from "react-icons/bi";
+import { BsPerson } from "react-icons/bs";
+import { LiaWarehouseSolid } from "react-icons/lia";
 import {
   MdAttachMoney,
+  MdFoodBank,
   MdLocationOn,
   MdRestaurantMenu,
   MdTableBar,
@@ -33,10 +34,22 @@ interface Props {
   id: number;
   name: string;
   addonCategoryId?: number;
-  itemType: "addonCategory" | "addon" | "table" | "location" | "menuCategory";
+  itemType:
+    | "addonCategory"
+    | "addon"
+    | "table"
+    | "location"
+    | "menuCategory"
+    | "warehouse"
+    | "warehouseItem"
+    | "supplier";
   required?: boolean;
   price?: number;
   isActive?: boolean;
+  warehouse?: Warehouse;
+  isNotDeletable?: Boolean;
+  warehouseItem?: WarehouseItem;
+  supplier?: Supplier;
 }
 export default async function ItemCard({
   id,
@@ -46,8 +59,12 @@ export default async function ItemCard({
   addonCategoryId,
   price,
   isActive,
+  warehouse,
+  isNotDeletable,
+  warehouseItem,
+  supplier,
 }: Props) {
-  const iconClasses = "size-8 mb-1 text-primary";
+  const iconClasses = "size-9 mb-1 text-primary";
   const menuAddonCategory =
     itemType === "addonCategory" ? await fetchMenuAddonCategory() : undefined;
   const menus = itemType === "addonCategory" ? await fetchMenu() : undefined;
@@ -55,7 +72,6 @@ export default async function ItemCard({
     itemType === "addonCategory" || itemType === "addon"
       ? await fetchAddonCategory()
       : undefined;
-  const location = itemType === "location" ? await fetchLocation() : undefined;
   const table =
     itemType === "table" ? ((await fetchTableWithId(id)) as Table) : undefined;
   const disableLocationMenuCategory =
@@ -84,25 +100,23 @@ export default async function ItemCard({
 
   return (
     <Card
-      className={clsx(
-        "bg-background h-48 p-1 flex flex-col items-center relative overflow-hidden justify-center m-1 w-44",
-        {
-          "opacity-70": isExist && itemType === "menuCategory",
-          "border-primary border-1": isActive,
-          "w-40 h-40": itemType === "menuCategory" || itemType === "location",
-        }
-      )}
+      className={`bg-background px-6 py-2 flex flex-col items-center relative overflow-hidden justify-center m-1 ${
+        isExist && itemType === "menuCategory" ? "opacity-70" : ""
+      } ${isActive ? "border-primary border-1" : ""}`}
     >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <MoreOptionButton
           id={id}
           itemType={itemType}
           addonCategory={addonCategory}
-          menu={menus}
+          menus={menus}
           table={table}
-          location={location}
           disableLocationMenuCat={disableLocationMenuCategory}
           qrCodeData={qrCodeData || ""}
+          warehouse={warehouse}
+          isNotDeletable={isNotDeletable}
+          warehouseItem={warehouseItem}
+          supplier={supplier}
         />
       </div>
       {itemType === "addonCategory" ? (
@@ -126,14 +140,20 @@ export default async function ItemCard({
           )}
         </div>
       ) : itemType === "location" ? (
-        <div className="flex justify-center items-center h-3/4 w-full overflow-hidden">
-          <MdLocationOn className={iconClasses} />
-        </div>
+        <MdLocationOn className={iconClasses} />
+      ) : itemType === "warehouse" ? (
+        <LiaWarehouseSolid className={iconClasses} />
+      ) : itemType === "warehouseItem" ? (
+        <MdFoodBank className={iconClasses} />
+      ) : itemType === "supplier" ? (
+        <BsPerson className={iconClasses} />
       ) : null}
       <p
-        className={clsx("mt-2 text-wrap text-center", {
-          "text-red-500": Boolean(!hasAddon && itemType === "addonCategory"),
-        })}
+        className={`mt-2 text-wrap text-center font-semibold ${
+          Boolean(!hasAddon && itemType === "addonCategory")
+            ? "text-red-500"
+            : ""
+        }`}
       >
         {name}
         {required ? <span className="text-primary"> *</span> : null}

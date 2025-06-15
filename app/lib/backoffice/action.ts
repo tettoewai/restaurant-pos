@@ -3,7 +3,7 @@
 import { config } from "@/config";
 import { prisma } from "@/db";
 import { PaidData } from "@/general";
-import { DISCOUNT, ORDERSTATUS } from "@prisma/client";
+import { DiscountType, OrderStatus } from "@prisma/client";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
 import QRCode from "qrcode";
@@ -16,6 +16,7 @@ import {
   fetchMenuAddonCategory,
   fetchPromotionMenuWithPromoId,
   fetchSelectedLocation,
+  fetchUser,
 } from "./data";
 
 interface Props {
@@ -58,11 +59,12 @@ export async function updateCompany(formData: FormData) {
 }
 
 export async function createMenu({ formData }: Props) {
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const price = Number(formData.get("price"));
-  const category = (formData.get("category") as string).split(",");
-  const image = formData.get("image");
+  const data = Object.fromEntries(formData);
+  const name = data.name as string;
+  const description = data.description as string;
+  const price = Number(data.price);
+  const category = (data.category as string).split(",");
+  const image = data.image;
   const isValid = name && price > 0 && category.length > 0;
   if (!isValid) return { message: "Missing required fields", isSuccess: false };
 
@@ -144,14 +146,15 @@ export async function updateMenuCategory(formData: FormData) {
 }
 
 export async function updateMenu({ formData }: Props) {
-  const id = Number(formData.get("id"));
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const price = Number(formData.get("price"));
-  const category = (formData.get("category") as string).split(",");
+  const data = Object.fromEntries(formData);
+  const id = Number(data.id);
+  const name = data.name as string;
+  const description = data.description as string;
+  const price = Number(data.price);
+  const category = (data.category as string).split(",");
   const categoryIds = category.map((item) => Number(item));
-  const image = formData.get("image");
-  const isValid = name && price > 0 && category.length > 0;
+  const image = data.image;
+  const isValid = id && name && price > 0 && category.length > 0;
   if (!isValid) return { message: "Missing required fields", isSuccess: false };
   try {
     if (image) {
@@ -311,10 +314,12 @@ export async function createAddon(formData: FormData) {
 }
 
 export async function updateAddon(formData: FormData) {
-  const id = Number(formData.get("id"));
-  const name = formData.get("name") as string;
-  const price = Number(formData.get("price"));
-  const addonCategoryId = Number(formData.get("addonCategory"));
+  const data = Object.fromEntries(formData);
+
+  const id = Number(data.id);
+  const name = data.name as string;
+  const price = Number(data.price);
+  const addonCategoryId = Number(data.addonCategory);
   const isValid = id && name && addonCategoryId > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
@@ -362,7 +367,7 @@ export async function updateAddonCategory(FormData: FormData) {
       isSuccess: false,
     };
   try {
-    const addonCategory = await prisma.addonCategory.update({
+    await prisma.addonCategory.update({
       where: { id },
       data: { name, isRequired },
     });
@@ -410,20 +415,14 @@ export async function updateAddonCategory(FormData: FormData) {
 }
 
 export async function updateSelectLocation(id: number) {
+  if (!id) return { message: "Missing required fields.", isSuccess: false };
   try {
-    const location = await fetchLocation();
-    const disselectLocationIds = location
-      .filter((item) => item.id !== id)
-      .map((location) => location.id);
-    await prisma.location.update({ where: { id }, data: { isSelected: true } });
-    await prisma.$transaction(
-      disselectLocationIds.map((item) =>
-        prisma.location.update({
-          where: { id: item },
-          data: { isSelected: false },
-        })
-      )
-    );
+    const user = await fetchUser();
+    if (!user) return { message: "Someting went wrong.", isSuccess: false };
+    await prisma.selectedLocation.deleteMany({ where: { userId: user.id } });
+    await prisma.selectedLocation.create({
+      data: { userId: user?.id, locationId: id },
+    });
     revalidatePath("/backoffice");
   } catch (error) {
     console.log(error);
@@ -495,23 +494,22 @@ export async function updateLocation(formData: FormData) {
 export async function deleteLocation(id: number) {
   try {
     const location = await fetchLocation();
+    const selectedLocation = await fetchSelectedLocation();
     if (location.length < 2) {
       return {
         message: "Keep location least one",
         isSuccess: false,
       };
     }
-    const isSelectedId = location.find((item) => item.isSelected === true)?.id;
+    const isSelectedId = selectedLocation?.locationId === id;
     await prisma.location.update({
       where: { id },
-      data: { isArchived: true, isSelected: false },
+      data: { isArchived: true },
     });
-    const location1 = await fetchLocation();
-    if (isSelectedId === id) {
-      await prisma.location.update({
-        where: { id: location1[0].id },
-        data: { isSelected: true },
-      });
+    if (isSelectedId) {
+      const updatedLocation = await fetchLocation();
+      const firstLocation = updatedLocation[0];
+      await updateSelectLocation(firstLocation.id);
     }
 
     revalidatePath("/backoffice/location");
@@ -554,11 +552,8 @@ export async function createTable(formData: FormData) {
       isSuccess: false,
     };
   try {
-    const locationId = (await fetchLocation()).find(
-      (item) => item.isSelected === true
-    )?.id;
-    const table =
-      locationId && (await prisma.table.create({ data: { name, locationId } }));
+    const locationId = (await fetchSelectedLocation())?.locationId;
+    locationId && (await prisma.table.create({ data: { name, locationId } }));
     revalidatePath("/backoffice/table");
     return { message: "Created table successfully.", isSuccess: true };
   } catch (error) {
@@ -578,15 +573,25 @@ export async function handleDisableLocationMenu({
   menuId: number;
 }) {
   try {
-    const locationId = (await fetchSelectedLocation())?.id;
+    const locationId = (await fetchSelectedLocation())?.locationId;
     if (available) {
-      const item = await prisma.disabledLocationMenu.findFirst({
-        where: { menuId, locationId },
-      });
-      item &&
-        (await prisma.disabledLocationMenu.delete({ where: { id: item.id } }));
-      revalidatePath("/backoffice/menu");
-      return { message: "Enable available successfully.", isSuccess: true };
+      try {
+        const item = await prisma.disabledLocationMenu.findFirst({
+          where: { menuId, locationId },
+        });
+        item &&
+          (await prisma.disabledLocationMenu.delete({
+            where: { id: item.id },
+          }));
+        revalidatePath("/backoffice/menu");
+        return { message: "Enable available successfully.", isSuccess: true };
+      } catch (error) {
+        console.log(error);
+        return {
+          message: "Something went wrong while toggling available menu",
+          isSuccess: false,
+        };
+      }
     } else {
       locationId &&
         (await prisma.disabledLocationMenu.create({
@@ -612,7 +617,7 @@ export async function handleDisableLocationMenuCat({
   menuCategoryId: number;
 }) {
   try {
-    const locationId = (await fetchSelectedLocation())?.id;
+    const locationId = (await fetchSelectedLocation())?.locationId;
     if (available) {
       const item = await prisma.disabledLocationMenuCategory.findFirst({
         where: { menuCategoryId, locationId },
@@ -720,13 +725,13 @@ export async function updateOrderStatus({
     const orderIds = orders.map((item) => item.id);
     const status =
       orderStatus === "pending"
-        ? ORDERSTATUS.PENDING
+        ? OrderStatus.PENDING
         : orderStatus === "cooking"
-        ? ORDERSTATUS.COOKING
+        ? OrderStatus.COOKING
         : orderStatus === "complete"
-        ? ORDERSTATUS.COMPLETE
+        ? OrderStatus.COMPLETE
         : orderStatus === "paid"
-        ? ORDERSTATUS.PAID
+        ? OrderStatus.PAID
         : undefined;
     if (!status)
       return {
@@ -985,7 +990,7 @@ export async function setPaidWithQuantity(item: PaidData[]) {
         currentOrder[0].paidQuantity + data.quantity ===
         currentOrder[0].quantity;
       const paidQuantity = currentOrder[0].paidQuantity + data.quantity;
-      const status = isPaid ? ORDERSTATUS.PAID : ORDERSTATUS.COMPLETE;
+      const status = isPaid ? OrderStatus.PAID : OrderStatus.COMPLETE;
 
       await prisma.order.updateMany({
         where: { itemId: data.itemId },
@@ -1009,19 +1014,20 @@ export async function setPaidWithQuantity(item: PaidData[]) {
 }
 
 export async function createPromotion(formData: FormData) {
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const discount_value = Number(formData.get("discount_amount"));
-  const discountType = formData.get("discount_type") as string;
-  const startDate = formData.get("start_date") as string;
-  const endDate = formData.get("end_date") as string;
-  const totalPrice = Number(formData.get("totalPrice"));
-  const menuQty = JSON.parse(formData.get("menuQty") as string);
-  const focMenu = JSON.parse(formData.get("focMenu") as string);
-  const image = formData.get("image");
-  const priority = Number(formData.get("priority"));
-  const group = formData.get("group") as string;
-  const conditions = formData.get("conditions") as string;
+  const data = Object.fromEntries(formData);
+  const name = data.name as string;
+  const description = data.description as string;
+  const discount_value = Number(data.discount_amount);
+  const discountType = data.discount_type as string;
+  const startDate = data.start_date as string;
+  const endDate = data.end_date as string;
+  const totalPrice = Number(data.totalPrice);
+  const menuQty = JSON.parse(data.menuQty as string);
+  const focMenu = JSON.parse(data.focMenu as string);
+  const image = data.image;
+  const priority = Number(data.priority);
+  const group = data.group as string;
+  const conditions = data.conditions as string;
 
   const isValid = Boolean(
     name && description && startDate && endDate && priority
@@ -1041,10 +1047,10 @@ export async function createPromotion(formData: FormData) {
     };
   const discount_type =
     discountType === "percentage"
-      ? DISCOUNT.PERCENTAGE
+      ? DiscountType.PERCENTAGE
       : discountType === "fixedValue"
-      ? DISCOUNT.FIXED_AMOUNT
-      : DISCOUNT.FOCMENU;
+      ? DiscountType.FIXED_AMOUNT
+      : DiscountType.FOCMENU;
 
   const start_date = new Date(startDate);
   const end_date = new Date(endDate);
@@ -1056,6 +1062,11 @@ export async function createPromotion(formData: FormData) {
       imageUrl = (await uploadImage(formData)) as string;
     }
     const location = await fetchSelectedLocation();
+    if (!location)
+      return {
+        message: "Location id is not provided.",
+        isSuccess: false,
+      };
     const promotion = await prisma.promotion.create({
       data: {
         name,
@@ -1066,7 +1077,7 @@ export async function createPromotion(formData: FormData) {
         end_date,
         conditions,
         totalPrice,
-        locationId: location?.id,
+        locationId: location.id,
         imageUrl,
         priority,
         group,
@@ -1118,20 +1129,21 @@ export async function createPromotion(formData: FormData) {
 }
 
 export async function updatePromotion(formData: FormData) {
-  const id = Number(formData.get("id"));
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const discount_value = Number(formData.get("discount_amount"));
-  const discountType = formData.get("discount_type") as string;
-  const startDate = formData.get("start_date") as string;
-  const endDate = formData.get("end_date") as string;
-  const menuQty = JSON.parse(formData.get("menuQty") as string);
-  const focMenu = JSON.parse(formData.get("focMenu") as string);
-  const conditions = formData.get("conditions") as string;
-  const priority = Number(formData.get("priority"));
-  const image = formData.get("image");
-  const group = formData.get("group") as string;
-  const totalPrice = Number(formData.get("totalPrice"));
+  const data = Object.fromEntries(formData);
+  const id = Number(data.id);
+  const name = data.name as string;
+  const description = data.description as string;
+  const discount_value = Number(data.discount_amount);
+  const discountType = data.discount_type as string;
+  const startDate = data.start_date as string;
+  const endDate = data.end_date as string;
+  const menuQty = JSON.parse(data.menuQty as string);
+  const focMenu = JSON.parse(data.focMenu as string);
+  const conditions = data.conditions as string;
+  const priority = Number(data.priority);
+  const image = data.image;
+  const group = data.group as string;
+  const totalPrice = Number(data.totalPrice);
 
   const isValid = Boolean(
     name && description && startDate && endDate && priority
@@ -1152,10 +1164,10 @@ export async function updatePromotion(formData: FormData) {
 
   const discount_type =
     discountType === "percentage"
-      ? DISCOUNT.PERCENTAGE
+      ? DiscountType.PERCENTAGE
       : discountType === "fixedValue"
-      ? DISCOUNT.FIXED_AMOUNT
-      : DISCOUNT.FOCMENU;
+      ? DiscountType.FIXED_AMOUNT
+      : DiscountType.FOCMENU;
 
   const start_date = new Date(startDate);
   const end_date = new Date(endDate);
@@ -1268,7 +1280,7 @@ export async function updatePromotion(formData: FormData) {
     await prisma.focCategory.deleteMany({
       where: { id: { in: focCategoryIds }, promotionId: id },
     });
-    if (discount_type === DISCOUNT.FOCMENU && focMenu && focMenu.length) {
+    if (discount_type === DiscountType.FOCMENU && focMenu && focMenu.length) {
       await Promise.all(
         focMenu.map(async (item: any) => {
           const focCategory = await prisma.focCategory.create({
@@ -1352,7 +1364,7 @@ export async function cancelOrder(formData: FormData) {
     await prisma.canceledOrder.create({ data: { itemId, reason } });
     await prisma.order.updateMany({
       where: { itemId },
-      data: { status: ORDERSTATUS.CANCELED },
+      data: { status: OrderStatus.CANCELED },
     });
     revalidatePath(`/backoffice/order`);
     return { message: "Canceled order successfully.", isSuccess: true };

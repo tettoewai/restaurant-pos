@@ -2,12 +2,17 @@ import {
   Promotion,
   PromotionMenu,
   PromotionUsage,
+  PurchaseOrder,
+  PurchaseOrderItem,
   Receipt,
+  Unit,
+  UnitCategory,
 } from "@prisma/client";
 import {
   fetchAddonCategoryWithIds,
   fetchMenuAddonCategoryWithMenuIds,
 } from "./app/lib/backoffice/data";
+import { POItemForm } from "./app/warehouse/purchase-order/new/page";
 import { weekday } from "./general";
 
 export const dateToString = ({
@@ -296,4 +301,147 @@ export function checkPromotionDuration({
     : promotionDays.length && timeDuration
     ? availablePromoDay && availablePromoTime
     : true;
+}
+
+export function roundToTwoDecimal(num: number): number {
+  return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
+export function convertUnit({
+  amount,
+  toUnit,
+}: {
+  amount: number;
+  toUnit: Unit;
+}): number {
+  // amount is in base unit (g, ml, or UNIT)
+  switch (toUnit) {
+    case Unit.KG:
+    case Unit.L:
+      return amount / 1000;
+    case Unit.VISS:
+      return amount / 1632.932532;
+    case Unit.LB:
+      return amount / 453.592;
+    case Unit.OZ:
+      return amount / 28.3495;
+    case Unit.GAL:
+      return amount / 3785.41;
+    case Unit.DOZ:
+      return amount / 12;
+    default:
+      return amount;
+  }
+}
+
+export function convertBaseUnit({
+  amount,
+  fromUnit,
+}: {
+  amount: number;
+  fromUnit: Unit;
+}): number {
+  // return amount in base unit (g, ml, or UNIT)
+  switch (fromUnit) {
+    case Unit.KG:
+    case Unit.L:
+      return amount * 1000;
+    case Unit.VISS:
+      return amount * 1632.932532;
+    case Unit.LB:
+      return amount * 453.592;
+    case Unit.OZ:
+      return amount * 28.3495;
+    case Unit.GAL:
+      return amount * 3785.41;
+    case Unit.DOZ:
+      return amount * 12;
+    default:
+      return amount;
+  }
+}
+
+export function captilize(s: string) {
+  return s[0].toUpperCase() + s.toLowerCase().slice(1);
+}
+
+export function validUnits(unitCategory: UnitCategory) {
+  if (unitCategory === UnitCategory.MASS) {
+    return ["G", "Kg", "Lb", "Oz", "Viss"];
+  } else if (unitCategory === UnitCategory.VOLUME) {
+    return ["Ml", "L", "Gal"];
+  } else if (unitCategory === UnitCategory.COUNT) {
+    return ["Doz", "Unit"];
+  } else {
+    return [""];
+  }
+}
+
+export function getPODataDiff(
+  original: PurchaseOrder,
+  update: { supplierId: number; warehouseId: number }
+) {
+  const diff: Record<string, any> = {};
+  if (
+    original.supplierId !== update.supplierId ||
+    original.warehouseId !== update.warehouseId
+  ) {
+    if (original.supplierId !== update.supplierId) {
+      diff["supplierId"] = {
+        old: original.supplierId,
+        new: update.supplierId,
+      };
+    }
+    if (original.warehouseId !== update.warehouseId) {
+      diff["warehouseId"] = {
+        old: original.warehouseId,
+        new: update.warehouseId,
+      };
+    }
+    return diff;
+  } else {
+    return undefined;
+  }
+}
+
+export function checkPOItemChange(
+  updateData: POItemForm[],
+  originalPOItem: PurchaseOrderItem[]
+) {
+  if (updateData.length !== originalPOItem.length) {
+    return true;
+  }
+  for (let x = 0; x < updateData.length; x++) {
+    if (
+      updateData[x].itemId !== originalPOItem[x].itemId ||
+      updateData[x].price !== originalPOItem[x].unitPrice ||
+      updateData[x].quantity !== originalPOItem[x].quantity
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+export function getPOItemDataDiff(
+  originalPOItem: PurchaseOrderItem[],
+  update: POItemForm[]
+) {
+  const updateData = update.map((item) => {
+    const baseQuantity = convertBaseUnit({
+      amount: item.quantity || 0,
+      fromUnit: item.unit.toUpperCase() as Unit,
+    });
+    return { ...item, quantity: Math.round(baseQuantity) };
+  });
+
+  const isChange = checkPOItemChange(updateData, originalPOItem);
+
+  if (isChange) {
+    const diff = { old: originalPOItem, new: updateData };
+    return diff;
+  } else {
+    return undefined;
+  }
 }

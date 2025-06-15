@@ -1,7 +1,7 @@
 "use server";
 import { CartItem } from "@/context/OrderContext";
 import { prisma } from "@/db";
-import { ORDERSTATUS, Table } from "@prisma/client";
+import { OrderStatus, Table } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import {
@@ -48,7 +48,7 @@ export const createOrder = async ({
       where: {
         tableId,
         status: {
-          notIn: [ORDERSTATUS.PAID],
+          notIn: [OrderStatus.PAID],
         },
         isArchived: false,
       },
@@ -75,7 +75,7 @@ export const createOrder = async ({
                 itemId: item.id,
                 quantity: item.quantity,
                 orderSeq,
-                status: ORDERSTATUS.PENDING,
+                status: OrderStatus.PENDING,
                 totalPrice,
                 tableId,
                 instruction: item.instruction,
@@ -93,7 +93,7 @@ export const createOrder = async ({
             itemId: item.id,
             quantity: item.quantity,
             orderSeq,
-            status: ORDERSTATUS.PENDING,
+            status: OrderStatus.PENDING,
             totalPrice,
             tableId,
             instruction: item.instruction,
@@ -238,7 +238,7 @@ export async function updateOrder(formData: FormData) {
     }
     const totalPrice = newPrice * quantity;
     await prisma.order.updateMany({
-      where: { tableId, status: ORDERSTATUS.PENDING },
+      where: { tableId, status: OrderStatus.PENDING },
       data: { totalPrice },
     });
     revalidatePath("/order");
@@ -348,7 +348,7 @@ export async function changeTable({
     if (order && order.length > 0)
       return { message: "This table is already taken.", isSuccess: false };
     await prisma.order.updateMany({
-      where: { tableId: prevTableId, status: { not: ORDERSTATUS.PAID } },
+      where: { tableId: prevTableId, status: { not: OrderStatus.PAID } },
       data: { tableId: tableId },
     });
     await prisma.notification.create({

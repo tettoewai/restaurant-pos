@@ -4,6 +4,13 @@ import {
   handleDisableLocationMenu,
   handleDisableLocationMenuCat,
 } from "@/app/lib/backoffice/action";
+import DeleteSupplierDialog from "@/app/warehouse/components/DeleteSupplierDialog";
+import DeleteWarehouseDialog from "@/app/warehouse/components/DeleteWarehouseDialog";
+import DeleteWarehouseItemDialog from "@/app/warehouse/components/DeleteWarehouseItemDialog";
+import EditMenuIngredient from "@/app/warehouse/components/EditMenuIngredient";
+import UpdateSupplierDialog from "@/app/warehouse/components/UpdateSupplierDialog";
+import UpdateWarehouseDialog from "@/app/warehouse/components/UpdateWarehouseDialog";
+import UpdateWarehouseItemDialog from "@/app/warehouse/components/UpdateWarehouseItemDialog";
 import { OrderData } from "@/general";
 import {
   addToast,
@@ -12,18 +19,25 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Spinner,
   Switch,
   useDisclosure,
 } from "@heroui/react";
 import {
+  Addon,
   AddonCategory,
+  AddonIngredient,
   DisabledLocationMenu,
   DisabledLocationMenuCategory,
-  Location,
   Menu,
   MenuCategory,
+  MenuCategoryMenu,
+  MenuItemIngredient,
   Promotion,
+  Supplier,
   Table,
+  Warehouse,
+  WarehouseItem,
 } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { IoMdMore } from "react-icons/io";
@@ -40,10 +54,15 @@ import DeleteTableDialog from "./DeleteTableDailog";
 import QrcodePrint from "./QrcodePrint";
 import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import UpdateAddonDialog from "./UpdateAddonDailog";
+import UpdateAddonIngredientDialog from "./UpdateAddonIngredient";
 import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
+import AddonIngredientPage, {
+  AddonIngredientDataType,
+} from "@/app/warehouse/addon-ingredient/page";
+import DeleteAddonIngredientDialog from "@/app/warehouse/components/DeleteAddonIngredient";
 
 interface Props {
   id: number;
@@ -56,11 +75,17 @@ interface Props {
     | "location"
     | "activeOrder"
     | "order"
-    | "promotion";
+    | "promotion"
+    | "warehouse"
+    | "warehouseItem"
+    | "ingredient"
+    | "supplier"
+    | "addonIngredient";
   categories?: MenuCategory[];
-  menu?: Menu[];
+  menus?: Menu[];
+  menu?: Menu;
+  addon?: Addon;
   addonCategory?: AddonCategory[];
-  location?: Location[];
   table?: Table;
   disableLocationMenuCat?: DisabledLocationMenuCategory[];
   disableLocationMenu?: DisabledLocationMenu[];
@@ -68,15 +93,25 @@ interface Props {
   promotion?: Promotion;
   tableId?: number;
   qrCodeData?: string;
+  warehouse?: Warehouse;
+  isNotDeletable?: Boolean;
+  warehouseItem?: WarehouseItem;
+  ingredients?: MenuItemIngredient[];
+  warehouseItems?: WarehouseItem[];
+  supplier?: Supplier;
+  addons?: Addon[];
+  addonIngredientData?: AddonIngredientDataType;
+  addonIngredients?: AddonIngredient[];
+  menuCategoryMenu?: MenuCategoryMenu[];
 }
 
 export default function MoreOptionButton({
   id,
   itemType,
   categories,
-  menu,
+  menus,
+  addon,
   addonCategory,
-  location,
   table,
   disableLocationMenuCat,
   disableLocationMenu,
@@ -84,6 +119,17 @@ export default function MoreOptionButton({
   tableId,
   promotion,
   qrCodeData,
+  warehouse,
+  warehouseItem,
+  isNotDeletable,
+  menu,
+  ingredients,
+  warehouseItems,
+  supplier,
+  addons,
+  addonIngredientData,
+  addonIngredients,
+  menuCategoryMenu
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -101,6 +147,7 @@ export default function MoreOptionButton({
   const iconClasses =
     "text-xl text-default-500 pointer-events-none flex-shrink-0";
   const [available, setAvailable] = useState<boolean>(false);
+  const [availableIsLoading, setAvailableIsLoading] = useState<boolean>(false);
   const [availableMenuCat, setAvailableMenuCat] = useState<boolean>(false);
   const isUpdateLocation =
     typeof window !== "undefined"
@@ -141,22 +188,31 @@ export default function MoreOptionButton({
     promotion,
   ]);
   const handleSwitchChange = async (e: boolean) => {
+    setAvailableIsLoading(true);
     if (itemType === "menu") {
-      const { isSuccess } = await handleDisableLocationMenu({
+      const { isSuccess, message } = await handleDisableLocationMenu({
         available: e,
         menuId: id,
       });
       if (isSuccess) {
         setAvailable(e);
       }
+      addToast({
+        title: message,
+        color: isSuccess ? "success" : "danger",
+      });
     } else if (itemType === "menuCategory") {
-      const { isSuccess } = await handleDisableLocationMenuCat({
+      const { isSuccess, message } = await handleDisableLocationMenuCat({
         available: e,
         menuCategoryId: id,
       });
       if (isSuccess) {
         setAvailableMenuCat(e);
       }
+      addToast({
+        title: message,
+        color: isSuccess ? "success" : "danger",
+      });
     }
     if (itemType === "promotion") {
       const { isSuccess, message } = await handleActivePromotion({ e, id });
@@ -168,6 +224,7 @@ export default function MoreOptionButton({
         setAvailable(e);
       }
     }
+    setAvailableIsLoading(false);
   };
   return (
     <>
@@ -192,10 +249,19 @@ export default function MoreOptionButton({
           >
             Edit
           </DropdownItem>
-          {itemType === "menu" ? (
+          {availableIsLoading ? (
             <DropdownItem
-              closeOnSelect={false}
+              key="none"
+              isReadOnly
+              className="p-0"
+              endContent={<Spinner variant="wave" />}
+            >
+              Loading...
+            </DropdownItem>
+          ) : itemType === "menu" ? (
+            <DropdownItem
               key="available"
+              isReadOnly
               endContent={
                 <Switch
                   isSelected={available}
@@ -210,8 +276,8 @@ export default function MoreOptionButton({
             </DropdownItem>
           ) : itemType === "menuCategory" ? (
             <DropdownItem
-              closeOnSelect={false}
               key="available"
+              isReadOnly
               endContent={
                 <Switch
                   isSelected={availableMenuCat}
@@ -234,8 +300,8 @@ export default function MoreOptionButton({
             </DropdownItem>
           ) : itemType === "promotion" ? (
             <DropdownItem
-              closeOnSelect={false}
               key="available"
+              isReadOnly
               endContent={
                 <Switch
                   isSelected={available}
@@ -255,7 +321,7 @@ export default function MoreOptionButton({
           )}
           <DropdownItem
             key="delete"
-            className="text-danger"
+            className={`text-danger ${isNotDeletable ? "hidden" : ""}`}
             color="danger"
             endContent={
               itemType === "activeOrder" ? (
@@ -278,6 +344,8 @@ export default function MoreOptionButton({
             isOpen={isUpdateOpen}
             onOpenChange={onUpdateOpenChange}
             onClose={onUpdateClose}
+            menu={menu}
+            menuCategoryMenu={menuCategoryMenu}
           />
           <DeleteMenuDialog
             id={id}
@@ -308,7 +376,7 @@ export default function MoreOptionButton({
             isOpen={isUpdateOpen}
             onOpenChange={onUpdateOpenChange}
             onClose={onUpdateClose}
-            menu={menu}
+            menu={menus}
           />
           <DeleteAddonCategoryDialog
             id={id}
@@ -346,7 +414,6 @@ export default function MoreOptionButton({
             onClose={onDeleteClose}
             onOpenChange={onDeleteOpenChange}
             isOpen={isDeleteOpen}
-            location={location}
           />
         </>
       ) : itemType === "table" ? (
@@ -378,6 +445,87 @@ export default function MoreOptionButton({
             onClose={onDeleteClose}
             onOpenChange={onDeleteOpenChange}
             isOpen={isDeleteOpen}
+          />
+        </>
+      ) : itemType === "warehouse" ? (
+        <>
+          <UpdateWarehouseDialog
+            id={id}
+            warehouse={warehouse}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+          />
+          <DeleteWarehouseDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+            warehouse={warehouse}
+          />
+        </>
+      ) : itemType === "warehouseItem" ? (
+        <>
+          <UpdateWarehouseItemDialog
+            id={id}
+            warehouseItem={warehouseItem}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+          />
+          <DeleteWarehouseItemDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+            warehouseItem={warehouseItem}
+          />
+        </>
+      ) : itemType === "ingredient" ? (
+        <EditMenuIngredient
+          id={id}
+          isOpen={isUpdateOpen}
+          onOpenChange={onUpdateOpenChange}
+          onClose={onUpdateClose}
+          menu={menu}
+          ingredients={ingredients}
+          warehouseItems={warehouseItems}
+        />
+      ) : itemType === "supplier" ? (
+        <>
+          <UpdateSupplierDialog
+            id={id}
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+            supplier={supplier}
+          />
+          <DeleteSupplierDialog
+            id={id}
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+            supplier={supplier}
+          />
+        </>
+      ) : itemType === "addonIngredient" ? (
+        <>
+          <UpdateAddonIngredientDialog
+            isOpen={isUpdateOpen}
+            onOpenChange={onUpdateOpenChange}
+            onClose={onUpdateClose}
+            addons={addons}
+            menus={menus}
+            warehouseItems={warehouseItems}
+            addonIngredientData={addonIngredientData}
+            addonIngredients={addonIngredients}
+          />
+          <DeleteAddonIngredientDialog
+            onClose={onDeleteClose}
+            onOpenChange={onDeleteOpenChange}
+            isOpen={isDeleteOpen}
+            menu={menu}
+            addon={addon}
           />
         </>
       ) : null}

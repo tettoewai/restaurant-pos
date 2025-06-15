@@ -1,13 +1,12 @@
-import clsx from "clsx";
+import Backdrop from "@/components/BackDrop";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import { IoMdHome } from "react-icons/io";
-import { TbArrowsExchange2 } from "react-icons/tb";
 import { AiFillInfoCircle } from "react-icons/ai";
+import { IoMdHome } from "react-icons/io";
 import { MdGroups2 } from "react-icons/md";
 import { RiCustomerService2Fill } from "react-icons/ri";
-import Backdrop from "@/components/BackDrop";
+import { TbArrowsExchange2 } from "react-icons/tb";
 
 interface Props {
   sideBarOpen: boolean;
@@ -51,10 +50,9 @@ export default function SidebarOrder({
     <>
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
-        className={clsx(
-          "h-[92%] w-0 rounded-md bg-background fixed z-30 top-16 mt-1 ml-0.5 overflow-hidden transition-width",
-          { "w-44": sideBarOpen }
-        )}
+        className={`h-[92%] w-0 rounded-md bg-background fixed z-30 top-16 mt-1 ml-0.5 overflow-hidden transition-width ${
+          sideBarOpen ? "w-44" : ""
+        }`}
       >
         <ul>
           {sideBarItem.map((item, index) => {
@@ -64,30 +62,23 @@ export default function SidebarOrder({
                 <Link
                   href={item.route}
                   onClick={() => setSideBarOpen(false)}
-                  className={clsx(
-                    "flex h-12 items-center rounded-lg overflow-hidden",
-                    {
-                      "pl-2": sideBarOpen,
-                      "justify-center border max-lg:border-none": !sideBarOpen,
-                      "border-red-700 border text-primary bg-gray-100 dark:bg-gray-800":
-                        isActive,
-                      border: !isActive,
-                    }
-                  )}
+                  className={`flex h-12 items-center rounded-lg overflow-hidden ${
+                    sideBarOpen
+                      ? "pl-2"
+                      : "justify-center border max-lg:border-none"
+                  } ${
+                    isActive
+                      ? "border-red-700 border text-primary bg-gray-100 dark:bg-gray-800"
+                      : "border"
+                  }`}
                 >
-                  <div
-                    className={clsx({
-                      "mr-1 text-2xl": sideBarOpen,
-                      "text-3xl": !sideBarOpen,
-                    })}
-                  >
+                  <div className={sideBarOpen ? "mr-1 text-2xl" : "text-3xl"}>
                     {item.icon}
                   </div>
                   <p
-                    className={clsx("transition-all", {
-                      flex: sideBarOpen,
-                      hidden: !sideBarOpen,
-                    })}
+                    className={`transition-all ${
+                      sideBarOpen ? "flex" : "hidden"
+                    }`}
                   >
                     {item.name}
                   </p>

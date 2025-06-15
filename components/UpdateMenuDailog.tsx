@@ -8,15 +8,18 @@ import {
 import {
   addToast,
   Button,
+  Form,
   Input,
+  menu,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
   Spinner,
 } from "@heroui/react";
-import { Menu, MenuCategory } from "@prisma/client";
+import { Menu, MenuCategory, MenuCategoryMenu } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import FileDropZone from "./FileDropZone";
@@ -28,6 +31,8 @@ interface Props {
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
+  menu?: Menu;
+  menuCategoryMenu?: MenuCategoryMenu[];
 }
 
 export default function UpdateMenuDialog({
@@ -36,37 +41,40 @@ export default function UpdateMenuDialog({
   isOpen,
   onOpenChange,
   onClose,
+  menu,
+  menuCategoryMenu,
 }: Props) {
-  const [prevData, setPrevData] = useState<Menu | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Set<string>>(
     new Set([])
   );
+  const [prevImage, setPrevImage] = useState<string>(menu?.assetUrl || "");
   const [menuImage, setMenuImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClose = () => {
+    setPrevImage("");
+    setMenuImage(null);
+    setSelectedCategory(new Set([]));
+    onClose();
+  };
+
   useEffect(() => {
-    if (isOpen) {
-      const getPrevMenu = async () => {
-        setIsLoading(true);
-        const [prevMenu, prevCategories] = await Promise.all([
-          fetchMenuWithId(id),
-          fetchMenuCategoryWithMenu(id),
-        ]);
-        setPrevData(prevMenu);
-        const prevCategoryIds = prevCategories.map((item) =>
-          String(item.menuCategoryId)
-        );
-        setSelectedCategory(new Set(prevCategoryIds));
-        setIsLoading(false);
-      };
-      getPrevMenu();
+    if (menu) {
+      setPrevImage(menu.assetUrl || "");
     }
-  }, [isOpen, id]);
+    if (menuCategoryMenu) {
+      const prevCategoryIds = menuCategoryMenu.map((item) =>
+        String(item.menuCategoryId)
+      );
+      setSelectedCategory(new Set(prevCategoryIds));
+    }
+  }, [isOpen, menu, menuCategoryMenu]);
+
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     formData.set("id", String(id));
@@ -76,7 +84,7 @@ export default function UpdateMenuDialog({
       JSON.parse(JSON.stringify(selectedCategoryArray))
     );
     menuImage && formData.append("image", menuImage);
-    if (!prevData?.assetUrl) deleteMenuImage(id);
+    if (!prevImage) deleteMenuImage(id);
     const { message, isSuccess } = await updateMenu({ formData });
     setIsSubmitting(false);
     addToast({
@@ -84,7 +92,7 @@ export default function UpdateMenuDialog({
       color: isSuccess ? "success" : "danger",
     });
     if (isSuccess) {
-      onClose();
+      handleClose();
     }
   };
 
@@ -94,6 +102,7 @@ export default function UpdateMenuDialog({
         backdrop="blur"
         isOpen={isOpen}
         onOpenChange={onOpenChange}
+        onClose={handleClose}
         className="bg-background"
         placement="center"
         isDismissable={false}
@@ -101,75 +110,64 @@ export default function UpdateMenuDialog({
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Update Menu</ModalHeader>
-          <form ref={formRef} onSubmit={handleSubmit}>
-            <ModalBody>
-              {isLoading ? (
-                <Spinner size="sm" />
+          <Form ref={formRef} onSubmit={handleSubmit}>
+            <ModalBody className="w-full">
+              <Input
+                name="name"
+                label="Name"
+                variant="bordered"
+                defaultValue={menu?.name}
+                required
+                isRequired
+              />
+              <NumberInput
+                name="price"
+                label="Price"
+                variant="bordered"
+                defaultValue={menu?.price}
+                required
+                isRequired
+              />
+              <MultipleSelector
+                selectedList={selectedCategory}
+                setSelectedList={setSelectedCategory}
+                list={menuCategory}
+                isRequired
+                itemType="menu"
+              />
+              <Input
+                name="description"
+                label="Description"
+                variant="bordered"
+                defaultValue={menu?.description || ""}
+              />
+              {prevImage ? (
+                <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
+                  <span className="truncate ...">{prevImage}</span>
+                  <IoMdClose
+                    className="text-primary size-6 mr-3 cursor-pointer"
+                    onClick={() => {
+                      setPrevImage("");
+                    }}
+                  />
+                </div>
+              ) : menuImage ? (
+                <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
+                  <span className="truncate ...">{menuImage.name}</span>
+                  <IoMdClose
+                    className="text-primary size-6x mr-3 cursor-pointer"
+                    onClick={() => setMenuImage(null)}
+                  />
+                </div>
               ) : (
-                <>
-                  <Input
-                    name="name"
-                    label="Name"
-                    variant="bordered"
-                    defaultValue={prevData?.name}
-                    required
-                    isRequired
-                  />
-                  <Input
-                    type="number"
-                    name="price"
-                    label="Price"
-                    variant="bordered"
-                    defaultValue={String(prevData?.price)}
-                    endContent={
-                      <span className="text-default-400 text-small">Kyats</span>
-                    }
-                    required
-                    isRequired
-                  />
-                  <MultipleSelector
-                    selectedList={selectedCategory}
-                    setSelectedList={setSelectedCategory}
-                    list={menuCategory}
-                    isRequired
-                    itemType="menu"
-                  />
-                  <Input
-                    name="description"
-                    label="Description"
-                    variant="bordered"
-                    defaultValue={prevData?.description || ""}
-                  />
-                  {prevData?.assetUrl ? (
-                    <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
-                      <span className="truncate ...">{prevData.assetUrl}</span>
-                      <IoMdClose
-                        className="text-primary size-6x mr-3 cursor-pointer"
-                        onClick={() => {
-                          setPrevData({ ...prevData, assetUrl: "" });
-                          setMenuImage(null);
-                        }}
-                      />
-                    </div>
-                  ) : menuImage ? (
-                    <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
-                      <span className="truncate ...">{menuImage.name}</span>
-                      <IoMdClose
-                        className="text-primary size-6x mr-3 cursor-pointer"
-                        onClick={() => setMenuImage(null)}
-                      />
-                    </div>
-                  ) : (
-                    <FileDropZone
-                      onDrop={(files) => {
-                        setMenuImage(files[0]);
-                      }}
-                    />
-                  )}
-                </>
+                <FileDropZone
+                  onDrop={(files) => {
+                    setMenuImage(files[0]);
+                  }}
+                />
               )}
             </ModalBody>
-            <ModalFooter>
+            <ModalFooter className="w-full">
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
                 onPress={onClose}
@@ -184,7 +182,7 @@ export default function UpdateMenuDialog({
                 {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
               </Button>
             </ModalFooter>
-          </form>
+          </Form>
         </ModalContent>
       </Modal>
     </div>

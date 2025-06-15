@@ -8,14 +8,12 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { Location } from "@prisma/client";
 
 interface Props {
   id: number;
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
-  location?: Location[];
 }
 
 export default function DeleteLocationDialog({
@@ -23,7 +21,6 @@ export default function DeleteLocationDialog({
   isOpen,
   onOpenChange,
   onClose,
-  location,
 }: Props) {
   const handleLocal = () => {
     const isUpdateLocation = localStorage.getItem("isUpdateLocation") || "";

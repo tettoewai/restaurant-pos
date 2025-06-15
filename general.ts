@@ -1,5 +1,5 @@
 "use client";
-import { $Enums, Addon, Menu, Order } from "@prisma/client";
+import { $Enums, Addon, Menu, Order, UnitCategory } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 export function useLocation(shouldFetch: boolean) {
@@ -40,7 +40,7 @@ export interface OrderData {
   addons?: Addon[];
   menu: Menu | undefined;
   quantity: number | undefined;
-  status: $Enums.ORDERSTATUS | undefined;
+  status: $Enums.OrderStatus | undefined;
   totalPrice: number | undefined;
   isFoc?: boolean;
   instruction: string | null | undefined;

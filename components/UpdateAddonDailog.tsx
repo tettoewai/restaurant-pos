@@ -4,12 +4,14 @@ import { fetchAddonWithId } from "@/app/lib/backoffice/data";
 import {
   addToast,
   Button,
+  Form,
   Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
   Spinner,
 } from "@heroui/react";
 import { Addon, AddonCategory } from "@prisma/client";
@@ -101,8 +103,8 @@ export default function UpdateAddonDialog({
             Update Addon
           </ModalHeader>
 
-          <form ref={formRef} onSubmit={handleSubmit}>
-            <ModalBody>
+          <Form ref={formRef} onSubmit={handleSubmit}>
+            <ModalBody className="w-full">
               {isLoading ? (
                 <Spinner size="sm" />
               ) : (
@@ -115,11 +117,11 @@ export default function UpdateAddonDialog({
                     required
                     isRequired
                   />
-                  <Input
+                  <NumberInput
                     name="price"
                     label="Price"
                     variant="bordered"
-                    defaultValue={String(prevData?.price)}
+                    defaultValue={prevData?.price}
                   />
                   <MultipleSelector
                     selectedList={selectedAddonCat}
@@ -132,7 +134,7 @@ export default function UpdateAddonDialog({
               )}
             </ModalBody>
 
-            <ModalFooter>
+            <ModalFooter className="w-full">
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
                 onPress={onClose}
@@ -147,7 +149,7 @@ export default function UpdateAddonDialog({
                 {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
               </Button>
             </ModalFooter>
-          </form>
+          </Form>
         </ModalContent>
       </Modal>
     </div>

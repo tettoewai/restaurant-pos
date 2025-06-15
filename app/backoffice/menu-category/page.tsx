@@ -15,10 +15,13 @@ export const metadata: Metadata = {
 };
 
 const MenuCateogory = async () => {
-  const [menuCategory, disableLocationMenuCategory] = await Promise.all([
-    fetchMenuCategory(),
-    fetchDisableLocationMenuCat(),
-  ]);
+  const menuCategory = await fetchMenuCategory();
+  if (!menuCategory || !menuCategory.length)
+    return (
+      <div>
+        <span>There is no menu-category.</span>
+      </div>
+    );
   return (
     <div>
       <div className="w-full flex justify-between items-center">

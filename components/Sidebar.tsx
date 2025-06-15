@@ -1,12 +1,11 @@
 "use client";
 
 import { Tooltip } from "@heroui/react";
-import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import { BiCategory, BiChart, BiFoodMenu } from "react-icons/bi";
-import { GiMeal } from "react-icons/gi";
+import { BiBox, BiCategory, BiChart, BiFoodMenu } from "react-icons/bi";
+import { GiGunStock, GiMeal, GiStoneBlock } from "react-icons/gi";
 import { IoFastFoodOutline, IoSettingsOutline } from "react-icons/io5";
 import { LuGitCompareArrows } from "react-icons/lu";
 
@@ -14,6 +13,7 @@ import { ImBullhorn } from "react-icons/im";
 import { IoIosPeople } from "react-icons/io";
 import {
   MdFoodBank,
+  MdOutlineFastfood,
   MdOutlineInventory,
   MdOutlineLocationOn,
   MdOutlineRestaurantMenu,
@@ -22,6 +22,9 @@ import {
 import { TbCategoryPlus, TbShoppingCartDollar } from "react-icons/tb";
 import Backdrop from "./BackDrop";
 import ShortcutButton from "./ShortCut";
+import { RiStockLine } from "react-icons/ri";
+import { FaGoodreads } from "react-icons/fa6";
+import { BsBox2 } from "react-icons/bs";
 
 interface Props {
   sideBarOpen: boolean;
@@ -58,12 +61,12 @@ export default function Sidebar({
     },
     { name: "Menu", route: "/backoffice/menu", icon: <BiFoodMenu /> },
     {
-      name: "Addon Category",
+      name: "Add-on Category",
       route: "/backoffice/addon-category",
       icon: <TbCategoryPlus />,
     },
     {
-      name: "Addon",
+      name: "Add-on",
       route: "/backoffice/addon",
       icon: <MdOutlineRestaurantMenu />,
     },
@@ -106,6 +109,11 @@ export default function Sidebar({
       icon: <GiMeal />,
     },
     {
+      name: "Add-on Ingredient",
+      route: "/warehouse/addon-ingredient",
+      icon: <MdOutlineFastfood />,
+    },
+    {
       name: "Supplier",
       route: "/warehouse/supplier",
       icon: <IoIosPeople />,
@@ -114,6 +122,11 @@ export default function Sidebar({
       name: "Purchase Order",
       route: "/warehouse/purchase-order",
       icon: <TbShoppingCartDollar />,
+    },
+    {
+      name: "Stock",
+      route: "/warehouse/stock",
+      icon: <BiBox />,
     },
     {
       name: "Stock Movement",
@@ -133,13 +146,10 @@ export default function Sidebar({
     <>
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
-        className={clsx(
-          "bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll text-medium scrollbar-hide 2xl:w-52",
-          {
-            "w-64": sideBarOpen,
-            "w-0 lg:w-16 2xl:w-52": !sideBarOpen,
-          }
-        )}
+        className={`bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll text-medium scrollbar-hide 2xl:w-56 
+          ${sideBarOpen ? "w-52 md:w-64" : ""} ${
+          !sideBarOpen ? "w-0 lg:w-16 2xl:w-52" : ""
+        }`}
       >
         <ul>
           {sideBarItem.map((item, index) => {
@@ -163,35 +173,28 @@ export default function Sidebar({
                     aria-label={item.name}
                     href={item.route}
                     onClick={() => setSideBarOpen(false)}
-                    className={clsx(
-                      "flex h-12 items-center rounded-lg overflow-hidden",
-                      {
-                        "pl-2": sideBarOpen,
-                        "justify-center border max-lg:border-none":
-                          !sideBarOpen,
-                        "border-red-700 border text-primary bg-gray-100 dark:bg-gray-800":
-                          isActive,
-                        border: !isActive,
-                      }
-                    )}
+                    className={`flex h-12 items-center rounded-lg overflow-hidden ${
+                      sideBarOpen
+                        ? "pl-2"
+                        : "justify-center border max-lg:border-none"
+                    } ${
+                      isActive
+                        ? "border-red-700 border text-primary bg-gray-100 dark:bg-gray-800"
+                        : "border"
+                    }`}
                   >
                     <div
-                      className={clsx("transition-size", {
-                        "mr-1 text-2xl": sideBarOpen,
-                        "text-3xl": !sideBarOpen,
-                      })}
+                      className={`transition-size ${
+                        sideBarOpen ? "mr-1 text-2xl" : "text-3xl"
+                      }`}
                       aria-hidden="true"
                     >
                       {item.icon}
                     </div>
                     <div
-                      className={clsx(
-                        "flex justify-between w-full items-center ml-1",
-                        {
-                          flex: sideBarOpen,
-                          "hidden 2xl:flex": !sideBarOpen,
-                        }
-                      )}
+                      className={`flex justify-between w-full items-center ml-1 ${
+                        sideBarOpen ? "flex" : "hidden 2xl:flex"
+                      }`}
                     >
                       <p>{item.name}</p>
                       <div>

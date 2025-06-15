@@ -11,11 +11,9 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-  Tooltip,
 } from "@heroui/react";
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { IoIosNotifications } from "react-icons/io";
 import useSWR, { mutate } from "swr";
 
@@ -113,7 +111,7 @@ export default function NotificationFeed() {
                     mutate("notification");
                     router.push(`/backoffice/order/${item.tableId}`);
                   }}
-                  className={clsx({ "opacity-50": item.isRead })}
+                  className={item.isRead ? "opacity-50" : ""}
                   textValue={item.message}
                 >
                   <div className="max-w-60 w-52">

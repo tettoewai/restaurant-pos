@@ -17,8 +17,7 @@ import MoreOptionButton from "@/components/MoreOptionButton";
 import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card, Link } from "@heroui/react";
-import { DISCOUNT, Order, ORDERSTATUS } from "@prisma/client";
-import clsx from "clsx";
+import { DiscountType, Order, OrderStatus } from "@prisma/client";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BsCartX } from "react-icons/bs";
@@ -148,8 +147,8 @@ function ActiveOrder() {
 
   const confirmedOrder = orderDataForTotalPrice.filter(
     (item) =>
-      item.status !== ORDERSTATUS.PENDING &&
-      item.status !== ORDERSTATUS.CANCELED
+      item.status !== OrderStatus.PENDING &&
+      item.status !== OrderStatus.CANCELED
   );
   const confirmedTotalPrice = getTotalOrderPrice({
     orders: confirmedOrder,
@@ -160,7 +159,7 @@ function ActiveOrder() {
       acc: Record<number, { menuId: number; quantity: number }>,
       { menu, quantity, status }
     ) => {
-      if (status === ORDERSTATUS.PENDING || status === ORDERSTATUS.CANCELED) {
+      if (status === OrderStatus.PENDING || status === OrderStatus.CANCELED) {
         return acc;
       }
       if (menu && !acc[menu.id]) {
@@ -198,10 +197,10 @@ function ActiveOrder() {
   );
   const discountedPrice = discountApplicablePromo.reduce(
     (acc: number, promo: any) => {
-      if (promo.discount_type === DISCOUNT.FIXED_AMOUNT) {
+      if (promo.discount_type === DiscountType.FIXED_AMOUNT) {
         return (acc += promo.discount_value);
       }
-      if (promo.discount_type === DISCOUNT.PERCENTAGE && totalPrice) {
+      if (promo.discount_type === DiscountType.PERCENTAGE && totalPrice) {
         const value = (totalPrice / 100) * promo.discount_value;
         return (acc += value);
       }
@@ -210,7 +209,7 @@ function ActiveOrder() {
   );
 
   const focPromotions = applicablePromotion.filter(
-    (item: any) => item.discount_type === DISCOUNT.FOCMENU
+    (item: any) => item.discount_type === DiscountType.FOCMENU
   );
 
   const focPromotionIds = focPromotions.map((item: any) => item.id);
@@ -295,12 +294,9 @@ function ActiveOrder() {
                       <MenuLoading />
                     ) : (
                       <Card
-                        className={clsx(
-                          "w-[11em] h-60 bg-background relative",
-                          {
-                            "border-primary border-1": item.isFoc,
-                          }
-                        )}
+                        className={`w-[11em] h-60 bg-background relative ${
+                          item.isFoc ? "border-primary border-1" : ""
+                        }`}
                       >
                         {item.isFoc ? (
                           <div className="w-12 h-12 -scale-x-100 absolute right-0 top-0">
@@ -364,15 +360,17 @@ function ActiveOrder() {
                           <div className="text-sm font-thin mt-1 flex justify-between items-center">
                             <span>Status :</span>
                             <span
-                              className={clsx(
-                                "font-bold flex items-center justify-center",
-                                {
-                                  "text-red-500": item.status === "PENDING",
-                                  "text-green-500": item.status === "COMPLETE",
-                                  "text-orange-500": item.status === "COOKING",
-                                  "text-gray-500": item.status === "CANCELED",
-                                }
-                              )}
+                              className={`font-bold flex items-center justify-center ${
+                                item.status === OrderStatus.PENDING
+                                  ? "text-red-500"
+                                  : item.status === OrderStatus.COMPLETE
+                                  ? "text-green-500"
+                                  : item.status === OrderStatus.COOKING
+                                  ? "text-orange-500"
+                                  : item.status === OrderStatus.CANCELED
+                                  ? "text-gray-500"
+                                  : ""
+                              }`}
                             >
                               {item.status}
                               {unseenCanceledOrder &&

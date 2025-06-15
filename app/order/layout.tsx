@@ -8,7 +8,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <OrderContextProvider>
       <div>
-        <div className="bg-gray-200 dark:bg-gray-950 min-h-dvh select-none">
+        <div className="bg-gray-200 dark:bg-gray-950 min-h-dvh">
           <Suspense>
             <TopBarOrder />
           </Suspense>

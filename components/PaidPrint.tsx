@@ -1,13 +1,12 @@
 "use client";
 import {
   fetchCompany,
-  fetchSelectedLocation,
+  fetchSelectedLocationData,
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import { dateToString } from "@/function";
 import { PaidData } from "@/general";
-import { baseStyles, Card, Input } from "@heroui/react";
-import { Addon, Menu } from "@prisma/client";
+import { Card } from "@heroui/react";
 import Image from "next/image";
 import { Dispatch, RefObject, SetStateAction } from "react";
 import useSWR from "swr";
@@ -39,7 +38,7 @@ function PaidPrint({
     fetchCompany().then((res) => res)
   );
   const { data: location } = useSWR("location", () =>
-    fetchSelectedLocation().then((res) => res)
+    fetchSelectedLocationData().then((res) => res)
   );
   const { data: table } = useSWR([tableId], () =>
     fetchTableWithId(tableId).then((res) => res)

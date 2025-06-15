@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/function";
 import {
   Card,
   Chip,
@@ -7,69 +8,66 @@ import {
 } from "@heroui/react";
 import {
   DisabledLocationMenu,
+  Menu,
   MenuCategory,
   MenuCategoryMenu,
 } from "@prisma/client";
-import clsx from "clsx";
 import Image from "next/image";
 import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
-import { formatCurrency } from "@/function";
 
 interface Props {
-  id: number;
-  name: string;
-  image?: string | null;
-  price?: number;
+  menu: Menu;
   categories: MenuCategory[];
   menuCategoryMenu: MenuCategoryMenu[];
   disableLocationMenu: DisabledLocationMenu[];
 }
 export default async function MenuCard({
-  id,
-  name,
-  image,
-  price,
+  menu,
   categories,
   menuCategoryMenu,
   disableLocationMenu,
 }: Props) {
   const validMenuCategoryIds = menuCategoryMenu
-    .filter((item) => item.menuId === id)
+    .filter((item) => item.menuId === menu.id)
     .map((categoryMenu) => categoryMenu.menuCategoryId);
   const menuCategory = categories.filter((item) =>
     validMenuCategoryIds.includes(item.id)
   );
-  const isExist = disableLocationMenu.find((item) => item.menuId === id);
+  const currentMenuCategoryMenu = menuCategoryMenu.filter(
+    (item) => item.menuId === item.id
+  );
+  const isExist = disableLocationMenu.find((item) => item.menuId === menu.id);
   return (
     <Card
-      className={clsx(
-        "bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden",
-        { "opacity-50": isExist }
-      )}
+      className={`p-4 bg-background mr-2 mb-2 flex flex-col items-center relative overflow-hidden ${
+        isExist ? "opacity-50" : ""
+      }`}
     >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <MoreOptionButton
-          id={id}
+          id={menu.id}
           itemType="menu"
           categories={categories}
           disableLocationMenu={disableLocationMenu}
+          menu={menu}
+          menuCategoryMenu={currentMenuCategoryMenu}
         />
       </div>
-      <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
+      <div className="flex justify-center items-center h-40 w-full overflow-hidden">
         <Image
-          src={image || "/default-menu.png"}
+          src={menu.assetUrl || "/default-menu.png"}
           alt="menu"
-          width={100}
-          height={100}
-          className="h-full w-full object-cover "
+          width={1080}
+          height={1080}
+          className="w-full h-40 object-cover rounded-md"
         />
       </div>
-      <span className="mt-2 text-wrap text-center">{name}</span>
-      {price && (
+      <span className="mt-2 text-wrap text-center">{menu.name}</span>
+      {menu.price && (
         <div className="flex items-center mt-1 mb-1">
           <MdAttachMoney className="text-xl text-primary" />
-          <p>{formatCurrency(price)}</p>
+          <p>{formatCurrency(menu.price)}</p>
         </div>
       )}
       <div className="space-x-1">

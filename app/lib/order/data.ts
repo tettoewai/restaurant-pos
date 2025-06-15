@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/db";
-import { ORDERSTATUS } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 import { unstable_noStore as noStore } from "next/cache";
 import {
   fetchAddonCategoryWithIds,
@@ -108,7 +108,7 @@ export async function fetchOrder(tableId: number) {
     const order = await prisma.order.findMany({
       where: {
         tableId,
-        status: { notIn: [ORDERSTATUS.PAID] },
+        status: { notIn: [OrderStatus.PAID] },
         isArchived: false,
       },
       orderBy: { createdAt: "asc" },
@@ -349,7 +349,7 @@ export async function fetchActiveOrderWithTableIds(tableIds: number[]) {
     return await prisma.order.findMany({
       where: {
         tableId: { in: tableIds },
-        status: { notIn: [ORDERSTATUS.PAID, ORDERSTATUS.CANCELED] },
+        status: { notIn: [OrderStatus.PAID, OrderStatus.CANCELED] },
       },
     });
   } catch (error) {

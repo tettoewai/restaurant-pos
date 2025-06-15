@@ -87,7 +87,7 @@ export default function Home() {
           Order
         </NextUiLink>
       </div>
-      <span>In usage, user must be scan qr code to place order</span>
+      <span>In usage, user must scan qr code to place order</span>
       <div className="mt-9 flex items-center justify-center flex-wrap">
         {functionItem.map((item, index) => (
           <div

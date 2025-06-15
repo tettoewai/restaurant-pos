@@ -20,12 +20,12 @@ import PromotionCard from "./components/PromotionCard";
 import { Metadata } from "next";
 import { baseMetadata } from "../lib/baseMetadata";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   ...baseMetadata,
   title: `${baseMetadata.title} | Order`,
 };
+
+export const revalidate = 60;
 
 const OrderPage = async ({
   searchParams,

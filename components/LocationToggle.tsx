@@ -6,42 +6,43 @@ import {
 } from "@/app/lib/backoffice/data";
 import {
   Button,
-  Divider,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
   Spinner,
 } from "@heroui/react";
-import { Location } from "@prisma/client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { MdLocationOn } from "react-icons/md";
+import useSWR from "swr";
 
 export default function Locationtoggle() {
-  const [selectedKey, setSelectedKey] = React.useState<Set<string>>(
-    new Set([])
-  );
-  const [location, setLocation] = useState<Location[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const isUpdateLocation =
     typeof window !== "undefined"
       ? localStorage.getItem("isUpdateLocation")
       : null;
-  useEffect(() => {
-    const getLocation = async () => {
-      setIsLoading(true);
-      const [locations, selectedLocation] = await Promise.all([
+
+  const { data, isLoading } = useSWR(
+    ["location", "selectedLocation"],
+    async () => {
+      const [location, selectedLocation] = await Promise.all([
         fetchLocation(),
         fetchSelectedLocation(),
       ]);
-      setLocation(locations);
-      setSelectedKey(new Set(String(selectedLocation?.id)));
-      setIsLoading(false);
-    };
+      return { location, selectedLocation };
+    }
+  );
 
-    getLocation();
-  }, [isUpdateLocation]);
+  const [selectedKey, setSelectedKey] = React.useState<Set<string>>(
+    new Set([])
+  );
+
+  useEffect(() => {
+    if (data && data.selectedLocation) {
+      setSelectedKey(new Set(String(data.selectedLocation.locationId)));
+    }
+  }, [data, data?.selectedLocation]);
 
   const handleSelectChange = async (e: any) => {
     setSelectedKey(e);
@@ -52,11 +53,19 @@ export default function Locationtoggle() {
     );
   };
 
-  const selectedLocationName = location.find(
-    (item) => item.id === Number(Array.from(selectedKey)[0])
-  )?.name;
+  if (
+    !data ||
+    !data.location ||
+    data.location.length < 2 ||
+    !data.selectedLocation
+  )
+    return null;
 
-  if (location.length < 2) return null;
+  const selectedLocationId = Number(Array.from(new Set(selectedKey))[0]);
+
+  const selectedLocationName = data?.location.find(
+    (item) => selectedLocationId === item.id
+  )?.name;
 
   return (
     <Dropdown className="bg-background">
@@ -82,7 +91,7 @@ export default function Locationtoggle() {
         selectedKeys={selectedKey}
         onSelectionChange={handleSelectChange}
       >
-        {location.map((item) => (
+        {data.location.map((item) => (
           <DropdownItem key={item.id.toString()}>{item.name}</DropdownItem>
         ))}
       </DropdownMenu>

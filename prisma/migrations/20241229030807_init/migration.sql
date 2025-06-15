@@ -1,8 +1,8 @@
 -- CreateEnum
-CREATE TYPE "ORDERSTATUS" AS ENUM ('PENDING', 'COOKING', 'COMPLETE', 'PAID', 'CANCELED');
+CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'COOKING', 'COMPLETE', 'PAID', 'CANCELED');
 
 -- CreateEnum
-CREATE TYPE "DISCOUNT" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT', 'FOCMENU');
+CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT', 'FOCMENU');
 
 -- CreateTable
 CREATE TABLE "Company" (
@@ -156,7 +156,7 @@ CREATE TABLE "Order" (
     "quantity" INTEGER NOT NULL,
     "paidQuantity" INTEGER NOT NULL DEFAULT 0,
     "orderSeq" TEXT NOT NULL,
-    "status" "ORDERSTATUS" NOT NULL,
+    "status" "OrderStatus" NOT NULL,
     "totalPrice" INTEGER NOT NULL,
     "tableId" INTEGER NOT NULL,
     "instruction" TEXT,
@@ -214,7 +214,7 @@ CREATE TABLE "Promotion" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "discount_type" "DISCOUNT" NOT NULL,
+    "discount_type" "DiscountType" NOT NULL,
     "discount_value" INTEGER,
     "totalPrice" INTEGER,
     "start_date" TIMESTAMP(3) NOT NULL,

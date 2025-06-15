@@ -31,7 +31,7 @@ export default function Cart() {
       addons,
     }));
 
-  const { data, error, isLoading } = useSWR("data", fetchMenuAddon);
+  const { data, isLoading } = useSWR("data", fetchMenuAddon);
 
   const router = useRouter();
 

@@ -36,8 +36,7 @@ import {
 import { Tab, Tabs } from "@heroui/tabs";
 import { addToast } from "@heroui/toast";
 import { User } from "@heroui/user";
-import { ORDERSTATUS } from "@prisma/client";
-import clsx from "clsx";
+import { OrderStatus } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { IoIosArrowDropdown } from "react-icons/io";
@@ -456,26 +455,31 @@ export default function App({ params }: { params: { id: string } }) {
                               >
                                 <DropdownItem
                                   key="pending"
-                                  className={clsx({
-                                    hidden: item.status === ORDERSTATUS.PENDING,
-                                  })}
+                                  className={
+                                    item.status === OrderStatus.PENDING
+                                      ? "hidden"
+                                      : "flex"
+                                  }
                                 >
                                   Pending
                                 </DropdownItem>
                                 <DropdownItem
                                   key="cooking"
-                                  className={clsx({
-                                    hidden: item.status === ORDERSTATUS.COOKING,
-                                  })}
+                                  className={
+                                    item.status === OrderStatus.COOKING
+                                      ? "hidden"
+                                      : "flex"
+                                  }
                                 >
                                   Cooking
                                 </DropdownItem>
                                 <DropdownItem
                                   key="complete"
-                                  className={clsx({
-                                    hidden:
-                                      item.status === ORDERSTATUS.COMPLETE,
-                                  })}
+                                  className={
+                                    item.status === OrderStatus.COMPLETE
+                                      ? "hidden"
+                                      : "flex"
+                                  }
                                 >
                                   Complete
                                 </DropdownItem>

@@ -9,7 +9,7 @@ import ListTable from "@/components/ListTable";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { convert12Hour, dateToString, formatCurrency } from "@/function";
 import { Chip, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
-import { DISCOUNT } from "@prisma/client";
+import { DiscountType } from "@prisma/client";
 import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
 
@@ -100,9 +100,10 @@ async function PromotionPage() {
         ) : null;
 
       const discountAmount =
-        item.discount_type === DISCOUNT.PERCENTAGE
+        item.discount_type === DiscountType.PERCENTAGE
           ? `${item.discount_value} %`
-          : item.discount_type === DISCOUNT.FIXED_AMOUNT && item.discount_value
+          : item.discount_type === DiscountType.FIXED_AMOUNT &&
+            item.discount_value
           ? formatCurrency(item.discount_value)
           : focMenuChip;
 
@@ -205,7 +206,7 @@ async function PromotionPage() {
           <MoreOptionButton
             itemType="promotion"
             id={item.id}
-            menu={menus}
+            menus={menus}
             promotion={item}
           />
         ),
