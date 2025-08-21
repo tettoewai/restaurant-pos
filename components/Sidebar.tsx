@@ -5,10 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import { BiBox, BiCategory, BiChart, BiFoodMenu } from "react-icons/bi";
-import { GiGunStock, GiMeal, GiStoneBlock } from "react-icons/gi";
+import { GiMeal } from "react-icons/gi";
 import { IoFastFoodOutline, IoSettingsOutline } from "react-icons/io5";
 import { LuGitCompareArrows } from "react-icons/lu";
 
+import { AiOutlineAudit } from "react-icons/ai";
 import { ImBullhorn } from "react-icons/im";
 import { IoIosPeople } from "react-icons/io";
 import {
@@ -22,9 +23,6 @@ import {
 import { TbCategoryPlus, TbShoppingCartDollar } from "react-icons/tb";
 import Backdrop from "./BackDrop";
 import ShortcutButton from "./ShortCut";
-import { RiStockLine } from "react-icons/ri";
-import { FaGoodreads } from "react-icons/fa6";
-import { BsBox2 } from "react-icons/bs";
 
 interface Props {
   sideBarOpen: boolean;
@@ -85,11 +83,6 @@ export default function Sidebar({
       route: "/backoffice/promotion",
       icon: <ImBullhorn />,
     },
-    {
-      name: "Setting",
-      route: "/backoffice/setting",
-      icon: <IoSettingsOutline />,
-    },
   ];
 
   const warehouseSidebar = [
@@ -135,9 +128,19 @@ export default function Sidebar({
     },
   ];
 
-  const sideBarItem: SideBarItem[] = isFromWarehouse
-    ? warehouseSidebar
-    : backOfficeSidebar;
+  const sideBarItem: SideBarItem[] = [
+    ...(isFromWarehouse ? warehouseSidebar : backOfficeSidebar),
+    {
+      name: "Audit Log",
+      route: "/warehouse/audit-log",
+      icon: <AiOutlineAudit />,
+    },
+    {
+      name: "Setting",
+      route: "/backoffice/setting",
+      icon: <IoSettingsOutline />,
+    },
+  ];
 
   const pathName = usePathname();
   const router = useRouter();
@@ -146,10 +149,12 @@ export default function Sidebar({
     <>
       {sideBarOpen && <Backdrop onClick={() => setSideBarOpen(false)} />}
       <nav
-        className={`bg-background h-full transition-all absolute z-30 top-16 mt-2 lg:mt-0 ml-1 left-1 lg:static rounded-md shadow-sm overflow-y-scroll text-medium scrollbar-hide 2xl:w-56 
-          ${sideBarOpen ? "w-52 md:w-64" : ""} ${
-          !sideBarOpen ? "w-0 lg:w-16 2xl:w-52" : ""
-        }`}
+        className={`bg-background shadow-sm rounded-md overflow-y-auto scrollbar-hide
+    transition-all
+    absolute top-[70px] bottom-0 left-1 z-30
+    lg:static lg:top-auto lg:bottom-auto lg:left-auto
+    ${sideBarOpen ? "w-52 md:w-64" : "w-0 lg:w-16 2xl:w-52"}
+  `}
       >
         <ul>
           {sideBarItem.map((item, index) => {

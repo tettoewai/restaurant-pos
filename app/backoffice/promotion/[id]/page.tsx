@@ -56,9 +56,11 @@ export default function App({ params }: { params: { id: string } }) {
   );
 
   const { data: focMenuAddonCatData } = useSWR(
-    id ? `focMenuAddonCat-${id}` : null,
+    id ? `focMenuAddonCat-${id}` : undefined,
     () =>
-      id ? fetchFocMenuAddonCategoryWithPromotionId(id) : Promise.resolve([])
+      id
+        ? fetchFocMenuAddonCategoryWithPromotionId(id)
+        : Promise.resolve(undefined)
   );
 
   const { data: menus = [] } = useSWR("menus", () => fetchMenu());

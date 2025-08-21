@@ -16,9 +16,10 @@ import { BiSearch } from "react-icons/bi";
 interface Props {
   rows: any;
   columns: any;
+  searchable?: boolean;
 }
 
-export default function ReceiptTable({ rows, columns }: Props) {
+export default function MyTable({ rows, columns, searchable }: Props) {
   const [filterValue, setFilterValue] = useState("");
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "key",
@@ -80,14 +81,18 @@ export default function ReceiptTable({ rows, columns }: Props) {
   return (
     <Table
       aria-label="list table"
-      className="rounded-lg bg-background mb-1 min-h-36  p-1 overflow-x-auto"
+      className="rounded-lg mb-1 p-1"
+      classNames={{
+        base: "max-h-[520px]",
+      }}
       removeWrapper
       isCompact
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
       fullWidth
-      topContent={topContent}
+      topContent={searchable ? topContent : null}
       topContentPlacement="outside"
+      isHeaderSticky
     >
       <TableHeader>
         {columns.map((column: any) => (
@@ -102,7 +107,7 @@ export default function ReceiptTable({ rows, columns }: Props) {
       </TableHeader>
       <TableBody items={sortedItems} emptyContent={"There is no item"}>
         {(item: any) => (
-          <TableRow key={item.key}>
+          <TableRow key={item.key} className="mb-2">
             {(columnKey) => (
               <TableCell align="center">
                 {getKeyValue(item, columnKey)}

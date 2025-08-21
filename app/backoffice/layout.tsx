@@ -30,7 +30,7 @@ const Layout = ({ children }: Props) => {
         </div>
 
         <div className="w-full h-[88%] 2xl:h-[90%] flex justify-center">
-          <div className="flex h-full w-full lg:max-w-screen-2xl">
+          <div className="flex h-full w-full lg:max-w-(--breakpoint-2xl)">
             <Sidebar
               sideBarOpen={sideBarOpen}
               setSideBarOpen={setSideBarOpen}

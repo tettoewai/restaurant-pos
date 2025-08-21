@@ -4,8 +4,6 @@ import ItemCard from "@/components/ItemCard";
 import { Suspense } from "react";
 import NewWarehouseItemDialog from "../components/NewWarehouseItemDialog";
 
-export const revalidate = 60;
-
 export default async function WarehouseItemPage() {
   const warehouseItem = await fetchWarehouseItem();
 

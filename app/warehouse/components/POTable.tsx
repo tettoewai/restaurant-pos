@@ -20,8 +20,6 @@ import {
 import {
   PurchaseOrder,
   PurchaseOrderItem,
-  Supplier,
-  Warehouse,
   WarehouseItem,
 } from "@prisma/client";
 import { motion } from "framer-motion";
@@ -50,7 +48,7 @@ export function POTable({
     warehouse: string | undefined;
     status: JSX.Element;
     createdAt: string;
-    action: JSX.Element;
+    action: JSX.Element | null;
   }[];
 }) {
   const router = useRouter();
@@ -146,6 +144,7 @@ export function POTable({
       onSortChange={setSortDescriptor}
       fullWidth
       topContent={topContent}
+      removeWrapper
     >
       <TableHeader>
         {columns.map((item) => (
@@ -163,11 +162,7 @@ export function POTable({
             <Fragment key={po.code}>
               <TableRow
                 onClick={() => toggleExpand(po.code)}
-                className={`cursor-pointer transition-colors ${
-                  expandedKeys.has(po.code)
-                    ? "bg-default-50"
-                    : "hover:bg-default-50"
-                }`}
+                className="cursor-pointer"
               >
                 <TableCell>
                   {po.code} {currentPO?.isEdited ? " (edited)" : ""}
@@ -186,7 +181,7 @@ export function POTable({
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="bg-default-50 px-4 pb-4 border-b-1"
+                      className="px-4 pb-4 border-b-1"
                     >
                       <p className="font-semibold">Purchase order items</p>
                       <div className="mt-4">

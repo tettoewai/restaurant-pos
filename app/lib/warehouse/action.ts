@@ -14,8 +14,6 @@ import {
   MovementSource,
   MovementType,
   POStatus,
-  PurchaseOrderItem,
-  StockMovement,
   Unit,
   UnitCategory,
 } from "@prisma/client";
@@ -28,6 +26,7 @@ import {
 } from "../backoffice/data";
 import {
   fetchPOItemWithPOId,
+  fetchPurchaseOrderWithId,
   fetchSelectedWarehouse,
   fetchSupplierWithId,
   fetchWarehouse,
@@ -164,7 +163,10 @@ export async function createWarehouseItem(formData: FormData) {
     data.unitCategory as string
   ).toUpperCase() as UnitCategory;
   const unit = (data.unit as string).toUpperCase() as Unit;
-  const threshold = Number(data.threshold);
+  const threshold = convertBaseUnit({
+    amount: Number(data.threshold),
+    fromUnit: unit,
+  });
   const isValid =
     name && unitCategory && unit && threshold && typeof threshold === "number";
   if (!isValid)
@@ -174,7 +176,7 @@ export async function createWarehouseItem(formData: FormData) {
     };
 
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     if (!company)
       return {
         message: "Something went wrong!",
@@ -205,7 +207,10 @@ export async function updateWarehouseItem(formData: FormData) {
     data.unitCategory as string
   ).toUpperCase() as UnitCategory;
   const unit = (data.unit as string).toUpperCase() as Unit;
-  const threshold = Number(data.threshold);
+  const threshold = convertBaseUnit({
+    amount: Number(data.threshold),
+    fromUnit: unit,
+  });
   const isValid =
     id &&
     name &&
@@ -280,7 +285,7 @@ export async function editMenuItemIngredient(
       errors.push("Each ingredient must have a unit.");
     }
     if (ingredient.quantity <= 0) {
-      errors.push("Ingredient qauantity must be grater than 0.");
+      errors.push("Ingredient quantity must be greater than 0.");
     }
     if (seenItems.has(ingredient.itemId)) {
       errors.push("Duplicate items are not allowed.");
@@ -338,7 +343,7 @@ export async function createSupplier(formData: FormData) {
       isSuccess: false,
     };
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     if (!company)
       return {
         message: "Something went wrong!",
@@ -435,7 +440,7 @@ export async function createAddonIngredient(formData: FormData) {
       errors.push("Each ingredient must have a unit.");
     }
     if (ingredient.extraQty <= 0) {
-      errors.push("Ingredient qauantity must be grater than 0.");
+      errors.push("Ingredient quantity must be greater than 0.");
     }
     if (seenItems.has(ingredient.itemId)) {
       errors.push("Duplicate items are not allowed.");
@@ -515,7 +520,7 @@ export async function updateAddonIngredient(formData: FormData) {
       errors.push("Each ingredient must have a unit.");
     }
     if (ingredient.extraQty <= 0) {
-      errors.push("Ingredient qauantity must be grater than 0.");
+      errors.push("Ingredient quantity must be greater than 0.");
     }
     if (seenItems.has(ingredient.itemId)) {
       errors.push("Duplicate items are not allowed.");
@@ -619,10 +624,10 @@ export async function createPurchaseOrder(formData: FormData) {
       errors.push("Each PO item must have a unit.");
     }
     if (poItem.quantity && poItem.quantity <= 0) {
-      errors.push("PO item qauantity must be grater than 0.");
+      errors.push("PO item quantity must be greater than 0.");
     }
     if (poItem.price && poItem.price <= 0) {
-      errors.push("PO item price must be grater than 0.");
+      errors.push("PO item price must be greater than 0.");
     }
     if (seenItems.has(poItem.itemId)) {
       errors.push("Duplicate items are not allowed.");
@@ -632,9 +637,9 @@ export async function createPurchaseOrder(formData: FormData) {
   if (errors.length > 0) {
     return { message: errors.join("\n"), isSuccess: false };
   }
-  const user = await fetchUser();
-  if (!user)
-    return { message: "Find error while getting user!", isSuccess: false };
+  const { company, user } = await fetchCompany();
+  if (!user || !company)
+    return { message: "Error occurred while fetching user!", isSuccess: false };
   try {
     const purchaseOrder = await prisma.purchaseOrder.create({
       data: {
@@ -669,6 +674,7 @@ export async function createPurchaseOrder(formData: FormData) {
     await prisma.auditLog.create({
       data: {
         userId: user.id,
+        companyId: company.id,
         action: "Create PO",
         targetType: "Purchase Order",
         targetId: purchaseOrder.id,
@@ -715,10 +721,10 @@ export async function updatePurchaseOrder(formData: FormData) {
       errors.push("Each PO item must have a unit.");
     }
     if (poItem.quantity && poItem.quantity <= 0) {
-      errors.push("PO item qauantity must be grater than 0.");
+      errors.push("PO item quantity must be greater than 0.");
     }
     if (poItem.price && poItem.price <= 0) {
-      errors.push("PO item price must be grater than 0.");
+      errors.push("PO item price must be greater than 0.");
     }
     if (seenItems.has(poItem.itemId)) {
       errors.push("Duplicate items are not allowed.");
@@ -728,9 +734,9 @@ export async function updatePurchaseOrder(formData: FormData) {
   if (errors.length > 0) {
     return { message: errors.join("\n"), isSuccess: false };
   }
-  const user = await fetchUser();
-  if (!user)
-    return { message: "Find error while getting user!", isSuccess: false };
+  const { company, user } = await fetchCompany();
+  if (!user || !company)
+    return { message: "Error occurred while fetching user!", isSuccess: false };
   try {
     const originalPOData = await prisma.purchaseOrder.findFirst({
       where: { id },
@@ -764,6 +770,7 @@ export async function updatePurchaseOrder(formData: FormData) {
       // for audit
       await prisma.auditLog.create({
         data: {
+          companyId: company.id,
           action: "POUpdate",
           userId: user.id,
           targetType: "Purchase Order",
@@ -807,6 +814,7 @@ export async function updatePurchaseOrder(formData: FormData) {
       await prisma.auditLog.create({
         data: {
           action: "POItemUpdate",
+          companyId: company.id,
           userId: user.id,
           targetType: "Purchase Order Item",
           targetId: id,
@@ -835,7 +843,6 @@ export async function updatePurchaseOrder(formData: FormData) {
     };
   }
 }
-
 export async function createStockMovement(
   stockMovement: {
     itemId: number;
@@ -855,9 +862,9 @@ export async function createStockMovement(
     };
 
   try {
-    await prisma.stockMovement.createMany({ data: stockMovement });
-    await prisma.$transaction(
-      stockMovement.map((item) => {
+    await prisma.$transaction([
+      prisma.stockMovement.createMany({ data: stockMovement }),
+      ...stockMovement.map((item) => {
         const quantity =
           item.type === MovementType.OUT ? -item.quantity : item.quantity;
         return prisma.warehouseStock.upsert({
@@ -874,8 +881,9 @@ export async function createStockMovement(
             quantity: item.quantity,
           },
         });
-      })
-    );
+      }),
+    ]);
+
     return {
       message: "Stock movement is finished successfully.",
       isSuccess: true,
@@ -894,8 +902,9 @@ export async function receivePurchaseOrder(poId: number) {
   try {
     const receivedPOItems = await fetchPOItemWithPOId(poId);
 
-    const user = await fetchUser();
-    if (!user) return { message: "User data not found!", isSuccess: false };
+    const { user, company } = await fetchCompany();
+    if (!user || !company)
+      return { message: "User data not found!", isSuccess: false };
     const updatedPO = await prisma.purchaseOrder.update({
       where: { id: poId },
       data: { status: "RECEIVED" },
@@ -903,8 +912,9 @@ export async function receivePurchaseOrder(poId: number) {
     const supplier = await fetchSupplierWithId(updatedPO.supplierId);
     await prisma.auditLog.create({
       data: {
-        action: "receive PO",
+        action: "RECEIVED_PO",
         userId: user.id,
+        companyId: company.id,
         targetType: "Purchase Order",
         targetId: poId,
       },
@@ -929,6 +939,173 @@ export async function receivePurchaseOrder(poId: number) {
     console.log(error);
     return {
       message: "Something went wrong while receiving PO!",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function cancelPurchaseOrder(poId: number) {
+  if (!poId)
+    return {
+      message: "PO id is not provided.",
+      isSuccess: false,
+    };
+  try {
+    await prisma.purchaseOrder.update({
+      where: { id: poId },
+      data: { status: POStatus.CANCELLED },
+    });
+    revalidatePath("/warehouse/purchase-order");
+    return { message: "Canceled PO Successfully.", isSuccess: true };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while canceling PO!",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function correctPurchaseOrder(formData: FormData) {
+  const data = Object.fromEntries(formData);
+  const id = Number(data.id);
+  const poItems = JSON.parse(data.poItems as string) as POItemForm[];
+  const errors: string[] = [];
+  const seenItems = new Set<number>();
+  if (!id) return { message: "Id is not provided!", isSuccess: false };
+
+  //poitem validation
+  for (const poItem of poItems) {
+    if (!poItem.unit || poItem.unit === "") {
+      errors.push("Each PO item must have a unit.");
+    }
+    if (poItem.quantity && poItem.quantity <= 0) {
+      errors.push("PO item quantity must be greater than 0.");
+    }
+    if (poItem.price && poItem.price <= 0) {
+      errors.push("PO item price must be greater than 0.");
+    }
+    if (seenItems.has(poItem.itemId)) {
+      errors.push("Duplicate items are not allowed.");
+    }
+    seenItems.add(poItem.itemId);
+  }
+  if (errors.length > 0) {
+    return { message: errors.join("\n"), isSuccess: false };
+  }
+  const { company, user } = await fetchCompany();
+  if (!user || !company)
+    return {
+      message: "Error occurred while fetching user ad company!",
+      isSuccess: false,
+    };
+
+  try {
+    const originalPOData = await fetchPurchaseOrderWithId(id);
+
+    if (!originalPOData)
+      return {
+        message: "Could not find purchase order items.",
+        isSuccess: false,
+      };
+    //prevent correction pending and cancelled po
+    if (originalPOData.status !== POStatus.RECEIVED)
+      return {
+        message: "Cannot correct non-received purchase order!",
+        isSuccess: false,
+      };
+
+    const originalPOItems = await prisma.purchaseOrderItem.findMany({
+      where: { purchaseOrderId: id },
+    });
+    if (!originalPOItems)
+      return { message: "Cannot find PO items", isSuccess: false };
+
+    // check po item difference
+    const poItemDataDiff = getPOItemDataDiff(originalPOItems, poItems);
+
+    if (poItemDataDiff) {
+      await prisma.purchaseOrder.update({
+        where: { id },
+        data: { isEdited: true },
+      });
+      await prisma.$transaction(
+        poItems.map((item) => {
+          const unit = item.unit?.toUpperCase() as Unit;
+          const baseQuantity = convertBaseUnit({
+            amount: item.quantity as number,
+            fromUnit: unit,
+          });
+          const basePrice = convertUnit({
+            amount: item.price || 0,
+            toUnit: unit,
+          });
+          return prisma.purchaseOrderItem.update({
+            where: {
+              itemId_purchaseOrderId: {
+                itemId: item.itemId,
+                purchaseOrderId: id,
+              },
+            },
+            data: { quantity: baseQuantity, unitPrice: basePrice },
+          });
+        })
+      );
+      // item transfer
+      const stockOutMovement = originalPOItems.map((item) => {
+        return {
+          itemId: item.itemId,
+          type: MovementType.OUT,
+          quantity: item.quantity || 0,
+          warehouseId: originalPOData.warehouseId,
+          source: MovementSource.PURCHASE_ORDER,
+          reference: `PO-${originalPOData.code}`,
+          note: `Correction of ${originalPOData.code}`,
+          parentId: originalPOData.id,
+        };
+      });
+      await createStockMovement(stockOutMovement);
+      const stockInMovement = poItems.map((item) => {
+        const unit = item.unit?.toUpperCase() as Unit;
+        const baseQuantity = convertBaseUnit({
+          amount: item.quantity as number,
+          fromUnit: unit,
+        });
+        return {
+          itemId: item.itemId,
+          type: MovementType.IN,
+          quantity: baseQuantity,
+          warehouseId: originalPOData.warehouseId,
+          source: MovementSource.PURCHASE_ORDER,
+          reference: `PO-${originalPOData.code}`,
+          note: `Correction of ${originalPOData.code}`,
+          parentId: originalPOData.id,
+        };
+      });
+      await createStockMovement(stockInMovement);
+      // audit correction
+      await prisma.auditLog.create({
+        data: {
+          companyId: company?.id,
+          userId: user.id,
+          action: "CORRECT_PO",
+          targetType: "PurchaseOrderItem",
+          targetId: id,
+          changes: poItemDataDiff,
+        },
+      });
+      revalidatePath("/warehouse/purchase-order");
+      return {
+        message: "Corrected PO items Successfully.",
+        isSuccess: true,
+      };
+    } else {
+      return { message: "Didn't find any changes", isSuccess: false };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      message: "Something went wrong while correcting the PO!",
       isSuccess: false,
     };
   }

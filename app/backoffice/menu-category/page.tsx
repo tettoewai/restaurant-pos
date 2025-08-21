@@ -1,13 +1,10 @@
-import {
-  fetchDisableLocationMenuCat,
-  fetchMenuCategory,
-} from "@/app/lib/backoffice/data";
+import { fetchMenuCategory } from "@/app/lib/backoffice/data";
+import { baseMetadata } from "@/app/lib/baseMetadata";
 import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";
-import { Suspense } from "react";
-import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   ...baseMetadata,

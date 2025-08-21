@@ -1,5 +1,6 @@
 import { candelOrder } from "@/app/lib/order/action";
 import {
+  addToast,
   Button,
   Modal,
   ModalBody,
@@ -8,7 +9,6 @@ import {
   ModalHeader,
   Spinner,
 } from "@heroui/react";
-import { addToast } from "@heroui/toast";
 import { useState } from "react";
 
 interface Props {

@@ -114,7 +114,7 @@ const QrcodePrint = ({
         onClick={() => handlePrint()}
       >
         Print qr{" "}
-        <BsQrCodeScan className="text-xl text-default-500 pointer-events-none flex-shrink-0" />
+        <BsQrCodeScan className="text-xl text-default-500 pointer-events-none shrink-0" />
       </button>
     </div>
   );

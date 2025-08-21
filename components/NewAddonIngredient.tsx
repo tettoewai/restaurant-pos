@@ -1,11 +1,13 @@
 "use client";
 
+import { fetchMenuAddonCategoryWithMenuId } from "@/app/lib/backoffice/data";
+import { createAddonIngredient } from "@/app/lib/warehouse/action";
+import { captilize, validUnits } from "@/function";
 import {
   addToast,
   Button,
   Checkbox,
   Form,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -14,27 +16,30 @@ import {
   NumberInput,
   Select,
   SelectItem,
+  SelectSection,
+  Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { Spinner } from "@heroui/spinner";
 import {
   Addon,
+  AddonCategory,
   AddonIngredient,
   Menu,
-  Unit,
+  MenuAddonCategory,
   WarehouseItem,
 } from "@prisma/client";
-import { useRef, useState } from "react";
-import ShortcutButton from "./ShortCut";
-import { captilize, validUnits } from "@/function";
+import { useState } from "react";
 import { RxCross1, RxPlus } from "react-icons/rx";
-import { createAddonIngredient } from "@/app/lib/warehouse/action";
+import ShortcutButton from "./ShortCut";
+import { prisma } from "@/db";
+import { fetchMenuAddonCategoryWithCategoryAndMenu } from "@/app/lib/warehouse/data";
 
 interface Props {
   addons: Addon[];
   warehouseItems: WarehouseItem[];
   menus: Menu[];
   addonIngredients: AddonIngredient[];
+  addonCategories: AddonCategory[];
 }
 
 export interface AddonIngredientForm {
@@ -44,11 +49,17 @@ export interface AddonIngredientForm {
   unit: string;
 }
 
+export interface AddonGroupWithCategoryType {
+  categoryName: string;
+  addons: Addon[];
+}
+
 export default function NewAddonIngredientDialog({
   addons,
   warehouseItems,
   menus,
   addonIngredients,
+  addonCategories,
 }: Props) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const closeModal = () => {
@@ -61,6 +72,15 @@ export default function NewAddonIngredientDialog({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAll, setIsAll] = useState(false);
+
+  const addonWithCategory: AddonGroupWithCategoryType[] = addonCategories.map(
+    (item) => {
+      const relatedAddons = addons.filter(
+        (addon) => addon.addonCategoryId === item.id
+      );
+      return { categoryName: item.name, addons: relatedAddons };
+    }
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -114,6 +134,22 @@ export default function NewAddonIngredientDialog({
     if (!menuValid || !addonId)
       return addToast({ title: "Missing required fields.", color: "danger" });
     setIsSubmitting(true);
+    const selectedAddon = addons.find((item) => item.id === addonId);
+    const relatedMenuAddonCategory = selectedAddon
+      ? await fetchMenuAddonCategoryWithCategoryAndMenu({
+          categoryId: selectedAddon.addonCategoryId,
+          menuId,
+        })
+      : null;
+    console.log("selectedAddon", selectedAddon);
+    console.log("relatedMenuAddonCategory", relatedMenuAddonCategory);
+    if (!relatedMenuAddonCategory) {
+      setIsSubmitting(false);
+      return addToast({
+        title: "This menu is not connected with related add-on category.",
+        color: "danger",
+      });
+    }
     const { isSuccess, message } = await createAddonIngredient(formData);
     setIsSubmitting(false);
     addToast({ title: message, color: isSuccess ? "success" : "danger" });
@@ -150,8 +186,12 @@ export default function NewAddonIngredientDialog({
             <ModalBody className="w-full">
               <div className="flex space-x-1">
                 <Select label="Select an addon" isRequired name="addon">
-                  {addons.map((item) => (
-                    <SelectItem key={item.id}>{item.name}</SelectItem>
+                  {addonWithCategory.map((item, index) => (
+                    <SelectSection key={index} title={item.categoryName}>
+                      {item.addons.map((addon) => (
+                        <SelectItem key={addon.id}>{addon.name}</SelectItem>
+                      ))}
+                    </SelectSection>
                   ))}
                 </Select>
                 <Select

@@ -11,9 +11,9 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { Spinner } from "@heroui/spinner";
 import { useRef, useState } from "react";
 
 export default function NewSupplierDailog() {

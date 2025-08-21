@@ -1,7 +1,7 @@
 "use client";
 
 import { updateWarehouseItem } from "@/app/lib/warehouse/action";
-import { captilize } from "@/function";
+import { captilize, convertUnit } from "@/function";
 import {
   addToast,
   Button,
@@ -167,7 +167,14 @@ export default function UpdateWarehouseItemDialog({
                 name="threshold"
                 label="Threshold"
                 variant="bordered"
-                defaultValue={warehouseItem?.threshold}
+                defaultValue={
+                  warehouseItem
+                    ? convertUnit({
+                        amount: warehouseItem?.threshold,
+                        toUnit: warehouseItem?.unit,
+                      })
+                    : 0
+                }
               />
             </ModalBody>
             <ModalFooter className="w-full">

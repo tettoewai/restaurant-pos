@@ -1,6 +1,11 @@
 export const revalidate = 3600;
 
-import { fetchAddon, fetchMenu } from "@/app/lib/backoffice/data";
+import {
+  fetchAddon,
+  fetchAddonCategory,
+  fetchMenu,
+  fetchMenuAddonCategory,
+} from "@/app/lib/backoffice/data";
 import {
   fetchAddonIngredients,
   fetchWarehouseItem,
@@ -25,10 +30,11 @@ export interface AddonIngredientDataType {
 export default async function AddonIngredientPage() {
   const addonIngredients = await fetchAddonIngredients();
 
-  const [addons, warehouseItems, menus] = await Promise.all([
+  const [addons, warehouseItems, menus, addonCategories] = await Promise.all([
     fetchAddon(),
     fetchWarehouseItem(),
     fetchMenu(),
+    fetchAddonCategory(),
   ]);
 
   // Assuming addonIngredients is your raw data with repeated menuId & addonId
@@ -74,6 +80,7 @@ export default async function AddonIngredientPage() {
           warehouseItems={warehouseItems}
           menus={menus}
           addonIngredients={addonIngredients}
+          addonCategories={addonCategories}
         />
       </div>
 

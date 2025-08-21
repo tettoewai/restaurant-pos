@@ -20,6 +20,9 @@ CREATE TYPE "UnitCategory" AS ENUM ('MASS', 'VOLUME', 'COUNT');
 -- CreateEnum
 CREATE TYPE "Unit" AS ENUM ('G', 'KG', 'ML', 'L', 'VISS', 'LB', 'OZ', 'GAL', 'DOZ', 'UNIT');
 
+-- CreateEnum
+CREATE TYPE "UserType" AS ENUM ('ADMIN', 'MANAGER', 'CASHIER', 'CHEF', 'WAREHOUSESTAFF', 'DEVELOPER');
+
 -- DropForeignKey
 ALTER TABLE "Promotion" DROP CONSTRAINT "Promotion_locationId_fkey";
 
@@ -173,6 +176,7 @@ CREATE TABLE "AddonIngredient" (
 -- CreateTable
 CREATE TABLE "AuditLog" (
     "id" SERIAL NOT NULL,
+    "companyId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
     "action" TEXT NOT NULL,
     "targetType" TEXT NOT NULL,
@@ -215,13 +219,22 @@ CREATE INDEX "Warehouse_locationId_idx" ON "Warehouse"("locationId");
 CREATE UNIQUE INDEX "PurchaseOrder_code_key" ON "PurchaseOrder"("code");
 
 -- CreateIndex
+CREATE INDEX "PurchaseOrderItem_itemId_purchaseOrderId_idx" ON "PurchaseOrderItem"("itemId", "purchaseOrderId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PurchaseOrderItem_itemId_purchaseOrderId_key" ON "PurchaseOrderItem"("itemId", "purchaseOrderId");
+
+-- CreateIndex
 CREATE INDEX "WarehouseItem_companyId_idx" ON "WarehouseItem"("companyId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "WarehouseStock_itemId_key" ON "WarehouseStock"("itemId");
+CREATE INDEX "WarehouseStock_itemId_idx" ON "WarehouseStock"("itemId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "WarehouseStock_itemId_warehouseId_key" ON "WarehouseStock"("itemId", "warehouseId");
+
+-- CreateIndex
+CREATE INDEX "AuditLog_companyId_idx" ON "AuditLog"("companyId");
 
 -- CreateIndex
 CREATE INDEX "Location_companyId_idx" ON "Location"("companyId");
@@ -309,6 +322,9 @@ ALTER TABLE "AddonIngredient" ADD CONSTRAINT "AddonIngredient_itemId_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PurchaseOrderHistory" ADD CONSTRAINT "PurchaseOrderHistory_purchaseOrderId_fkey" FOREIGN KEY ("purchaseOrderId") REFERENCES "PurchaseOrder"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

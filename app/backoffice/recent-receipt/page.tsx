@@ -4,7 +4,7 @@ import {
   fetchTableWithIds,
 } from "@/app/lib/backoffice/data";
 import ReceiptPrintButton from "@/components/ReceiptPrintButton";
-import ReceiptTable from "@/components/ReceiptTable";
+import MyTable from "@/components/MyTable";
 import { dateToString, formatCurrency } from "@/function";
 import { Link as NextUiLink } from "@heroui/react";
 import Link from "next/link";
@@ -16,7 +16,7 @@ export default async function recentReceiptPage() {
   const tableIds = receipts.length ? receipts.map((item) => item.tableId) : [];
   const tables = tableIds.length ? await fetchTableWithIds(tableIds) : [];
 
-  const company = await fetchCompany();
+  const { company } = await fetchCompany();
 
   const columns = [
     { key: "key", label: "No.", sortable: true },
@@ -97,7 +97,7 @@ export default async function recentReceiptPage() {
         <span className="text-sm text-gray-600">Review receipt and print.</span>
       </div>
       <div className="mt-2">
-        <ReceiptTable columns={columns} rows={rows} />
+        <MyTable columns={columns} rows={rows} searchable={true} />
       </div>
     </div>
   );

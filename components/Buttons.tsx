@@ -124,3 +124,32 @@ export function EditPOButton({ item }: { item: PurchaseOrder }) {
     </Button>
   );
 }
+
+export function NewPOButton() {
+  const router = useRouter();
+  return (
+    <Button
+      color="primary"
+      onPress={() => router.push("/warehouse/purchase-order/new")}
+    >
+      Create New PO
+    </Button>
+  );
+}
+
+export function CorrectionPOBtn({ item }: { item: PurchaseOrder }) {
+  const router = useRouter();
+  return (
+    <Button
+      onPress={() =>
+        router.push(`/warehouse/purchase-order/${item.id}/correction`)
+      }
+      size="sm"
+      color="warning"
+      variant="light"
+      className="text-warning"
+    >
+      Correction
+    </Button>
+  );
+}

@@ -5,15 +5,22 @@ import {
   PurchaseOrder,
   PurchaseOrderItem,
   Receipt,
+  StockMovement,
   Unit,
   UnitCategory,
 } from "@prisma/client";
 import {
+  fetchAddon,
   fetchAddonCategoryWithIds,
+  fetchMenu,
   fetchMenuAddonCategoryWithMenuIds,
 } from "./app/lib/backoffice/data";
 import { POItemForm } from "./app/warehouse/purchase-order/new/page";
 import { weekday } from "./general";
+import {
+  fetchAddonIngredients,
+  fetchMenuItemIngredientWithMenuIds,
+} from "./app/lib/warehouse/data";
 
 export const dateToString = ({
   date,
@@ -429,11 +436,16 @@ export function getPOItemDataDiff(
   update: POItemForm[]
 ) {
   const updateData = update.map((item) => {
+    const unit = item.unit.toUpperCase() as Unit;
     const baseQuantity = convertBaseUnit({
       amount: item.quantity || 0,
-      fromUnit: item.unit.toUpperCase() as Unit,
+      fromUnit: unit,
     });
-    return { ...item, quantity: Math.round(baseQuantity) };
+    const basePrice = convertUnit({
+      amount: item.price || 0,
+      toUnit: unit,
+    });
+    return { ...item, quantity: baseQuantity, price: basePrice };
   });
 
   const isChange = checkPOItemChange(updateData, originalPOItem);
@@ -444,4 +456,63 @@ export function getPOItemDataDiff(
   } else {
     return undefined;
   }
+}
+
+export function timeAgo(date: Date) {
+  const nowDate = new Date();
+  const seconds = Math.floor((nowDate.getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) {
+    return Math.floor(interval) + " yrs ago";
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    return Math.floor(interval) + " mth ago";
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    return Math.floor(interval) + " d ago";
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    return Math.floor(interval) + " hr ago";
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    return Math.floor(interval) + " mins ago";
+  }
+  return "Just now";
+}
+
+export async function checkWMS() {
+  // check set ingradients of menu and addon
+
+  const menus = await fetchMenu();
+  const menuIds = menus.map((item) => item.id);
+  const menuIngredients = await fetchMenuItemIngredientWithMenuIds(menuIds);
+  const menuIdsWithIngredient = menuIngredients
+    .map((item) => item.menuId)
+    .reduce((acc: number[], cur) => {
+      if (!acc.includes(cur)) {
+        acc.push(cur);
+      }
+      return acc;
+    }, []);
+
+  const notsetIngredientMenuIds = menuIds.filter(
+    (item) => !menuIdsWithIngredient.find((id) => item === id)
+  );
+  console.log("notsetIngredientMenuIds", notsetIngredientMenuIds);
+  // check set ingradients of addon
+  const addons = await fetchAddon();
+  const addonIds = addons.map((item) => item.id);
+  const addonIngredients = await fetchAddonIngredients();
+  const addonIdIngredients = addonIngredients.map((item) => item.addonId);
+  const menuIdIngredients = addonIngredients.map((item) => item.menuId);
+  console.log("addonId", addonIds);
+  console.log("addonIdIngredients", addonIdIngredients);
+  console.log("menuIdIngredients", menuIdIngredients);
+
+  
+  // check stock hit threshole
 }

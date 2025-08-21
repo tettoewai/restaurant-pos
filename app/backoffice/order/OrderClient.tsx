@@ -1,7 +1,9 @@
 "use client";
 
 import { fetchOrder, fetchTableWithIds } from "@/app/lib/backoffice/data";
-import { Card, Spinner } from "@heroui/react";
+import { timeAgo } from "@/function";
+import { Card, Chip, Spinner } from "@heroui/react";
+import { OrderStatus } from "@prisma/client";
 import Link from "next/link";
 import { MdTableBar } from "react-icons/md";
 import useSWR from "swr";
@@ -45,9 +47,19 @@ const OrderClient = () => {
         {order && order.length > 0 ? (
           uniqueTable.map((tableId) => {
             const validTable = tables?.find((item) => item.id === tableId);
+            const firstOrder = order
+              .filter((item) => item.status === OrderStatus.PENDING)
+              .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
             return (
               <Link key={tableId} href={`/backoffice/order/${tableId}`}>
-                <Card className="w-40 h-40 bg-background">
+                <Card className="w-40 h-40 bg-background p-2">
+                  <div className="w-full flex justify-end">
+                    {firstOrder ? (
+                      <Chip variant="faded">
+                        {timeAgo(firstOrder.createdAt)}
+                      </Chip>
+                    ) : null}
+                  </div>
                   <div className="w-full flex items-center justify-center h-3/5">
                     <MdTableBar className="size-10 mb-1 text-primary" />
                   </div>

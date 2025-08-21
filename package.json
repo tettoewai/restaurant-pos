@@ -11,7 +11,6 @@
   "dependencies": {
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
-    "@heroui/react": "^2.7.8",
     "@prisma/client": "^6.2.1",
     "@vercel/speed-insights": "^1.0.12",
     "chart.js": "^4.4.4",
@@ -34,17 +33,20 @@
     "screenfull": "^6.0.2",
     "sharp": "^0.34.2",
     "swr": "^2.2.5",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@heroui/react": "2.7.8"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20.14.10",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
+    "postcss": "^8.5.6",
     "prisma": "^6.2.1",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "tailwindcss": "^3.3.3"
   }
 }

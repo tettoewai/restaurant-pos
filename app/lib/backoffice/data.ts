@@ -18,6 +18,7 @@ interface Props {
 }
 
 export async function fetchUser() {
+  noStore();
   try {
     const session = await getServerSession();
     const email = session?.user?.email;
@@ -27,27 +28,38 @@ export async function fetchUser() {
     return user;
   } catch (error) {
     console.error("Database Error:", error);
-    // Avoid throwing inside build step
     return null;
   }
 }
 
-export async function fetchCompany() {
+export async function fetchUserWithIds(ids: number[]) {
+  noStore();
+  if (!ids.length) return undefined;
   try {
-    const user = await fetchUser();
-    const comapny = await prisma.company.findFirst({
-      where: { id: user?.companyId },
-    });
-    return comapny;
+    return prisma.user.findMany({ where: { id: { in: ids } } });
   } catch (error) {
     console.error("Database Error:", error);
-    return null;
+    throw new Error("Failed to fetch user data.");
+  }
+}
+
+export async function fetchCompany() {
+  noStore();
+  try {
+    const user = await fetchUser();
+    const company = await prisma.company.findFirst({
+      where: { id: user?.companyId },
+    });
+    return { company, user };
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch company data.");
   }
 }
 export async function fetchMenuCategory() {
   noStore();
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     const menuCategory = await prisma.menuCategory.findMany({
       where: { companyId: company?.id, isArchived: false },
       orderBy: { id: "asc" },
@@ -269,7 +281,7 @@ export async function fetchMenuCategoryWithMenu(id: number) {
 export async function fetchLocation() {
   noStore();
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     const location = await prisma.location.findMany({
       where: { companyId: company?.id, isArchived: false },
       orderBy: { id: "asc" },
@@ -347,6 +359,7 @@ export async function fetchTableWithIds(ids: number[]) {
 }
 
 export async function fetchSelectedLocation() {
+  noStore();
   try {
     const user = await fetchUser();
     return await prisma.selectedLocation.findFirst({
@@ -359,6 +372,7 @@ export async function fetchSelectedLocation() {
 }
 
 export async function fetchSelectedLocationData() {
+  noStore();
   try {
     const user = await fetchUser();
     const location = await prisma.selectedLocation.findFirst({
@@ -627,6 +641,18 @@ export async function fetchMenuAddonCategoryWithMenuIds(menuIds: number[]) {
   }
 }
 
+export async function fetchMenuAddonCategoryWithMenuId(menuId: number) {
+  noStore();
+  try {
+    return await prisma.menuAddonCategory.findFirst({
+      where: { menuId },
+    });
+  } catch (error) {
+    console.error("Database error for menuAddonCateogry", error);
+    throw new Error("Failed to fetch menuAddonCateogry with menuId.");
+  }
+}
+
 export async function fetchAddonWithAddonCatIds(addonCatIds: number[]) {
   noStore();
   try {
@@ -854,7 +880,7 @@ export async function createDefaultData({ email, name }: Props) {
       return {
         purchaseOrderId: item.id,
         itemId: warehouseItems[index].id,
-        quantity: 30,
+        quantity: 20,
         unitPrice: 500,
       };
     });

@@ -1,19 +1,17 @@
 "use client";
+import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import { ScrollShadow } from "@heroui/react";
 import { useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
 import { ReactNode, useState } from "react";
 import useSWR from "swr";
 import { createDefaultData, fetchUser } from "../lib/backoffice/data";
-import Sidebar from "@/components/Sidebar";
 
 interface Props {
   children: ReactNode;
 }
 const Layout = ({ children }: Props) => {
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
-  const { setTheme, resolvedTheme } = useTheme();
   const { data } = useSession();
   const userEmail = data?.user?.email;
   const userName = data?.user?.name;
@@ -29,7 +27,7 @@ const Layout = ({ children }: Props) => {
       </div>
 
       <div className="w-full h-[88%] 2xl:h-[90%] flex justify-center">
-        <div className="flex h-full w-full lg:max-w-screen-2xl">
+        <div className="flex h-full w-full lg:max-w-(--breakpoint-2xl)">
           <Sidebar
             sideBarOpen={sideBarOpen}
             setSideBarOpen={setSideBarOpen}

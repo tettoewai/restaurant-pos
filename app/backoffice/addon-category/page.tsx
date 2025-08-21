@@ -1,14 +1,10 @@
-import {
-  fetchAddonCategory,
-  fetchMenu,
-  fetchMenuAddonCategory,
-} from "@/app/lib/backoffice/data";
+import { fetchAddonCategory, fetchMenu } from "@/app/lib/backoffice/data";
+import { baseMetadata } from "@/app/lib/baseMetadata";
 import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import ItemCard from "@/components/ItemCard";
 import NewAddonCategoryDialog from "@/components/NewAddonCategoryDailog";
-import { Suspense } from "react";
-import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   ...baseMetadata,

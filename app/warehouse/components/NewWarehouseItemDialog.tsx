@@ -15,9 +15,9 @@ import {
   NumberInput,
   Select,
   SelectItem,
+  Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { Spinner } from "@heroui/spinner";
 import { Unit, UnitCategory } from "@prisma/client";
 import { useMemo, useState } from "react";
 

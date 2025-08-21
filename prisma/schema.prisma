@@ -21,6 +21,7 @@ model Company {
   Supplier       Supplier[]
   User           User[]
   WarehouseItem  WarehouseItem[]
+  AuditLog       AuditLog[]
 }
 
 model Location {
@@ -389,6 +390,9 @@ model PurchaseOrderItem {
   unitPrice       Float
   warehouseItem   WarehouseItem @relation(fields: [itemId], references: [id])
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+  @@unique([itemId, purchaseOrderId], name: "itemId_purchaseOrderId")
+  @@index([itemId, purchaseOrderId])
 }
 
 model WarehouseItem {
@@ -422,12 +426,14 @@ model DisabledWarehouseItem {
 
 model WarehouseStock {
   id            Int           @id @default(autoincrement())
-  itemId        Int           @unique
+  itemId        Int
   quantity      Int
   warehouseId   Int
   warehouseItem WarehouseItem @relation(fields: [itemId], references: [id])
   warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+
   @@unique([itemId, warehouseId], name: "itemId_warehouseId")
+  @@index([itemId])
 }
 
 model StockMovement {
@@ -468,6 +474,7 @@ model AddonIngredient {
 
 model AuditLog {
   id         Int      @id @default(autoincrement())
+  companyId  Int
   userId     Int
   action     String // e.g., "UPDATE_PO", "CREATE_PO", "DELETE_PO"
   targetType String // e.g., "PurchaseOrder"
@@ -475,6 +482,9 @@ model AuditLog {
   changes    Json? // e.g., { status: { old: "PENDING", new: "RECEIVED" } }
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id])
+  company    Company  @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
 }
 
 model PurchaseOrderHistory {
@@ -545,4 +555,13 @@ enum Unit {
   GAL
   DOZ
   UNIT
+}
+
+enum UserType {
+  ADMIN
+  MANAGER
+  CASHIER
+  CHEF
+  WAREHOUSESTAFF
+  DEVELOPER
 }

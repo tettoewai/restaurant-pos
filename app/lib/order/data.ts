@@ -190,7 +190,6 @@ export async function fetchPromotionUsage({
 
 export async function fetchOrderWithItemId(itemId: string) {
   noStore();
-  if (!itemId) return null;
   try {
     const order = await prisma.order.findMany({ where: { itemId } });
     return order;
@@ -201,7 +200,7 @@ export async function fetchOrderWithItemId(itemId: string) {
 }
 
 export async function fetchReceiptWithCode(receitpCode: string) {
-  if (!receitpCode) return;
+  noStore();
   try {
     return await prisma.receipt.findMany({
       where: { code: receitpCode },
@@ -213,10 +212,7 @@ export async function fetchReceiptWithCode(receitpCode: string) {
 }
 
 export async function fetchCompanyFromOrder(tableId: number) {
-  if (!tableId) {
-    console.error("Missing tableId.");
-    throw new Error("Missing tableId.");
-  }
+  noStore();
   try {
     const table = await fetchTableWithId(tableId);
     const location = table && (await fetchLocationWithId(table.locationId));
@@ -231,6 +227,7 @@ export async function fetchCompanyFromOrder(tableId: number) {
 }
 
 export async function fetchCanceledOrders(itemId: string[]) {
+  noStore();
   try {
     return await prisma.canceledOrder.findMany({
       where: { itemId: { in: itemId } },
@@ -242,6 +239,7 @@ export async function fetchCanceledOrders(itemId: string[]) {
 }
 
 export async function fetchCanceledOrder(itemId: string) {
+  noStore();
   try {
     return await prisma.canceledOrder.findFirst({
       where: { itemId },

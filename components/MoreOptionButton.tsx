@@ -80,7 +80,8 @@ interface Props {
     | "warehouseItem"
     | "ingredient"
     | "supplier"
-    | "addonIngredient";
+    | "addonIngredient"
+    | "warehouseStock";
   categories?: MenuCategory[];
   menus?: Menu[];
   menu?: Menu;
@@ -129,7 +130,7 @@ export default function MoreOptionButton({
   addons,
   addonIngredientData,
   addonIngredients,
-  menuCategoryMenu
+  menuCategoryMenu,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -145,7 +146,7 @@ export default function MoreOptionButton({
     onClose: onDeleteClose,
   } = useDisclosure();
   const iconClasses =
-    "text-xl text-default-500 pointer-events-none flex-shrink-0";
+    "text-xl text-default-500 pointer-events-none shrink-0";
   const [available, setAvailable] = useState<boolean>(false);
   const [availableIsLoading, setAvailableIsLoading] = useState<boolean>(false);
   const [availableMenuCat, setAvailableMenuCat] = useState<boolean>(false);

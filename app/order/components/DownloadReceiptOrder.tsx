@@ -269,7 +269,9 @@ export default function DownloadReceiptOrder() {
                 >
                   <div>#{validReceiptData.code}</div>
                   <div className="text-center border-b pb-4 mb-4">
-                    <h2 className="font-bold text-lg">{company?.name}</h2>
+                    <h2 className="font-bold text-lg">
+                      {company?.company?.name}
+                    </h2>
                     {location && (
                       <p className="text-gray-500">
                         {location.street +

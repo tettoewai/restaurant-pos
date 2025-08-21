@@ -4,7 +4,7 @@ import {
   fetchWarehouseItem,
 } from "@/app/lib/warehouse/data";
 import MoreOptionButton from "@/components/MoreOptionButton";
-import { captilize, convertUnit } from "@/function";
+import { captilize, convertUnit, roundToTwoDecimal } from "@/function";
 import { Card } from "@heroui/react";
 import Image from "next/image";
 import { CiWarning } from "react-icons/ci";
@@ -31,7 +31,7 @@ export default async function ItemIngredientPage() {
           Set menu ingredient for smart cook.
         </span>
       </div>
-      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-6 space-y-6 mt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2">
         {menus.map((menu) => {
           const currentIngredients = menuItemIngredient.filter(
             (item) => item.menuId === menu.id
@@ -75,10 +75,12 @@ export default async function ItemIngredientPage() {
                         <h2>{currentItem?.name}</h2>
                         <div className="flex space-x-1">
                           <h2>
-                            {convertUnit({
-                              amount: ingredient.quantity,
-                              toUnit: currentItem.unit,
-                            })}
+                            {roundToTwoDecimal(
+                              convertUnit({
+                                amount: ingredient.quantity,
+                                toUnit: currentItem.unit,
+                              })
+                            )}
                           </h2>
                           <span>{captilize(currentItem.unit)}</span>
                         </div>

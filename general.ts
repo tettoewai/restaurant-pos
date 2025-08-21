@@ -1,5 +1,5 @@
 "use client";
-import { $Enums, Addon, Menu, Order, UnitCategory } from "@prisma/client";
+import { $Enums, Addon, Menu, Order } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 export function useLocation(shouldFetch: boolean) {
@@ -44,6 +44,7 @@ export interface OrderData {
   totalPrice: number | undefined;
   isFoc?: boolean;
   instruction: string | null | undefined;
+  createdAt?: Date;
 }
 
 export interface PaidData extends OrderData {
@@ -91,6 +92,7 @@ export function formatOrder({
         totalPrice,
         instruction,
         isFoc,
+        createdAt: validItem?.createdAt,
       };
     } else {
       return {
@@ -101,6 +103,7 @@ export function formatOrder({
         totalPrice,
         instruction,
         isFoc,
+        createdAt: validItem?.createdAt,
       };
     }
   });

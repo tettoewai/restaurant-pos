@@ -42,7 +42,8 @@ interface Props {
     | "menuCategory"
     | "warehouse"
     | "warehouseItem"
-    | "supplier";
+    | "supplier"
+    | "warehouseStock";
   required?: boolean;
   price?: number;
   isActive?: boolean;
@@ -50,6 +51,7 @@ interface Props {
   isNotDeletable?: Boolean;
   warehouseItem?: WarehouseItem;
   supplier?: Supplier;
+  quantity?: string;
 }
 export default async function ItemCard({
   id,
@@ -63,6 +65,7 @@ export default async function ItemCard({
   isNotDeletable,
   warehouseItem,
   supplier,
+  quantity,
 }: Props) {
   const iconClasses = "size-9 mb-1 text-primary";
   const menuAddonCategory =
@@ -100,25 +103,30 @@ export default async function ItemCard({
 
   return (
     <Card
-      className={`bg-background px-6 py-2 flex flex-col items-center relative overflow-hidden justify-center m-1 ${
+      shadow="none"
+      radius="sm"
+      className={`bg-background px-6 py-2 flex flex-col items-center relative overflow-hidden justify-center m-1 min-w-32 ${
         isExist && itemType === "menuCategory" ? "opacity-70" : ""
       } ${isActive ? "border-primary border-1" : ""}`}
     >
-      <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
-        <MoreOptionButton
-          id={id}
-          itemType={itemType}
-          addonCategory={addonCategory}
-          menus={menus}
-          table={table}
-          disableLocationMenuCat={disableLocationMenuCategory}
-          qrCodeData={qrCodeData || ""}
-          warehouse={warehouse}
-          isNotDeletable={isNotDeletable}
-          warehouseItem={warehouseItem}
-          supplier={supplier}
-        />
-      </div>
+      {itemType !== "warehouseStock" ? (
+        <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
+          <MoreOptionButton
+            id={id}
+            itemType={itemType}
+            addonCategory={addonCategory}
+            menus={menus}
+            table={table}
+            disableLocationMenuCat={disableLocationMenuCategory}
+            qrCodeData={qrCodeData || ""}
+            warehouse={warehouse}
+            isNotDeletable={isNotDeletable}
+            warehouseItem={warehouseItem}
+            supplier={supplier}
+          />
+        </div>
+      ) : null}
+
       {itemType === "addonCategory" ? (
         <TbCategoryPlus className={iconClasses} />
       ) : itemType === "addon" ? (
@@ -158,20 +166,16 @@ export default async function ItemCard({
         {name}
         {required ? <span className="text-primary"> *</span> : null}
       </p>
+      {itemType === "warehouseStock" ? <p></p> : null}
       <div className="mt-4 w-full flex justify-center flex-wrap">
         {addonCategory && itemType !== "addonCategory" ? (
-          <Chip variant="bordered" className="m-[1px]" size="sm">
+          <Chip variant="bordered" className="m-px" size="sm">
             {addonCategory.find((item) => item.id === addonCategoryId)?.name}
           </Chip>
         ) : null}
         {validMenus &&
           validMenus.slice(0, 2).map((item) => (
-            <Chip
-              variant="bordered"
-              className="m-[1px]"
-              size="sm"
-              key={item.id}
-            >
+            <Chip variant="bordered" className="m-px" size="sm" key={item.id}>
               {item.name}
             </Chip>
           ))}
@@ -200,6 +204,7 @@ export default async function ItemCard({
           <p>{price}</p>
         </div>
       )}
+      {itemType === "warehouseStock" ? <p>{quantity}</p> : null}
     </Card>
   );
 }

@@ -64,7 +64,7 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
           </div>
         </div>
         <div className="flex justify-between space-x-2 items-center">
-          <h1 className="truncate">{data?.name}</h1>
+          <h1 className="truncate">{data?.company?.name}</h1>
           <LocationToggle />
         </div>
 

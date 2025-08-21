@@ -5,12 +5,13 @@ import {
   fetchWarehouseItemWithIds,
   fetchWarehousesWithIds,
 } from "@/app/lib/warehouse/data";
-import { EditPOButton } from "@/components/Buttons";
+import { CorrectionPOBtn, EditPOButton } from "@/components/Buttons";
 import { dateToString } from "@/function";
 import { Button } from "@heroui/react";
 import { MdDelete } from "react-icons/md";
 import POStatusToggle from "../components/POStatusToggle";
 import { POTable } from "../components/POTable";
+import { POStatus } from "@prisma/client";
 
 export default async function PurchaseOrderPage() {
   const purchaseOrders = await fetchPurchaseOrder();
@@ -51,25 +52,16 @@ export default async function PurchaseOrderPage() {
       ),
       createdAt: dateToString({ date: po.createdAt, type: "DMY" }),
       action:
-        po.status === "RECEIVED" ? (
-          <div>
-            <Button
-              size="sm"
-              color="warning"
-              variant="light"
-              className="text-warning"
-            >
-              Correction
-            </Button>
-          </div>
-        ) : (
+        po.status === POStatus.RECEIVED ? (
+          <CorrectionPOBtn item={po} />
+        ) : po.status === POStatus.PENDING ? (
           <div className="space-x-2">
             <EditPOButton item={po} />
             <Button isIconOnly variant="light" color="danger">
               <MdDelete className="size-5" />
             </Button>
           </div>
-        ),
+        ) : null,
     };
   });
 

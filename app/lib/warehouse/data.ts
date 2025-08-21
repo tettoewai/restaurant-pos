@@ -5,7 +5,6 @@ import { unstable_noStore as noStore } from "next/cache";
 import {
   fetchAddon,
   fetchCompany,
-  fetchMenu,
   fetchSelectedLocation,
   fetchUser,
 } from "../backoffice/data";
@@ -43,9 +42,8 @@ export async function fetchSelectedWarehouse() {
   noStore();
   try {
     const user = await fetchUser();
-    if (!user) return null;
     return await prisma.selectedWarehouse.findFirst({
-      where: { userId: user.id },
+      where: { userId: user?.id },
     });
   } catch (error) {
     console.error("Database Error:", error);
@@ -56,10 +54,9 @@ export async function fetchSelectedWarehouse() {
 export async function fetchWarehouseItem() {
   noStore();
   try {
-    const company = await fetchCompany();
-    if (!company) return null;
+    const { company } = await fetchCompany();
     return await prisma.warehouseItem.findMany({
-      where: { companyId: company.id, isArchived: false },
+      where: { companyId: company?.id, isArchived: false },
       orderBy: { id: "desc" },
     });
   } catch (error) {
@@ -93,7 +90,7 @@ export async function fetchWarehouseItemWithIds(ids: number[]) {
 export async function fetchSupplier() {
   noStore();
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     if (!company) return [];
     return await prisma.supplier.findMany({
       where: { companyId: company.id, isArchived: false },
@@ -147,7 +144,7 @@ export async function fetchPurchaseOrder() {
     const warehouseId = warehouse.map((item) => item.id);
     return await prisma.purchaseOrder.findMany({
       where: { warehouseId: { in: warehouseId } },
-      orderBy: { createdAt: "desc" },
+      orderBy: { id: "desc" },
     });
   } catch (error) {
     console.error("Database Error:", error);
@@ -196,5 +193,67 @@ export async function fetchPOItemWithPOId(poId: number) {
   } catch (error) {
     console.error("Database Error:", error);
     return [];
+  }
+}
+
+export async function fetchWarehouseStock() {
+  noStore();
+  try {
+    const selectedWarehouse = await fetchSelectedWarehouse();
+    return await prisma.warehouseStock.findMany({
+      where: { warehouseId: selectedWarehouse?.warehouseId },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch warehouse stock data.");
+  }
+}
+
+export async function fetchStockMovement() {
+  noStore();
+  try {
+    const warehouseItem = await fetchWarehouseItem();
+    const itemIds = warehouseItem.map((item) => item.id);
+
+    return await prisma.stockMovement.findMany({
+      where: { itemId: { in: itemIds } },
+      orderBy: { id: "desc" },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch stock movement data.");
+  }
+}
+
+export async function fetchAuditLog() {
+  noStore();
+  try {
+    const { company } = await fetchCompany();
+    return await prisma.auditLog.findMany({
+      where: { companyId: company?.id },
+      orderBy: { id: "asc" },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch audit log data.");
+  }
+}
+
+export async function fetchMenuAddonCategoryWithCategoryAndMenu({
+  categoryId,
+  menuId,
+}: {
+  categoryId: number;
+  menuId: number;
+}) {
+  noStore();
+  if (!categoryId || !menuId) return null;
+  try {
+    return await prisma.menuAddonCategory.findFirst({
+      where: { addonCategoryId: categoryId, menuId },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch Add-on Cateogry data.");
   }
 }

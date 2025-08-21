@@ -38,7 +38,7 @@ const OrderPage = async ({
   const table = await fetchTableWithId(tableId);
   const isValid = table && !table.isArchived;
   if (!isValid) return null;
-  const [company, menuCategory, menuCategoryMenu, menuOrder, promotions] =
+  const [{ company }, menuCategory, menuCategoryMenu, menuOrder, promotions] =
     await Promise.all([
       fetchCompany(),
       fetchMenuCategoryOrder(tableId),

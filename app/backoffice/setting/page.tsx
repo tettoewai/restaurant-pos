@@ -8,6 +8,8 @@ import { IoIosArrowForward } from "react-icons/io";
 import { VscAccount } from "react-icons/vsc";
 import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
+import { BsHouseCheck } from "react-icons/bs";
+import CheckWMSDialog from "@/components/CheckWMSDialog";
 
 export const metadata: Metadata = {
   ...baseMetadata,
@@ -37,6 +39,13 @@ function page() {
             <IoIosArrowForward className="size-6 " />
           </Card>
         </NextUiLink>
+        <Card className={itemClass} fullWidth>
+          <div className="flex items-center">
+            <BsHouseCheck className=" size-6 mr-2" />
+            <span>Warehouse Management System</span>
+          </div>
+          <CheckWMSDialog />
+        </Card>
         <Card className={itemClass}>
           <div className="flex items-center">
             <BsBuildingGear className=" size-6 mr-2" />

@@ -31,7 +31,7 @@ export default function UpdateCompanyDialog() {
     if (isOpen) {
       setIsLoading(true);
       const getCompany = async () => {
-        const company = await fetchCompany();
+        const { company } = await fetchCompany();
         setPrevData(company);
         setIsLoading(false);
       };

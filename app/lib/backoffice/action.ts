@@ -42,7 +42,7 @@ export async function updateCompany(formData: FormData) {
       isSuccess: false,
     };
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     await prisma.company.update({
       where: { id: company?.id },
       data: { name, street, township, city },
@@ -100,7 +100,7 @@ export async function createMenu({ formData }: Props) {
 
 export async function createMenuCategory(formData: FormData) {
   const name = formData.get("name") as string;
-  const company = await fetchCompany();
+  const { company } = await fetchCompany();
   const isValid = company && name;
   if (!isValid)
     return {
@@ -440,7 +440,7 @@ export async function createLocation(formData: FormData) {
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
-    const company = await fetchCompany();
+    const { company } = await fetchCompany();
     company &&
       (await prisma.location.create({
         data: {

@@ -14,28 +14,29 @@ import CancelOrderBODialog from "@/components/CancelOrderBODialog";
 import PaidAndPrintDialog from "@/components/PaidAndPrintDialog";
 import QuantityDialog from "@/components/QuantityDialog";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
-import { formatCurrency } from "@/function";
+import { formatCurrency, timeAgo } from "@/function";
 import { formatOrder, getTotalOrderPrice, OrderData } from "@/general";
-import { Badge } from "@heroui/badge";
-import { Button } from "@heroui/button";
 import {
+  addToast,
+  Badge,
+  Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@heroui/dropdown";
-import { Spinner, useDisclosure } from "@heroui/react";
-import {
+  Spinner,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-} from "@heroui/table";
-import { Tab, Tabs } from "@heroui/tabs";
-import { addToast } from "@heroui/toast";
-import { User } from "@heroui/user";
+  Tabs,
+  useDisclosure,
+  User,
+} from "@heroui/react";
+
 import { OrderStatus } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -101,7 +102,7 @@ export default function App({ params }: { params: { id: string } }) {
     ? data.map((item) => item.addonId).filter((addon) => addon !== null)
     : [];
   const { data: addons, isLoading: addonIsLoading } = useSWR(
-    addonIds && addonIds?.length > 0 ? [addonIds] : null,
+    addonIds && addonIds?.length > 0 ? ["addons", addonIds] : null,
     () => fetchAddonWithIds(addonIds).then((res) => res)
   );
 
@@ -363,6 +364,7 @@ export default function App({ params }: { params: { id: string } }) {
                     <TableColumn>Addon</TableColumn>
                     <TableColumn>Quantity</TableColumn>
                     <TableColumn align="center">Status</TableColumn>
+                    <TableColumn align="center">Time</TableColumn>
                   </TableHeader>
                   <TableBody emptyContent="There is no order yet">
                     {filteredUnpaidOrders.map((item, index) => {
@@ -438,8 +440,10 @@ export default function App({ params }: { params: { id: string } }) {
                                 onAction={async (e: any) => {
                                   const status = String(e);
                                   setItemId(item.itemId);
-                                  if (status === "paid") {
-                                    if (item.status !== "COMPLETE") return;
+                                  if (
+                                    status === "paid" &&
+                                    item.status === "COMPLETE"
+                                  ) {
                                     if (item.quantity && item.quantity > 1) {
                                       setPrevQuantity(item.quantity);
                                       setQuantityDialogData(item);
@@ -455,18 +459,16 @@ export default function App({ params }: { params: { id: string } }) {
                               >
                                 <DropdownItem
                                   key="pending"
-                                  className={
-                                    item.status === OrderStatus.PENDING
-                                      ? "hidden"
-                                      : "flex"
-                                  }
+                                  isReadOnly
+                                  className="hidden"
                                 >
                                   Pending
                                 </DropdownItem>
                                 <DropdownItem
                                   key="cooking"
                                   className={
-                                    item.status === OrderStatus.COOKING
+                                    item.status === OrderStatus.COOKING ||
+                                    item.status === OrderStatus.COMPLETE
                                       ? "hidden"
                                       : "flex"
                                   }
@@ -476,7 +478,8 @@ export default function App({ params }: { params: { id: string } }) {
                                 <DropdownItem
                                   key="complete"
                                   className={
-                                    item.status === OrderStatus.COMPLETE
+                                    item.status === OrderStatus.COMPLETE ||
+                                    item.status === OrderStatus.PENDING
                                       ? "hidden"
                                       : "flex"
                                   }
@@ -501,6 +504,9 @@ export default function App({ params }: { params: { id: string } }) {
                                 )}
                               </DropdownMenu>
                             </Dropdown>
+                          </TableCell>
+                          <TableCell>
+                            {item.createdAt ? timeAgo(item.createdAt): "--"}
                           </TableCell>
                         </TableRow>
                       );

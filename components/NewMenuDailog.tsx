@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
+  Spinner,
   useDisclosure,
 } from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
@@ -19,7 +20,6 @@ import { useRef, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
-import { Spinner } from "@heroui/spinner";
 import ShortcutButton from "./ShortCut";
 
 interface Props {

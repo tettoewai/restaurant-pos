@@ -74,7 +74,7 @@ export default function PromotionCard({
                       />
                     )}
                   </div>
-                  <CardFooter className="flex flex-col items-start before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-md bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+                  <CardFooter className="flex flex-col items-start before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-md bottom-1 w-[calc(100%-8px)] shadow-small ml-1 z-10">
                     <h1 className="text-lg font-bold stroke-white stroke-2">
                       {item.name}
                     </h1>

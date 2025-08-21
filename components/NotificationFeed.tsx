@@ -4,6 +4,7 @@ import {
   fetchNotification,
   fetchTableWithIds,
 } from "@/app/lib/backoffice/data";
+import { timeAgo } from "@/function";
 import {
   Badge,
   Button,
@@ -35,31 +36,6 @@ export default function NotificationFeed() {
     }
   );
 
-  const timeAgo = (date: Date) => {
-    const nowDate = new Date();
-    const seconds = Math.floor((nowDate.getTime() - date.getTime()) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) {
-      return Math.floor(interval) + " years ago";
-    }
-    interval = seconds / 2592000;
-    if (interval > 1) {
-      return Math.floor(interval) + " months ago";
-    }
-    interval = seconds / 86400;
-    if (interval > 1) {
-      return Math.floor(interval) + " days ago";
-    }
-    interval = seconds / 3600;
-    if (interval > 1) {
-      return Math.floor(interval) + " hours ago";
-    }
-    interval = seconds / 60;
-    if (interval > 1) {
-      return Math.floor(interval) + " minutes ago";
-    }
-    return "Just now";
-  };
   const tableIds = notification?.map((item) => item.tableId) as number[];
   const { data: tables } = useSWR([notification], () =>
     fetchTableWithIds(tableIds).then((res) => res)
