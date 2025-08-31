@@ -1,7 +1,5 @@
 "use server";
 
-import { MenuItemIngredientForm } from "@/app/warehouse/components/EditMenuIngredient";
-import { POItemForm } from "@/app/warehouse/purchase-order/new/page";
 import { AddonIngredientForm } from "@/components/NewAddonIngredient";
 import { prisma } from "@/db";
 import {
@@ -32,6 +30,8 @@ import {
   fetchSupplierWithId,
   fetchWarehouse,
 } from "./data";
+import { MenuItemIngredientForm } from "@/app/secure/warehouse/components/EditMenuIngredient";
+import { POItemForm } from "@/app/secure/warehouse/components/NewPurchaseOrderForm";
 
 export async function createWarehouse(formData: FormData) {
   const name = formData.get("name") as string;
@@ -44,7 +44,7 @@ export async function createWarehouse(formData: FormData) {
     await prisma.warehouse.create({
       data: { name, locationId: selectedLocation?.locationId },
     });
-    revalidatePath("/warehouse/manage");
+    revalidatePath("/secure/warehouse/manage");
     return {
       message: "Created warehouse successfully.",
       isSuccess: true,
@@ -68,7 +68,7 @@ export async function updateWarehouse(formData: FormData) {
       where: { id },
       data: { name },
     });
-    revalidatePath("/warehouse/manage");
+    revalidatePath("/secure/warehouse/manage");
     return {
       message: "Updated warehouse successfully.",
       isSuccess: true,
@@ -95,7 +95,7 @@ export async function updateSelectWarehouse(id: number) {
       const warehouse = await prisma.selectedWarehouse.create({
         data: { userId: user.id, warehouseId: id },
       });
-      revalidatePath("/warehouse");
+      revalidatePath("/secure/warehouse");
       return {
         warehouseId: warehouse.id,
         message: "Warehouse selection is updated successfully.",
@@ -143,7 +143,7 @@ export async function deleteWarehouse(id: number) {
         await updateSelectWarehouse(firstWarehouseId);
       }
     }
-    revalidatePath("/warehouse/manage");
+    revalidatePath("/secure/warehouse/manage");
     return {
       message: "Deleted warehouse successfully.",
       isSuccess: true,
@@ -186,7 +186,7 @@ export async function createWarehouseItem(formData: FormData) {
     await prisma.warehouseItem.create({
       data: { name, unitCategory, unit, threshold, companyId: company.id },
     });
-    revalidatePath("/warehouse/warehouse-item");
+    revalidatePath("/secure/warehouse/warehouse-item");
     return {
       message: "Created warehouse item successfully.",
       isSuccess: true,
@@ -230,7 +230,7 @@ export async function updateWarehouseItem(formData: FormData) {
       where: { id },
       data: { name, unitCategory, unit, threshold },
     });
-    revalidatePath("/warehouse/warehouse-item");
+    revalidatePath("/secure/warehouse/warehouse-item");
     return {
       message: "Updated warehouse item successfully.",
       isSuccess: true,
@@ -255,7 +255,7 @@ export async function deleteWarehouseItem(id: number) {
       where: { id },
       data: { isArchived: true },
     });
-    revalidatePath("/warehouse/warehouse-item");
+    revalidatePath("/secure/warehouse/warehouse-item");
     return {
       message: "Deleted warehouse item successfully.",
       isSuccess: true,
@@ -319,7 +319,7 @@ export async function editMenuItemIngredient(
         });
       })
     );
-    revalidatePath("/warehouse/item-ingredient");
+    revalidatePath("/secure/warehouse/item-ingredient");
     return {
       message: "Edited ingredients successfully.",
       isSuccess: true,
@@ -353,7 +353,7 @@ export async function createSupplier(formData: FormData) {
     await prisma.supplier.create({
       data: { name, phone, email, address, companyId: company?.id },
     });
-    revalidatePath("/warehouse/supplier");
+    revalidatePath("/secure/warehouse/supplier");
     return {
       message: "Created supplier successfully.",
       isSuccess: true,
@@ -383,7 +383,7 @@ export async function updateSupplier(formData: FormData) {
       where: { id },
       data: { name, phone, email, address },
     });
-    revalidatePath("/warehouse/supplier");
+    revalidatePath("/secure/warehouse/supplier");
     return {
       message: "Updated supplier successfully.",
       isSuccess: true,
@@ -408,7 +408,7 @@ export async function deleteSupplier(id: number) {
       where: { id },
       data: { isArchived: true },
     });
-    revalidatePath("/warehouse/supplier");
+    revalidatePath("/secure/warehouse/supplier");
     return {
       message: "Deleted supplier successfully.",
       isSuccess: true,
@@ -462,8 +462,9 @@ export async function createAddonIngredient(formData: FormData) {
   });
 
   const addon = await fetchAddonWithId(addonId);
-  if(addon && addon.needIngredient === false){return {message:"This addon does not need ingredient", isSuccess:false}}
-
+  if (addon && addon.needIngredient === false) {
+    return { message: "This addon does not need ingredient", isSuccess: false };
+  }
 
   const sameMenu =
     sameAddon && sameAddon.menuId ? sameAddon.menuId === menuId : menuId;
@@ -491,7 +492,7 @@ export async function createAddonIngredient(formData: FormData) {
         });
       })
     );
-    revalidatePath("/warehouse/addon-ingredient");
+    revalidatePath("/secure/warehouse/addon-ingredient");
     return {
       message: "Created addon ingredient successfully.",
       isSuccess: true,
@@ -560,7 +561,7 @@ export async function updateAddonIngredient(formData: FormData) {
         });
       })
     );
-    revalidatePath("/warehouse/addon-ingredient");
+    revalidatePath("/secure/warehouse/addon-ingredient");
     return {
       message: "Updated addon ingredient successfully.",
       isSuccess: true,
@@ -590,7 +591,7 @@ export async function deleteAddonIngredient({
     await prisma.addonIngredient.deleteMany({
       where: { addonId, menuId: menuId || 0 },
     });
-    revalidatePath("/warehouse/addon-ingredient");
+    revalidatePath("/secure/warehouse/addon-ingredient");
     return {
       message: "Deleted addon ingredient successfully.",
       isSuccess: true,
@@ -685,7 +686,7 @@ export async function createPurchaseOrder(formData: FormData) {
         targetId: purchaseOrder.id,
       },
     });
-    revalidatePath("/warehouse/purchase-order");
+    revalidatePath("/secure/warehouse/purchase-order");
     return {
       message: "Created purchase order successfully.",
       isSuccess: true,
@@ -835,7 +836,7 @@ export async function updatePurchaseOrder(formData: FormData) {
       });
     }
 
-    revalidatePath("/warehouse/purchase-order");
+    revalidatePath("/secure/warehouse/purchase-order");
     return {
       message: "Update purchase order successfully.",
       isSuccess: true,
@@ -938,7 +939,7 @@ export async function receivePurchaseOrder(poId: number) {
     });
 
     await createStockMovement(stockMovement);
-    revalidatePath("/warehouse/purchase-order");
+    revalidatePath("/secure/warehouse/purchase-order");
     return { message: "Received PO Successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -960,7 +961,7 @@ export async function cancelPurchaseOrder(poId: number) {
       where: { id: poId },
       data: { status: POStatus.CANCELLED },
     });
-    revalidatePath("/warehouse/purchase-order");
+    revalidatePath("/secure/warehouse/purchase-order");
     return { message: "Canceled PO Successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -1099,7 +1100,7 @@ export async function correctPurchaseOrder(formData: FormData) {
           changes: poItemDataDiff,
         },
       });
-      revalidatePath("/warehouse/purchase-order");
+      revalidatePath("/secure/warehouse/purchase-order");
       return {
         message: "Corrected PO items Successfully.",
         isSuccess: true,

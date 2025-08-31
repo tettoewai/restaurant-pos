@@ -1,14 +1,12 @@
 "use client";
+import { createDefaultData, fetchUser } from "@/app/lib/backoffice/data";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import BackOfficeContextProvider from "@/context/BackOfficeContext";
 import { ScrollShadow } from "@heroui/react";
 import { useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import useSWR from "swr";
-import { createDefaultData, fetchUser } from "../lib/backoffice/data";
-
 interface Props {
   children: ReactNode;
 }
@@ -19,9 +17,11 @@ const Layout = ({ children }: Props) => {
   const userName = data?.user?.name;
 
   const { data: user } = useSWR("user", () => fetchUser().then((res) => res));
-  if (user?.email !== userEmail && userEmail && userName) {
-    createDefaultData({ email: userEmail, name: userName });
-  }
+  useEffect(() => {
+    if (user?.email !== userEmail && userEmail && userName) {
+      createDefaultData({ email: userEmail, name: userName });
+    }
+  }, [user, userEmail, userName]);
   return (
     <BackOfficeContextProvider>
       <div className="bg-gray-200 dark:bg-gray-950 h-dvh">

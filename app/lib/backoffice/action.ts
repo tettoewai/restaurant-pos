@@ -47,7 +47,7 @@ export async function updateCompany(formData: FormData) {
       where: { id: company?.id },
       data: { name, street, township, city },
     });
-    revalidatePath("/backoffice");
+    revalidatePath("/secure/backoffice");
     return { message: "Updated company successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -87,7 +87,7 @@ export async function createMenu({ formData }: Props) {
       )
     );
 
-    revalidatePath("/backoffice/menu");
+    revalidatePath("/secure/backoffice/menu");
     return { message: "Created menu successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -112,7 +112,7 @@ export async function createMenuCategory(formData: FormData) {
     await prisma.menuCategory.create({
       data: { name, companyId: company.id },
     });
-    revalidatePath("/backoffice/menu-category");
+    revalidatePath("/secure/backoffice/menu-category");
     return { message: "Created menu category successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -134,7 +134,7 @@ export async function updateMenuCategory(formData: FormData) {
     };
   try {
     await prisma.menuCategory.update({ where: { id }, data: { name } });
-    revalidatePath("/backoffice/menu-category");
+    revalidatePath("/secure/backoffice/menu-category");
     return { message: "Updated menu category successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -199,7 +199,7 @@ export async function updateMenu({ formData }: Props) {
       );
     }
 
-    revalidatePath("/backoffice/menu");
+    revalidatePath("/secure/backoffice/menu");
     return { message: "Updated menu successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -216,7 +216,7 @@ export async function deleteMenu(id: number) {
       where: { id: id },
       data: { isArchived: true },
     });
-    revalidatePath("/backoffice/menu");
+    revalidatePath("/secure/backoffice/menu");
     return { message: "Deleted menu successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -233,7 +233,7 @@ export async function deleteAddonCategory(id: number) {
       where: { id: id },
       data: { isArchived: true },
     });
-    revalidatePath("/backoffice/addon-category");
+    revalidatePath("/secure/backoffice/addon-category");
     return { message: "Deleted addon category successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -250,7 +250,7 @@ export async function deleteMenuCategory(id: number) {
       where: { id: id },
       data: { isArchived: true },
     });
-    revalidatePath("/backoffice/menu-category");
+    revalidatePath("/secure/backoffice/menu-category");
     return { message: "Deleted menu category successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -282,7 +282,7 @@ export async function createAddonCategory(FormData: FormData) {
         })
       )
     );
-    revalidatePath("/backoffice/addon-category");
+    revalidatePath("/secure/backoffice/addon-category");
     return { message: "Created addon category successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -302,8 +302,10 @@ export async function createAddon(formData: FormData) {
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
-    await prisma.addon.create({ data: { name, price, addonCategoryId,needIngredient } });
-    revalidatePath("/backoffice/addon");
+    await prisma.addon.create({
+      data: { name, price, addonCategoryId, needIngredient },
+    });
+    revalidatePath("/secure/backoffice/addon");
     return { message: "Created addon successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -322,16 +324,16 @@ export async function updateAddon(formData: FormData) {
   const price = Number(data.price);
   const addonCategoryId = Number(data.addonCategory);
   const needIngredient = Boolean(formData.has("needIngredient"));
-  console.log("data",data)
+  console.log("data", data);
   const isValid = id && name && addonCategoryId > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
     await prisma.addon.update({
       where: { id },
-      data: { name, price, addonCategoryId,needIngredient },
+      data: { name, price, addonCategoryId, needIngredient },
     });
-    revalidatePath("/backoffice/addon");
+    revalidatePath("/secure/backoffice/addon");
     return { message: "Updated addon successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -345,7 +347,7 @@ export async function updateAddon(formData: FormData) {
 export async function deleteAddon(id: number) {
   try {
     await prisma.addon.update({ where: { id }, data: { isArchived: true } });
-    revalidatePath("/backoffice/addon");
+    revalidatePath("/secure/backoffice/addon");
     return { message: "Deleted addon successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -403,7 +405,7 @@ export async function updateAddonCategory(FormData: FormData) {
         )
       );
     }
-    revalidatePath("/backoffice/addon-category");
+    revalidatePath("/secure/backoffice/addon-category");
     return {
       message: "Updated addon category successfully",
       isSuccess: true,
@@ -426,7 +428,7 @@ export async function updateSelectLocation(id: number) {
     await prisma.selectedLocation.create({
       data: { userId: user?.id, locationId: id },
     });
-    revalidatePath("/backoffice");
+    revalidatePath("/secure/backoffice");
   } catch (error) {
     console.log(error);
   }
@@ -456,7 +458,7 @@ export async function createLocation(formData: FormData) {
           longitude,
         },
       }));
-    revalidatePath("/backoffice");
+    revalidatePath("/secure/backoffice");
     return { message: "Created location successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -483,7 +485,7 @@ export async function updateLocation(formData: FormData) {
       where: { id },
       data: { name, street, township, city, latitude, longitude },
     });
-    revalidatePath("/backoffice");
+    revalidatePath("/secure/backoffice");
     return { message: "Updated location successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -515,7 +517,7 @@ export async function deleteLocation(id: number) {
       await updateSelectLocation(firstLocation.id);
     }
 
-    revalidatePath("/backoffice/location");
+    revalidatePath("/secure/backoffice/location");
     return { message: "Deleted location successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -557,7 +559,7 @@ export async function createTable(formData: FormData) {
   try {
     const locationId = (await fetchSelectedLocation())?.locationId;
     locationId && (await prisma.table.create({ data: { name, locationId } }));
-    revalidatePath("/backoffice/table");
+    revalidatePath("/secure/backoffice/table");
     return { message: "Created table successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -586,7 +588,7 @@ export async function handleDisableLocationMenu({
           (await prisma.disabledLocationMenu.delete({
             where: { id: item.id },
           }));
-        revalidatePath("/backoffice/menu");
+        revalidatePath("/secure/backoffice/menu");
         return { message: "Enable available successfully.", isSuccess: true };
       } catch (error) {
         console.log(error);
@@ -600,7 +602,7 @@ export async function handleDisableLocationMenu({
         (await prisma.disabledLocationMenu.create({
           data: { menuId, locationId },
         }));
-      revalidatePath("/backoffice/menu");
+      revalidatePath("/secure/backoffice/menu");
       return { message: "Disable available successfully.", isSuccess: true };
     }
   } catch (error) {
@@ -629,14 +631,14 @@ export async function handleDisableLocationMenuCat({
         (await prisma.disabledLocationMenuCategory.delete({
           where: { id: item.id },
         }));
-      revalidatePath("/backoffice/menu-category");
+      revalidatePath("/secure/backoffice/menu-category");
       return { message: "Enable available successfully.", isSuccess: true };
     } else {
       locationId &&
         (await prisma.disabledLocationMenuCategory.create({
           data: { menuCategoryId, locationId },
         }));
-      revalidatePath("/backoffice/menu-category");
+      revalidatePath("/secure/backoffice/menu-category");
       return { message: "Disable available successfully.", isSuccess: true };
     }
   } catch (error) {
@@ -659,7 +661,7 @@ export async function updateTable(formData: FormData) {
     };
   try {
     await prisma.table.update({ where: { id }, data: { name } });
-    revalidatePath("/backoffice/table");
+    revalidatePath("/secure/backoffice/table");
     return { message: "Updated table successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -673,7 +675,7 @@ export async function updateTable(formData: FormData) {
 export async function deleteTable(id: number) {
   try {
     await prisma.table.update({ where: { id }, data: { isArchived: true } });
-    revalidatePath("/backoffice/table");
+    revalidatePath("/secure/backoffice/table");
     return { message: "Deleted table successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -745,7 +747,7 @@ export async function updateOrderStatus({
       where: { id: { in: orderIds } },
       data: { status },
     });
-    revalidatePath(`/backoffice/order`);
+    revalidatePath(`/secure/backoffice/order`);
     return { message: "Updated order status successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -780,7 +782,7 @@ export async function createFocMenuAddonCategory({
     await prisma.focMenuAddonCategory.createMany({
       data: dataWithPromotionId,
     });
-    revalidatePath("/backoffice/promotion");
+    revalidatePath("/secure/backoffice/promotion");
     return {
       message: `Created ${focAddonCategory.length} focMenuAddonCategory(ies) successfully.`,
       isSuccess: true,
@@ -878,7 +880,7 @@ export async function setNotiRead(id: number) {
       where: { id },
       data: { isRead: true },
     });
-    revalidatePath("/backoffice");
+    revalidatePath("/secure/backoffice");
   } catch (error) {
     console.log(error);
   }
@@ -891,7 +893,7 @@ export async function setNotiReadWithTableId(id: number) {
       where: { tableId: id, isRead: false },
       data: { isRead: true },
     });
-    revalidatePath("/backoffice");
+    revalidatePath("/secure/backoffice");
   } catch (error) {
     console.log(error);
   }
@@ -1116,7 +1118,7 @@ export async function createPromotion(formData: FormData) {
       );
     }
 
-    revalidatePath(`/backoffice/promotion`);
+    revalidatePath(`/secure/backoffice/promotion`);
     return {
       message: "Created promotion successfully.",
       isSuccess: true,
@@ -1298,7 +1300,7 @@ export async function updatePromotion(formData: FormData) {
         })
       );
     }
-    revalidatePath(`/backoffice/promotion`);
+    revalidatePath(`/secure/backoffice/promotion`);
     return { message: "Updated promotion successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);
@@ -1315,7 +1317,7 @@ export async function deletePromotion(id: number) {
       where: { id: id },
       data: { isArchived: true },
     });
-    revalidatePath("/backoffice/promotion");
+    revalidatePath("/secure/backoffice/promotion");
     return { message: "Deleted promotion successfully.", isSuccess: true };
   } catch (error) {
     console.log(error);
@@ -1340,7 +1342,7 @@ export async function handleActivePromotion({
     };
   try {
     await prisma.promotion.update({ where: { id }, data: { is_active: e } });
-    revalidatePath("/backoffice/promotion");
+    revalidatePath("/secure/backoffice/promotion");
     return {
       message: "Changed promotion status successfully.",
       isSuccess: true,
@@ -1369,7 +1371,7 @@ export async function cancelOrder(formData: FormData) {
       where: { itemId },
       data: { status: OrderStatus.CANCELED },
     });
-    revalidatePath(`/backoffice/order`);
+    revalidatePath(`/secure/backoffice/order`);
     return { message: "Canceled order successfully.", isSuccess: true };
   } catch (error) {
     console.error(error);

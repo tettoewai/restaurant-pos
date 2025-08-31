@@ -96,13 +96,13 @@ export function POTable({
       <div className="flex w-full justify-between">
         <Button
           onPress={() => {
-            router.push("/warehouse/purchase-order/new");
+            router.push("/secure/warehouse/purchase-order/new");
           }}
           className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 m-2 rounded"
         >
           <ShortcutButton
             onPress={() => {
-              router.push("/warehouse/purchase-order/new");
+              router.push("/secure/warehouse/purchase-order/new");
             }}
             keys={["ctrl"]}
             letter="O"

@@ -21,7 +21,7 @@ import { Addon, AddonIngredient, Menu, WarehouseItem } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { RxCross1, RxPlus } from "react-icons/rx";
 import { AddonIngredientForm } from "./NewAddonIngredient";
-import { AddonIngredientDataType } from "@/app/warehouse/addon-ingredient/page";
+import { AddonIngredientDataType } from "@/app/secure/warehouse/addon-ingredient/page";
 import { updateAddonIngredient } from "@/app/lib/warehouse/action";
 
 interface Props {

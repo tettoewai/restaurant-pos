@@ -15,7 +15,11 @@ export const metadata: Metadata = {
   title: `Setting | ${baseMetadata.title}`,
 };
 
-function SettingPage() {
+function SettingPage({ params }: { params: { section: string } }) {
+  const section = params.section;
+  if (section !== "backoffice" && section !== "warehouse") {
+    return <div>Invalid section</div>;
+  }
   const itemClass =
     "flex justify-between flex-row items-center p-2 bg-background h-14";
   return (
@@ -28,7 +32,7 @@ function SettingPage() {
       </div>
       <div className="mt-5 space-y-2">
         <NextUiLink
-          href={"/backoffice/recent-receipt"}
+          href={"/secure/backoffice/recent-receipt"}
           as={Link}
           className="w-full"
         >

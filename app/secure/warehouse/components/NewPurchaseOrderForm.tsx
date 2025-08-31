@@ -87,7 +87,7 @@ export default function NewPurchaseOrderForm({
     setIsSubmitting(false);
     addToast({ title: message, color: isSuccess ? "success" : "danger" });
     if (isSuccess) {
-      router.push("/warehouse/purchase-order");
+      router.push("/secure/warehouse/purchase-order");
     }
   };
   return (
@@ -271,7 +271,7 @@ export default function NewPurchaseOrderForm({
           <div>
             <Button
               className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-              onPress={() => router.push("/warehouse/purchase-order")}
+              onPress={() => router.push("/secure/warehouse/purchase-order")}
               isDisabled={isSubmitting}
             >
               Cancel

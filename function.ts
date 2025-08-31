@@ -16,7 +16,7 @@ import {
   fetchMenuAddonCategory,
   fetchMenuAddonCategoryWithMenuIds,
 } from "./app/lib/backoffice/data";
-import { POItemForm } from "./app/warehouse/purchase-order/new/page";
+import { POItemForm } from "./app/secure/warehouse/purchase-order/new/page";
 import { weekday } from "./general";
 import {
   fetchAddonIngredients,

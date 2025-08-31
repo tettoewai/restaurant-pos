@@ -4,13 +4,13 @@ import {
   handleDisableLocationMenu,
   handleDisableLocationMenuCat,
 } from "@/app/lib/backoffice/action";
-import DeleteSupplierDialog from "@/app/warehouse/components/DeleteSupplierDialog";
-import DeleteWarehouseDialog from "@/app/warehouse/components/DeleteWarehouseDialog";
-import DeleteWarehouseItemDialog from "@/app/warehouse/components/DeleteWarehouseItemDialog";
-import EditMenuIngredient from "@/app/warehouse/components/EditMenuIngredient";
-import UpdateSupplierDialog from "@/app/warehouse/components/UpdateSupplierDialog";
-import UpdateWarehouseDialog from "@/app/warehouse/components/UpdateWarehouseDialog";
-import UpdateWarehouseItemDialog from "@/app/warehouse/components/UpdateWarehouseItemDialog";
+import DeleteSupplierDialog from "@/app/secure/warehouse/components/DeleteSupplierDialog";
+import DeleteWarehouseDialog from "@/app/secure/warehouse/components/DeleteWarehouseDialog";
+import DeleteWarehouseItemDialog from "@/app/secure/warehouse/components/DeleteWarehouseItemDialog";
+import EditMenuIngredient from "@/app/secure/warehouse/components/EditMenuIngredient";
+import UpdateSupplierDialog from "@/app/secure/warehouse/components/UpdateSupplierDialog";
+import UpdateWarehouseDialog from "@/app/secure/warehouse/components/UpdateWarehouseDialog";
+import UpdateWarehouseItemDialog from "@/app/secure/warehouse/components/UpdateWarehouseItemDialog";
 import { OrderData } from "@/general";
 import {
   addToast,
@@ -61,8 +61,8 @@ import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
 import AddonIngredientPage, {
   AddonIngredientDataType,
-} from "@/app/warehouse/addon-ingredient/page";
-import DeleteAddonIngredientDialog from "@/app/warehouse/components/DeleteAddonIngredient";
+} from "@/app/secure/warehouse/addon-ingredient/page";
+import DeleteAddonIngredientDialog from "@/app/secure/warehouse/components/DeleteAddonIngredient";
 
 interface Props {
   id: number;
@@ -145,8 +145,7 @@ export default function MoreOptionButton({
     onOpenChange: onDeleteOpenChange,
     onClose: onDeleteClose,
   } = useDisclosure();
-  const iconClasses =
-    "text-xl text-default-500 pointer-events-none shrink-0";
+  const iconClasses = "text-xl text-default-500 pointer-events-none shrink-0";
   const [available, setAvailable] = useState<boolean>(false);
   const [availableIsLoading, setAvailableIsLoading] = useState<boolean>(false);
   const [availableMenuCat, setAvailableMenuCat] = useState<boolean>(false);

@@ -72,7 +72,7 @@ export default async function recentReceiptPage() {
         <div className="space-x-2">
           <NextUiLink
             as={Link}
-            href={`/backoffice/recent-receipt/${receiptCode}`}
+            href={`/secure/backoffice/recent-receipt/${receiptCode}`}
             color="primary"
             className="hover:bg-default-100 p-[8px] rounded-md"
           >

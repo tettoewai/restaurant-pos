@@ -68,14 +68,14 @@ export default function Home() {
         <NextUiLink
           as={Link}
           className="bg-primary m-2 rounded-md p-2 px-2 text-white"
-          href={"/backoffice/order"}
+          href={"secure/backoffice/order"}
         >
           Backoffice
         </NextUiLink>
         <NextUiLink
           as={Link}
           className="bg-white m-2 rounded-md p-2 px-2 text-red-500"
-          href={`/warehouse`}
+          href={`secure/warehouse`}
         >
           Warehouse
         </NextUiLink>

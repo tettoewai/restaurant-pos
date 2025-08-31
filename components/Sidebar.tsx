@@ -27,7 +27,6 @@ import ShortcutButton from "./ShortCut";
 interface Props {
   sideBarOpen: boolean;
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
-  isFromWarehouse?: boolean;
 }
 
 interface SideBarItem {
@@ -36,51 +35,47 @@ interface SideBarItem {
   icon: JSX.Element;
 }
 
-export default function Sidebar({
-  sideBarOpen,
-  setSideBarOpen,
-  isFromWarehouse,
-}: Props) {
+export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   const backOfficeSidebar = [
     {
       name: "Order",
-      route: "/backoffice/order",
+      route: "/secure/backoffice/order",
       icon: <IoFastFoodOutline />,
     },
     {
       name: "Dashboard",
-      route: "/backoffice/dashboard",
+      route: "/secure/backoffice/dashboard",
       icon: <BiChart />,
     },
     {
       name: "Menu category",
-      route: "/backoffice/menu-category",
+      route: "/secure/backoffice/menu-category",
       icon: <BiCategory />,
     },
-    { name: "Menu", route: "/backoffice/menu", icon: <BiFoodMenu /> },
+    { name: "Menu", route: "/secure/backoffice/menu", icon: <BiFoodMenu /> },
     {
       name: "Add-on Category",
-      route: "/backoffice/addon-category",
+      route: "/secure/backoffice/addon-category",
       icon: <TbCategoryPlus />,
     },
     {
       name: "Add-on",
-      route: "/backoffice/addon",
+      route: "/secure/backoffice/addon",
       icon: <MdOutlineRestaurantMenu />,
     },
     {
       name: "Table",
-      route: "/backoffice/table",
+      route: "/secure/backoffice/table",
       icon: <MdOutlineTableBar />,
     },
     {
       name: "Location",
-      route: "/backoffice/location",
+      route: "/secure/backoffice/location",
       icon: <MdOutlineLocationOn />,
     },
     {
       name: "Promotion",
-      route: "/backoffice/promotion",
+      route: "/secure/backoffice/promotion",
       icon: <ImBullhorn />,
     },
   ];
@@ -88,62 +83,64 @@ export default function Sidebar({
   const warehouseSidebar = [
     {
       name: "Warehouse",
-      route: "/warehouse",
+      route: "/secure/warehouse",
       icon: <MdOutlineInventory />,
     },
     {
       name: "Warehouse Item",
-      route: "/warehouse/warehouse-item",
+      route: "/secure/warehouse/warehouse-item",
       icon: <MdFoodBank />,
     },
     {
       name: "Ingredient",
-      route: "/warehouse/item-ingredient",
+      route: "/secure/warehouse/item-ingredient",
       icon: <GiMeal />,
     },
     {
       name: "Add-on Ingredient",
-      route: "/warehouse/addon-ingredient",
+      route: "/secure/warehouse/addon-ingredient",
       icon: <MdOutlineFastfood />,
     },
     {
       name: "Supplier",
-      route: "/warehouse/supplier",
+      route: "/secure/warehouse/supplier",
       icon: <IoIosPeople />,
     },
     {
       name: "Purchase Order",
-      route: "/warehouse/purchase-order",
+      route: "/secure/warehouse/purchase-order",
       icon: <TbShoppingCartDollar />,
     },
     {
       name: "Stock",
-      route: "/warehouse/stock",
+      route: "/secure/warehouse/stock",
       icon: <BiBox />,
     },
     {
       name: "Stock Movement",
-      route: "/warehouse/stock-movement",
+      route: "/secure/warehouse/stock-movement",
       icon: <LuGitCompareArrows />,
-    },
-  ];
-
-  const sideBarItem: SideBarItem[] = [
-    ...(isFromWarehouse ? warehouseSidebar : backOfficeSidebar),
-    {
-      name: "Audit Log",
-      route: "/warehouse/audit-log",
-      icon: <AiOutlineAudit />,
-    },
-    {
-      name: "Setting",
-      route: "/backoffice/setting",
-      icon: <IoSettingsOutline />,
     },
   ];
 
   const pathName = usePathname();
   const router = useRouter();
+
+  const sideBarItem: SideBarItem[] = [
+    ...(pathName.split("/")[2] === "warehouse"
+      ? warehouseSidebar
+      : backOfficeSidebar),
+    {
+      name: "Audit Log",
+      route: "/secure/warehouse/audit-log",
+      icon: <AiOutlineAudit />,
+    },
+    {
+      name: "Setting",
+      route: `/secure/${pathName.split("/")[2]}/setting`,
+      icon: <IoSettingsOutline />,
+    },
+  ];
 
   return (
     <>
@@ -159,7 +156,7 @@ export default function Sidebar({
         <ul>
           {sideBarItem.map((item, index) => {
             const isActive =
-              pathName.split("/")[2] === item.route.split("/")[2];
+              pathName.split("/")[3] === item.route.split("/")[3];
             return (
               <li
                 key={index}

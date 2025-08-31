@@ -2,8 +2,11 @@ export const revalidate = 3600;
 
 import { Card } from "@heroui/react";
 import { LiaWarehouseSolid } from "react-icons/lia";
-import { fetchSelectedWarehouse, fetchWarehouse } from "../lib/warehouse/data";
 import WarehouoseToggle from "./components/WarehouseToggle";
+import {
+  fetchSelectedWarehouse,
+  fetchWarehouse,
+} from "@/app/lib/warehouse/data";
 
 export default async function WarehousePage() {
   const [warehouse, selectedWarehouse] = await Promise.all([

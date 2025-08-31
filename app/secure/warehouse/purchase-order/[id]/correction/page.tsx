@@ -1,12 +1,12 @@
 "use client";
 
-import { updatePurchaseOrder } from "@/app/lib/warehouse/action";
+import { correctPurchaseOrder } from "@/app/lib/warehouse/action";
 import {
   fetchPOItemWithPOId,
   fetchPurchaseOrderWithId,
-  fetchSupplier,
-  fetchWarehouse,
-  fetchWarehouseItem,
+  fetchSupplierWithId,
+  fetchWarehouseItemWithIds,
+  fetchWarehouseWithId,
 } from "@/app/lib/warehouse/data";
 import {
   captilize,
@@ -25,11 +25,10 @@ import {
 } from "@heroui/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RxCross1, RxPlus } from "react-icons/rx";
 import useSWR from "swr";
-import { POItemForm } from "../new/page";
+import { POItemForm } from "../../new/page";
 
-export default function EditPOPage() {
+export default function CorrectionPOPage() {
   const param = useParams();
   const poId = Number(param.id);
   const router = useRouter();
@@ -44,17 +43,31 @@ export default function EditPOPage() {
     () => fetchPOItemWithPOId(poId)
   );
 
-  const { data: suppliers, isLoading: supplierIsLoading } = useSWR(
-    `suppliers-${poId}`,
-    () => fetchSupplier()
+  const { data: supplier, isLoading: supplierIsLoading } = useSWR(
+    prevPOData ? `suppliers-${poId}` : undefined,
+    () =>
+      prevPOData
+        ? fetchSupplierWithId(prevPOData.supplierId)
+        : Promise.resolve(undefined)
   );
-  const { data: warehouses, isLoading: warehouseIsLoading } = useSWR(
-    `warehouses-${poId}`,
-    () => fetchWarehouse()
+  const { data: warehouse, isLoading: warehouseIsLoading } = useSWR(
+    prevPOData ? `warehouses-${poId}` : undefined,
+    () =>
+      prevPOData
+        ? fetchWarehouseWithId(prevPOData.warehouseId)
+        : Promise.resolve(undefined)
   );
+  const warehouseItemIds = prevPOItemData
+    ? prevPOItemData.map((item) => item.itemId)
+    : [];
   const { data: warehouseItems, isLoading: warehosueItemIsLoading } = useSWR(
-    `warehousesItem-${poId}`,
-    () => fetchWarehouseItem()
+    warehouseItemIds && warehouseItemIds.length
+      ? `warehousesItem-${poId}`
+      : undefined,
+    () =>
+      warehouseItemIds && warehouseItemIds.length
+        ? fetchWarehouseItemWithIds(warehouseItemIds)
+        : Promise.resolve(undefined)
   );
 
   const [prevPOItems, setPrevPOItems] = useState<POItemForm[]>([
@@ -105,24 +118,8 @@ export default function EditPOPage() {
     if (!poId)
       return addToast({ title: "Id is not provided", color: "danger" });
     formData.set("id", String(poId));
-    const data = Object.fromEntries(formData);
-    const supplierId = Number(data.supplier);
-    const warehouseId = Number(data.warehouse);
-    const isValid =
-      supplierId &&
-      typeof supplierId === "number" &&
-      warehouseId &&
-      typeof warehouseId === "number";
-    if (!isValid)
-      return addToast({
-        title: "Missing supplier id or warehouse id!",
-        color: "danger",
-      });
 
     for (const poItem of poItems) {
-      if (!poItem.itemId || poItem.itemId === 0) {
-        errors.push("Each PO item must have an item selected.");
-      }
       if (!poItem.unit || poItem.unit === "") {
         errors.push("Each PO item must have a unit.");
       }
@@ -140,21 +137,19 @@ export default function EditPOPage() {
     if (errors.length > 0) {
       return addToast({ title: errors.join("\n"), color: "danger" });
     }
-    const supplierChange = prevPOData?.supplierId !== supplierId;
-    const warehouseChange = prevPOData?.warehouseId !== warehouseId;
+
     const poItemChange =
       JSON.stringify(poItems) !== JSON.stringify(prevPOItems);
-    const nothingChange = !supplierChange && !warehouseChange && !poItemChange;
-    if (nothingChange) return router.push("/warehouse/purchase-order");
+    if (!poItemChange) return router.push("/secure/warehouse/purchase-order");
     formData.set("poItems", JSON.stringify(poItems));
     setIsSubmitting(true);
-    const { isSuccess, message } = await updatePurchaseOrder(formData);
+    const { isSuccess, message } = await correctPurchaseOrder(formData);
     addToast({
       title: message,
       color: isSuccess ? "success" : "danger",
     });
     if (isSuccess) {
-      router.push("/warehouse/purchase-order");
+      router.push("/secure/warehouse/purchase-order");
     }
     setIsSubmitting(false);
   };
@@ -164,13 +159,13 @@ export default function EditPOPage() {
     <div>
       <div className="w-full flex justify-between items-center">
         <div className="flex flex-col pl-4">
-          <span className="text-primary">Update Purchase Order(PO)</span>
+          <span className="text-primary">Correct Purchase Order(PO)</span>
           <span className="text-sm text-gray-600">
-            Update your purchase order(PO).
+            Correct your purchase order(PO). Make sure next time.
           </span>
         </div>
       </div>
-      <div className="flex justify-end mt-2 pr-4">
+      <div className="flex justify-end mt-2 pr-4 text-danger">
         <p>Status: {prevPOData ? captilize(prevPOData?.status) : ""}</p>
       </div>
       <Form className="mt-4" onSubmit={handleSubmit}>
@@ -187,16 +182,13 @@ export default function EditPOPage() {
                 <Select
                   label="Select a suppliers"
                   size="sm"
-                  isRequired
-                  name="supplier"
+                  isDisabled
                   defaultSelectedKeys={
                     new Set([String(prevPOData?.supplierId)])
                   }
                 >
-                  {suppliers && suppliers.length ? (
-                    suppliers.map((item) => (
-                      <SelectItem key={item.id}>{item.name}</SelectItem>
-                    ))
+                  {supplier ? (
+                    <SelectItem key={supplier.id}>{supplier.name}</SelectItem>
                   ) : (
                     <SelectItem isReadOnly key="none">
                       There is no supplier.
@@ -214,16 +206,13 @@ export default function EditPOPage() {
                 <Select
                   label="Select a warehouse"
                   size="sm"
-                  isRequired
-                  name="warehouse"
+                  isDisabled
                   defaultSelectedKeys={
                     new Set([String(prevPOData?.warehouseId)])
                   }
                 >
-                  {warehouses && warehouses.length ? (
-                    warehouses.map((item) => (
-                      <SelectItem key={item.id}>{item.name}</SelectItem>
-                    ))
+                  {warehouse ? (
+                    <SelectItem key={warehouse.id}>{warehouse.name}</SelectItem>
                   ) : (
                     <SelectItem isReadOnly key="none">
                       There is no warehouse.
@@ -249,6 +238,7 @@ export default function EditPOPage() {
                 const units = currentWarehouseItem
                   ? validUnits(currentWarehouseItem.unitCategory)
                   : [""];
+
                 return (
                   <div key={poItem.id} className="flex space-x-1 mt-3">
                     {warehosueItemIsLoading ? (
@@ -261,18 +251,8 @@ export default function EditPOPage() {
                       <Select
                         label="Select a item"
                         size="sm"
-                        isRequired
+                        isDisabled
                         selectedKeys={new Set([String(poItem.itemId)])}
-                        onSelectionChange={(e) => {
-                          const value = Number(Array.from(e)[0]);
-                          setPOItems((prev) =>
-                            prev.map((item) => {
-                              if (item.id === poItem.id) {
-                                return { ...item, itemId: value };
-                              } else return item;
-                            })
-                          );
-                        }}
                       >
                         {warehouseItems && warehouseItems.length ? (
                           warehouseItems.map((item) => {
@@ -353,54 +333,17 @@ export default function EditPOPage() {
                         )
                       }
                     />
-                    {poItems.length > 1 ? (
-                      <Button
-                        isIconOnly
-                        color="primary"
-                        variant="light"
-                        onPress={() =>
-                          setPOItems((prev) =>
-                            prev.filter((item) => poItem.id !== item.id)
-                          )
-                        }
-                      >
-                        <RxCross1 />
-                      </Button>
-                    ) : null}
                   </div>
                 );
               })}
-              {warehouseItems && warehouseItems.length !== poItems.length ? (
-                <div className="w-full flex justify-center items-center mt-3">
-                  <Button
-                    isIconOnly
-                    variant="ghost"
-                    color="primary"
-                    onPress={() =>
-                      setPOItems((prev) => {
-                        const lastItemId = poItems[poItems.length - 1].id;
-                        return [
-                          ...prev,
-                          {
-                            id: lastItemId + 1,
-                            itemId: 0,
-                            quantity: undefined,
-                            unit: "",
-                            price: undefined,
-                          },
-                        ];
-                      })
-                    }
-                  >
-                    <RxPlus />
-                  </Button>
-                </div>
-              ) : null}
+
               <div className="flex justify-end mt-4">
                 <div>
                   <Button
                     className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
-                    onPress={() => router.push("/warehouse/purchase-order")}
+                    onPress={() =>
+                      router.push("/secure/warehouse/purchase-order")
+                    }
                     isDisabled={isSubmitting}
                   >
                     Cancel
@@ -413,7 +356,7 @@ export default function EditPOPage() {
                     {isSubmitting ? (
                       <Spinner color="white" />
                     ) : (
-                      <span>Update</span>
+                      <span>Correct</span>
                     )}
                   </Button>
                 </div>

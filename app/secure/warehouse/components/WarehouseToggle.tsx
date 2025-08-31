@@ -79,7 +79,7 @@ export default function WarehouseToggle({
         <DropdownSection showDivider>
           <DropdownItem
             key="action"
-            onPress={() => router.push("/warehouse/manage")}
+            onPress={() => router.push("/secure/warehouse/manage")}
             endContent={<BiEdit className="size-5 text-primary" />}
           >
             Manage

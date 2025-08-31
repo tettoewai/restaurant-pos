@@ -1,3 +1,3 @@
 export { default } from "next-auth/middleware";
 
-export const config = { matcher: ["/backoffice/:path*", "/warehouse/:path*"] };
+export const config = { matcher: ["/secure/:path*"] };
