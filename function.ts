@@ -13,6 +13,7 @@ import {
   fetchAddon,
   fetchAddonCategoryWithIds,
   fetchMenu,
+  fetchMenuAddonCategory,
   fetchMenuAddonCategoryWithMenuIds,
 } from "./app/lib/backoffice/data";
 import { POItemForm } from "./app/warehouse/purchase-order/new/page";
@@ -485,8 +486,7 @@ export function timeAgo(date: Date) {
 }
 
 export async function checkWMS() {
-  // check set ingradients of menu and addon
-
+  // check setting ingradients of menu and addon
   const menus = await fetchMenu();
   const menuIds = menus.map((item) => item.id);
   const menuIngredients = await fetchMenuItemIngredientWithMenuIds(menuIds);
@@ -503,16 +503,33 @@ export async function checkWMS() {
     (item) => !menuIdsWithIngredient.find((id) => item === id)
   );
   console.log("notsetIngredientMenuIds", notsetIngredientMenuIds);
-  // check set ingradients of addon
-  const addons = await fetchAddon();
-  const addonIds = addons.map((item) => item.id);
-  const addonIngredients = await fetchAddonIngredients();
-  const addonIdIngredients = addonIngredients.map((item) => item.addonId);
-  const menuIdIngredients = addonIngredients.map((item) => item.menuId);
-  console.log("addonId", addonIds);
-  console.log("addonIdIngredients", addonIdIngredients);
-  console.log("menuIdIngredients", menuIdIngredients);
 
-  
+  // check setting ingradients of addon
+  const [menuAddonCat, addons, addonIngredients] = await Promise.all([
+    fetchMenuAddonCategory(),
+    fetchAddon(),
+    fetchAddonIngredients(),
+  ]);
+  const notsetIngredientAddonIds = menuAddonCat.map((item) => {
+    const currentAddons = addons.filter(
+      (addon) =>
+        addon.addonCategoryId === item.addonCategoryId && addon.needIngredient
+    );
+    return {
+      addonIds: currentAddons
+        .filter(
+          (addon) =>
+            !addonIngredients.find(
+              (ingredient) =>
+                ingredient.addonId === addon.id &&
+                ingredient.menuId === item.menuId
+            )
+        )
+        .map((addon) => addon.id),
+      menuId: item.menuId,
+    };
+  });
+  console.log("notsetIngredientAddonIds", notsetIngredientAddonIds);
+
   // check stock hit threshole
 }

@@ -295,13 +295,14 @@ export async function createAddonCategory(FormData: FormData) {
 
 export async function createAddon(formData: FormData) {
   const name = formData.get("name") as string;
+  const needIngredient = Boolean(formData.has("needIngredient"));
   const price = Number(formData.get("price"));
   const addonCategoryId = Number(formData.get("addonCategory"));
   const isValid = name && addonCategoryId > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
-    await prisma.addon.create({ data: { name, price, addonCategoryId } });
+    await prisma.addon.create({ data: { name, price, addonCategoryId,needIngredient } });
     revalidatePath("/backoffice/addon");
     return { message: "Created addon successfully.", isSuccess: true };
   } catch (error) {
@@ -320,13 +321,15 @@ export async function updateAddon(formData: FormData) {
   const name = data.name as string;
   const price = Number(data.price);
   const addonCategoryId = Number(data.addonCategory);
+  const needIngredient = Boolean(formData.has("needIngredient"));
+  console.log("data",data)
   const isValid = id && name && addonCategoryId > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
     await prisma.addon.update({
       where: { id },
-      data: { name, price, addonCategoryId },
+      data: { name, price, addonCategoryId,needIngredient },
     });
     revalidatePath("/backoffice/addon");
     return { message: "Updated addon successfully.", isSuccess: true };

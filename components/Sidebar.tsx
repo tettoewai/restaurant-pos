@@ -151,9 +151,9 @@ export default function Sidebar({
       <nav
         className={`bg-background shadow-sm rounded-md overflow-y-auto scrollbar-hide
     transition-all
-    absolute top-[70px] bottom-0 left-1 z-30
+    absolute top-[70px] bottom-0 left-1 z-30 m-1
     lg:static lg:top-auto lg:bottom-auto lg:left-auto
-    ${sideBarOpen ? "w-52 md:w-64" : "w-0 lg:w-16 2xl:w-52"}
+    ${sideBarOpen ? "w-52 lg:w-64" : "w-0 lg:w-16 2xl:w-56"}
   `}
       >
         <ul>
@@ -197,7 +197,7 @@ export default function Sidebar({
                       {item.icon}
                     </div>
                     <div
-                      className={`flex justify-between w-full items-center ml-1 ${
+                      className={`flex justify-between w-full items-center ml-1 text-sm ${
                         sideBarOpen ? "flex" : "hidden 2xl:flex"
                       }`}
                     >

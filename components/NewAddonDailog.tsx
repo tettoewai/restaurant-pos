@@ -3,6 +3,7 @@ import { createAddon } from "@/app/lib/backoffice/action";
 import {
   addToast,
   Button,
+  Checkbox,
   Input,
   Modal,
   ModalBody,
@@ -101,6 +102,9 @@ export default function NewAddonDialog({ addonCategory }: Props) {
                 addonCategoryList={addonCategory}
                 itemType="addon"
               />
+              <div className="w-full flex justify-end">
+                <Checkbox name="needIngredient" defaultSelected>Need ingredient</Checkbox>
+              </div>
             </ModalBody>
             <ModalFooter>
               <Button

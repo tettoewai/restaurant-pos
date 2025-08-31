@@ -73,11 +73,12 @@ export default function NewAddonIngredientDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAll, setIsAll] = useState(false);
 
-  const addonWithCategory: AddonGroupWithCategoryType[] = addonCategories.map(
+  const addonWithCategory: (AddonGroupWithCategoryType | undefined)[]= addonCategories.map(
     (item) => {
       const relatedAddons = addons.filter(
-        (addon) => addon.addonCategoryId === item.id
+        (addon) => addon.addonCategoryId && addon.needIngredient
       );
+      if (relatedAddons.length === 0) return undefined;
       return { categoryName: item.name, addons: relatedAddons };
     }
   );
@@ -141,8 +142,7 @@ export default function NewAddonIngredientDialog({
           menuId,
         })
       : null;
-    console.log("selectedAddon", selectedAddon);
-    console.log("relatedMenuAddonCategory", relatedMenuAddonCategory);
+      
     if (!relatedMenuAddonCategory) {
       setIsSubmitting(false);
       return addToast({
@@ -187,11 +187,11 @@ export default function NewAddonIngredientDialog({
               <div className="flex space-x-1">
                 <Select label="Select an addon" isRequired name="addon">
                   {addonWithCategory.map((item, index) => (
-                    <SelectSection key={index} title={item.categoryName}>
+                    item?<SelectSection key={index} title={item.categoryName}>
                       {item.addons.map((addon) => (
                         <SelectItem key={addon.id}>{addon.name}</SelectItem>
                       ))}
-                    </SelectSection>
+                    </SelectSection>: null
                   ))}
                 </Select>
                 <Select
@@ -226,7 +226,7 @@ export default function NewAddonIngredientDialog({
                           <Select
                             isRequired
                             label="Select an item"
-                            selectedKeys={new Set([String(item.itemId)])}
+                            selectedKeys={new Set([String(item.itemId || "")])}
                             onSelectionChange={(e) => {
                               const selectedValue = Number(Array.from(e)[0]);
                               setItemIngredients((prev) =>

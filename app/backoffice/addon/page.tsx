@@ -31,6 +31,7 @@ const Addon = async () => {
             <ItemCard
               itemType="addon"
               id={addon.id}
+              addon={addon}
               name={addon.name}
               addonCategoryId={addon.addonCategoryId}
               price={addon.price}

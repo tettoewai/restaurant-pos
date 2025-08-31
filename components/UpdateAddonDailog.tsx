@@ -1,9 +1,9 @@
 "use client";
 import { updateAddon } from "@/app/lib/backoffice/action";
-import { fetchAddonWithId } from "@/app/lib/backoffice/data";
 import {
   addToast,
   Button,
+  Checkbox,
   Form,
   Input,
   Modal,
@@ -24,6 +24,7 @@ interface Props {
   onOpenChange: () => void;
   onClose: () => void;
   addonCategory?: AddonCategory[];
+  addon?: Addon;
 }
 
 export default function UpdateAddonDialog({
@@ -32,13 +33,13 @@ export default function UpdateAddonDialog({
   onOpenChange,
   onClose,
   addonCategory,
+  addon
 }: Props) {
-  const [prevData, setPrevData] = useState<Addon | null>(null);
+
   const [selectedAddonCat, setSelectedAddonCat] = useState<Set<string>>(
     new Set([])
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const closeModal = () => {
@@ -52,30 +53,25 @@ export default function UpdateAddonDialog({
       formRef.current.reset();
     }
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      const getPrevData = async () => {
-        setIsLoading(true);
-        const addon = await fetchAddonWithId(id);
-        setPrevData(addon);
-        setSelectedAddonCat(new Set(String(addon?.addonCategoryId)));
-        setIsLoading(false);
-      };
-      getPrevData();
-    }
-  }, [isOpen, id]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
+    const name = formData.get("name") as string;
     formData.set("id", String(id));
     const selectedAddonCatArray = Array.from(selectedAddonCat);
     formData.append(
       "addonCategory",
       JSON.parse(JSON.stringify(selectedAddonCatArray))
     );
+    const isValid = name && typeof name === "string" && selectedAddonCat.size > 0
+    const nothingChanged = name === addon?.name && selectedAddonCatArray[0] === String(addon?.addonCategoryId) && Boolean(formData.has("needIngredient")) === addon?.needIngredient
+    if(nothingChanged){
+      setIsSubmitting(false);
+      addToast({title:"Nothing changed",color:"warning"})
+      return;
+    }
     const { isSuccess, message } = await updateAddon(formData);
     setIsSubmitting(false);
     addToast({
@@ -86,6 +82,11 @@ export default function UpdateAddonDialog({
       closeModal();
     }
   };
+
+  useEffect(() => {
+    if (addon?.addonCategoryId && isOpen) {
+      setSelectedAddonCat(new Set([String(addon.addonCategoryId)]));
+    }}, [addon,isOpen]);
 
   return (
     <div className="relative">
@@ -105,15 +106,11 @@ export default function UpdateAddonDialog({
 
           <Form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody className="w-full">
-              {isLoading ? (
-                <Spinner size="sm" />
-              ) : (
-                <>
-                  <Input
+             <Input
                     name="name"
                     label="Name"
                     variant="bordered"
-                    defaultValue={prevData?.name}
+                    defaultValue={addon?.name}
                     required
                     isRequired
                   />
@@ -121,7 +118,7 @@ export default function UpdateAddonDialog({
                     name="price"
                     label="Price"
                     variant="bordered"
-                    defaultValue={prevData?.price}
+                    defaultValue={addon?.price}
                   />
                   <MultipleSelector
                     selectedList={selectedAddonCat}
@@ -130,8 +127,9 @@ export default function UpdateAddonDialog({
                     addonCategoryList={addonCategory}
                     itemType="addon"
                   />
-                </>
-              )}
+                  <div className="w-full flex justify-end">
+                    <Checkbox name="needIngredient" defaultSelected={addon?.needIngredient}>Need ingredient</Checkbox>
+                  </div>
             </ModalBody>
 
             <ModalFooter className="w-full">

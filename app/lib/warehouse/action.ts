@@ -20,6 +20,7 @@ import {
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import {
+  fetchAddonWithId,
   fetchCompany,
   fetchSelectedLocation,
   fetchUser,
@@ -459,6 +460,10 @@ export async function createAddonIngredient(formData: FormData) {
   const sameAddon = await prisma.addonIngredient.findFirst({
     where: { addonId },
   });
+
+  const addon = await fetchAddonWithId(addonId);
+  if(addon && addon.needIngredient === false){return {message:"This addon does not need ingredient", isSuccess:false}}
+
 
   const sameMenu =
     sameAddon && sameAddon.menuId ? sameAddon.menuId === menuId : menuId;

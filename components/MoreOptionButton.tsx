@@ -393,6 +393,7 @@ export default function MoreOptionButton({
             isOpen={isUpdateOpen}
             onOpenChange={onUpdateOpenChange}
             onClose={onUpdateClose}
+            addon={addon}
             addonCategory={addonCategory}
           />
           <DeleteAddonDialog

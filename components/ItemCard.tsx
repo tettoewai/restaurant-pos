@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@heroui/react";
-import { Supplier, Table, Warehouse, WarehouseItem } from "@prisma/client";
+import { Addon, Supplier, Table, Warehouse, WarehouseItem } from "@prisma/client";
 import Image from "next/image";
 import { BiSolidCategoryAlt } from "react-icons/bi";
 import { BsPerson } from "react-icons/bs";
@@ -52,6 +52,7 @@ interface Props {
   warehouseItem?: WarehouseItem;
   supplier?: Supplier;
   quantity?: string;
+  addon?: Addon;
 }
 export default async function ItemCard({
   id,
@@ -61,6 +62,7 @@ export default async function ItemCard({
   addonCategoryId,
   price,
   isActive,
+  addon,
   warehouse,
   isNotDeletable,
   warehouseItem,
@@ -120,6 +122,7 @@ export default async function ItemCard({
             disableLocationMenuCat={disableLocationMenuCategory}
             qrCodeData={qrCodeData || ""}
             warehouse={warehouse}
+            addon={addon}
             isNotDeletable={isNotDeletable}
             warehouseItem={warehouseItem}
             supplier={supplier}
