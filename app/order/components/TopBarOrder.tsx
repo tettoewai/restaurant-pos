@@ -3,12 +3,11 @@ import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import { fetchCompanyFromOrder } from "@/app/lib/order/data";
 import { OrderContext } from "@/context/OrderContext";
 import { Badge, Tooltip } from "@heroui/react";
+import { Cart, CloseCircle, HamburgerMenu } from "@solar-icons/react";
 import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useContext, useState } from "react";
-import { IoClose, IoMenu } from "react-icons/io5";
-import { MdShoppingCart } from "react-icons/md";
 import useSWR from "swr";
 import SidebarOrder from "./SidebarOrder";
 
@@ -55,9 +54,9 @@ const TopBarOrder = () => {
         >
           <span className="sr-only">Open sidebar</span>
           {sideBarOpen ? (
-            <IoClose className="w-full h-full" />
+            <CloseCircle className="w-full h-full" />
           ) : (
-            <IoMenu className="w-full h-full" />
+            <HamburgerMenu className="w-full h-full" />
           )}
         </button>
         <span className={bebasNeue.className}>
@@ -81,7 +80,7 @@ const TopBarOrder = () => {
               shape="rectangle"
             >
               <button className="w-10 mr-2">
-                <MdShoppingCart className="flex size-8 cursor-pointer m-1 items-center p-1 text-primary" />
+                <Cart className="flex size-8 cursor-pointer m-1 items-center p-1 text-primary" />
               </button>
             </Badge>
           </Link>

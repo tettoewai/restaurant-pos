@@ -1,6 +1,6 @@
 import { Button } from "@heroui/react";
 import { saveAs } from "file-saver";
-import { RiFileExcel2Line } from "react-icons/ri";
+import Image from "next/image";
 import * as XLSX from "xlsx";
 
 const exportToExcel = (
@@ -50,7 +50,15 @@ export default function ExportToExcelBtn({
       radius="sm"
       color="primary"
       isIconOnly
-      startContent={<RiFileExcel2Line className="size-5" />}
+      startContent={
+        <Image
+          priority
+          src="excel-logo.svg"
+          height={5}
+          width={5}
+          alt="Excel Logo"
+        />
+      }
       onPress={() => exportToExcel(sheetsData, fileName)}
     ></Button>
   );

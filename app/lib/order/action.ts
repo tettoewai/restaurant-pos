@@ -3,17 +3,13 @@ import { CartItem } from "@/context/OrderContext";
 import { prisma } from "@/db";
 import { OrderStatus, Table } from "@prisma/client";
 import { nanoid } from "nanoid";
-import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import {
-  fetchAddonCategoryWithIds,
   fetchAddonWithIds,
   fetchMenuWithId,
-  fetchMenuWithIds,
   fetchOrderWithTableId,
-  fetchTable,
   fetchTableWithId,
 } from "../backoffice/data";
-import { revalidatePath } from "next/cache";
 import { fetchOrderWithItemId } from "./data";
 
 export const getTotalPrice = async (cartItem: CartItem[]) => {

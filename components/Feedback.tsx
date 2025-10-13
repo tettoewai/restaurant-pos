@@ -8,8 +8,8 @@ import {
   Spinner,
   Textarea,
 } from "@heroui/react";
+import { Star } from "@solar-icons/react";
 import React, { useState } from "react";
-import { FaStar } from "react-icons/fa";
 
 interface Props {
   receiptCode: string;
@@ -53,7 +53,7 @@ function Feedback({ receiptCode }: Props) {
         <ButtonGroup variant="light" size="lg">
           {[1, 2, 3, 4, 5].map((rate) => (
             <Button key={rate} isIconOnly onPress={() => handleRating(rate)}>
-              <FaStar
+              <Star
                 size={24}
                 className={`cursor-pointer ${
                   rating >= rate ? "text-primary" : "text-gray-300"

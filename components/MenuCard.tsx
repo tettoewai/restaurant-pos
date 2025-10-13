@@ -12,8 +12,8 @@ import {
   MenuCategory,
   MenuCategoryMenu,
 } from "@prisma/client";
+import { Banknote2 } from "@solar-icons/react";
 import Image from "next/image";
-import { MdAttachMoney } from "react-icons/md";
 import MoreOptionButton from "./MoreOptionButton";
 
 interface Props {
@@ -66,7 +66,7 @@ export default async function MenuCard({
       <span className="mt-2 text-wrap text-center">{menu.name}</span>
       {menu.price && (
         <div className="flex items-center mt-1 mb-1">
-          <MdAttachMoney className="text-xl text-primary" />
+          <Banknote2 className="text-xl text-primary" />
           <p>{formatCurrency(menu.price)}</p>
         </div>
       )}

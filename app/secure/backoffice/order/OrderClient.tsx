@@ -4,8 +4,8 @@ import { fetchOrder, fetchTableWithIds } from "@/app/lib/backoffice/data";
 import { timeAgo } from "@/function";
 import { Card, Chip, Spinner } from "@heroui/react";
 import { OrderStatus } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
-import { MdTableBar } from "react-icons/md";
 import useSWR from "swr";
 
 const OrderClient = () => {
@@ -61,7 +61,13 @@ const OrderClient = () => {
                     ) : null}
                   </div>
                   <div className="w-full flex items-center justify-center h-3/5">
-                    <MdTableBar className="size-10 mb-1 text-primary" />
+                    <Image
+                      priority
+                      src="table.svg"
+                      height={10}
+                      width={10}
+                      alt="Table Icon"
+                    />
                   </div>
                   <div className="w-full flex items-center justify-center">
                     <span>{validTable?.name}</span>

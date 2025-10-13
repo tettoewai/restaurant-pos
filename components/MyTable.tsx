@@ -1,17 +1,17 @@
 "use client";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   getKeyValue,
   Input,
   SortDescriptor,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@heroui/react";
+import { MinimalisticMagnifer } from "@solar-icons/react";
 import { useCallback, useMemo, useState } from "react";
-import { BiSearch } from "react-icons/bi";
 
 interface Props {
   rows: any;
@@ -69,7 +69,7 @@ export default function MyTable({ rows, columns, searchable }: Props) {
           }}
           placeholder="Search by code..."
           size="sm"
-          startContent={<BiSearch className="text-default-300" />}
+          startContent={<MinimalisticMagnifer className="text-default-300" />}
           value={filterValue}
           variant="bordered"
           onClear={() => setFilterValue("")}

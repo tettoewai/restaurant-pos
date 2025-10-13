@@ -3,12 +3,15 @@ import CheckWMSDialog from "@/components/CheckWMSDialog";
 import SignOutDialog from "@/components/SignOutDialog";
 import UpdateCompanyDialog from "@/components/UpdateCompanyDailog";
 import { Card, Link as NextUiLink } from "@heroui/react";
+import {
+  BillList,
+  Buildings3,
+  Garage,
+  RoundAltArrowRight,
+  User,
+} from "@solar-icons/react";
 import { Metadata } from "next";
 import Link from "next/link";
-import { BsBuildingGear, BsHouseCheck } from "react-icons/bs";
-import { HiOutlineReceiptRefund } from "react-icons/hi2";
-import { IoIosArrowForward } from "react-icons/io";
-import { VscAccount } from "react-icons/vsc";
 
 export const metadata: Metadata = {
   ...baseMetadata,
@@ -38,22 +41,22 @@ function SettingPage({ params }: { params: { section: string } }) {
         >
           <Card className={itemClass} fullWidth radius="sm">
             <div className="flex items-center">
-              <HiOutlineReceiptRefund className=" size-6 mr-2" />
+              <BillList className=" size-6 mr-2" />
               <span>Recent receipt</span>
             </div>
-            <IoIosArrowForward className="size-6 " />
+            <RoundAltArrowRight className="size-6 " />
           </Card>
         </NextUiLink>
         <Card className={itemClass} fullWidth radius="sm">
           <div className="flex items-center">
-            <BsHouseCheck className=" size-6 mr-2" />
+            <Garage className=" size-6 mr-2" />
             <span>Warehouse Management System</span>
           </div>
           <CheckWMSDialog />
         </Card>
         <Card className={itemClass} fullWidth radius="sm">
           <div className="flex items-center">
-            <BsBuildingGear className=" size-6 mr-2" />
+            <Buildings3 className=" size-6 mr-2" />
             <span>Company</span>
           </div>
 
@@ -61,7 +64,7 @@ function SettingPage({ params }: { params: { section: string } }) {
         </Card>
         <Card className={itemClass} fullWidth radius="sm">
           <div className="flex items-center">
-            <VscAccount className=" size-6 mr-2" />
+            <User className=" size-6 mr-2" />
             <span>Account</span>
           </div>
 

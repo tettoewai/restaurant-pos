@@ -21,9 +21,9 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Company, Receipt } from "@prisma/client";
+import { Printer } from "@solar-icons/react";
 import html2canvas from "html2canvas";
 import { useMemo, useRef } from "react";
-import { GrPrint } from "react-icons/gr";
 import { useReactToPrint } from "react-to-print";
 import useSWR from "swr";
 
@@ -114,7 +114,7 @@ export default function ReceiptPrintButton({
   return (
     <>
       <Button isIconOnly variant="light" onPress={onOpen}>
-        <GrPrint className="size-6 text-success" />
+        <Printer className="size-6 text-success" />
       </Button>
       <Modal
         backdrop="blur"

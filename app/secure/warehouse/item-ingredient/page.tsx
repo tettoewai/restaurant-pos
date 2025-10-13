@@ -6,8 +6,8 @@ import {
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { captilize, convertUnit, roundToTwoDecimal } from "@/function";
 import { Card } from "@heroui/react";
+import { DangerTriangle } from "@solar-icons/react";
 import Image from "next/image";
-import { CiWarning } from "react-icons/ci";
 
 export default async function ItemIngredientPage() {
   const menus = await fetchMenu();
@@ -89,7 +89,7 @@ export default async function ItemIngredientPage() {
                   })
                 ) : (
                   <div className="flex justify-center items-center h-full mt-2 text-warning-500">
-                    <CiWarning className="size-14" />
+                    <DangerTriangle className="size-14" />
                     <span className="text-center">
                       Ingredients are not set yet.
                     </span>

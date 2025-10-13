@@ -6,7 +6,6 @@ import {
   addToast,
   Button,
   Form,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -18,9 +17,8 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Menu, MenuItemIngredient, WarehouseItem } from "@prisma/client";
-import { error } from "console";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { useEffect, useState } from "react";
-import { RxCross1, RxPlus } from "react-icons/rx";
 
 interface Props {
   id: number;
@@ -245,7 +243,7 @@ export default function EditMenuIngredient({
                               )
                             }
                           >
-                            <RxCross1 />
+                            <CloseCircle />
                           </Button>
                         ) : null}
                       </div>
@@ -279,7 +277,7 @@ export default function EditMenuIngredient({
                       })
                     }
                   >
-                    <RxPlus />
+                    <AddCircle />
                   </Button>
                 </div>
               ) : null}

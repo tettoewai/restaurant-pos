@@ -1,14 +1,19 @@
 "use client";
 
 import { Button, Tooltip } from "@heroui/react";
+import { PurchaseOrder } from "@prisma/client";
+import {
+  FullScreen,
+  MoonStars,
+  PenNewSquare,
+  QuitFullScreen,
+  Sun2,
+} from "@solar-icons/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { GoScreenFull, GoScreenNormal } from "react-icons/go";
-import { MdDarkMode, MdEdit, MdLightMode } from "react-icons/md";
 import screenfull from "screenfull";
 import ShortcutButton from "./ShortCut";
-import { PurchaseOrder } from "@prisma/client";
 
 export const FullScreenButton = () => {
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
@@ -35,7 +40,7 @@ export const FullScreenButton = () => {
               setIsFullScreen(false);
             }}
           >
-            <GoScreenNormal className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+            <QuitFullScreen className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       ) : (
@@ -54,7 +59,7 @@ export const FullScreenButton = () => {
               setIsFullScreen(true);
             }}
           >
-            <GoScreenFull className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+            <FullScreen className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       )}
@@ -75,7 +80,7 @@ export function ModeButton() {
           delay={1000}
         >
           <Button isIconOnly variant="light" onPress={() => setTheme("light")}>
-            <MdDarkMode className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+            <MoonStars className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       ) : (
@@ -87,7 +92,7 @@ export function ModeButton() {
           delay={1000}
         >
           <Button isIconOnly variant="light" onPress={() => setTheme("dark")}>
-            <MdLightMode className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+            <Sun2 className="size-7 md:size-8 cursor-pointer text-primary p-1" />
           </Button>
         </Tooltip>
       )}
@@ -120,7 +125,7 @@ export function EditPOButton({ item }: { item: PurchaseOrder }) {
       variant="light"
       onPress={() => router.push(`/warehouse/purchase-order/${item.id}`)}
     >
-      <MdEdit className="size-5" />
+      <PenNewSquare className="size-5" />
     </Button>
   );
 }

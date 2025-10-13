@@ -14,8 +14,8 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Menu } from "@prisma/client";
+import { Star } from "@solar-icons/react";
 import { useRef, useState } from "react";
-import { BsStar } from "react-icons/bs";
 import MultipleSelector from "./MultipleSelector";
 import ShortcutButton from "./ShortCut";
 
@@ -102,7 +102,7 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
               <Checkbox
                 isSelected={isRequired}
                 onValueChange={setIsRequired}
-                icon={<BsStar className="text-primary" />}
+                icon={<Star className="text-primary" />}
                 name="isRequired"
               >
                 Required

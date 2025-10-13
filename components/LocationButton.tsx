@@ -1,8 +1,8 @@
 "use client";
 import { Button, Spinner, Tooltip } from "@heroui/react";
 import { Location } from "@prisma/client";
+import { MapPoint } from "@solar-icons/react";
 import { useEffect, useState } from "react";
-import { MdLocationOn } from "react-icons/md";
 
 interface Props {
   prevData?: Location | null;
@@ -88,7 +88,7 @@ const LocationButton = ({ prevData }: Props) => {
           {loading ? (
             <Spinner color="white" size="sm" />
           ) : (
-            <MdLocationOn size={18} />
+            <MapPoint size={18} />
           )}
         </Button>
       </Tooltip>

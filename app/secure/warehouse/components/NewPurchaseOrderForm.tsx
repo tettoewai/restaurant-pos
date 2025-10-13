@@ -1,6 +1,6 @@
 "use client";
 import { createPurchaseOrder } from "@/app/lib/warehouse/action";
-import { validUnits, captilize } from "@/function";
+import { captilize, validUnits } from "@/function";
 import {
   addToast,
   Button,
@@ -11,9 +11,9 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Supplier, Warehouse, WarehouseItem } from "@prisma/client";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { RxCross1, RxPlus } from "react-icons/rx";
 
 export interface POItemForm {
   id: number;
@@ -235,7 +235,7 @@ export default function NewPurchaseOrderForm({
                     )
                   }
                 >
-                  <RxCross1 />
+                  <CloseCircle />
                 </Button>
               ) : null}
             </div>
@@ -263,7 +263,7 @@ export default function NewPurchaseOrderForm({
                 })
               }
             >
-              <RxPlus />
+              <AddCircle />
             </Button>
           </div>
         ) : null}

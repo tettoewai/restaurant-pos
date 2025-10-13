@@ -16,15 +16,15 @@ import { MenuLoading } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
-import { Button, Card, Link } from "@heroui/react";
+import { Button, Card } from "@heroui/react";
 import { DiscountType, Order, OrderStatus } from "@prisma/client";
+import { CartCross } from "@solar-icons/react";
+import Head from "next/head";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import FocPromotion from "../components/FocPromotion";
 import NoticeCancelDialog from "../components/NoticeCancelDialog";
-import Head from "next/head";
 
 function ActiveOrder() {
   const searchParams = useSearchParams();
@@ -395,7 +395,7 @@ function ActiveOrder() {
         ) : (
           <div className="flex items-center justify-center mt-36 w-full">
             <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
-              <BsCartX className="size-12 text-primary mb-4" />
+              <CartCross className="size-12 text-primary mb-4" />
               <span>Hungry?</span>
               <span className="text-sm">You have not ordered anything!</span>
               <Button

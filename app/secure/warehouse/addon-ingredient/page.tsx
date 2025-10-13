@@ -4,7 +4,6 @@ import {
   fetchAddon,
   fetchAddonCategory,
   fetchMenu,
-  fetchMenuAddonCategory,
 } from "@/app/lib/backoffice/data";
 import {
   fetchAddonIngredients,
@@ -14,9 +13,9 @@ import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import NewAddonIngredientDialog from "@/components/NewAddonIngredient";
 import { captilize, convertUnit } from "@/function";
+import { WidgetAdd } from "@solar-icons/react";
+import { HandPlatter } from "lucide-react";
 import { Suspense } from "react";
-import { BiFoodMenu } from "react-icons/bi";
-import { MdRestaurantMenu } from "react-icons/md";
 
 export interface AddonIngredientDataType {
   menuId: number;
@@ -109,8 +108,8 @@ export default async function AddonIngredientPage() {
                   />
                 </div>
                 <div className="flex space-x-4 mt-3">
-                  <MdRestaurantMenu className="size-8 text-primary" />
-                  <BiFoodMenu className="size-8 text-primary" />
+                  <WidgetAdd className="size-8 text-primary" />
+                  <HandPlatter size={8} />
                 </div>
                 <div className="flex space-x-4 text-sm mt-2">
                   <p className="truncate">{currentAddon?.name}</p>

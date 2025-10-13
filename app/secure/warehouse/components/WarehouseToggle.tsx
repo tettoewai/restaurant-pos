@@ -11,10 +11,9 @@ import {
   Spinner,
 } from "@heroui/react";
 import { SelectedWarehouse, Warehouse } from "@prisma/client";
+import { AltArrowDown, PenNewSquare } from "@solar-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BiEdit } from "react-icons/bi";
-import { IoIosArrowDown } from "react-icons/io";
 
 export default function WarehouseToggle({
   warehouse,
@@ -64,7 +63,7 @@ export default function WarehouseToggle({
           isDisabled={isLoading}
           variant="light"
           className="bg-background p-2"
-          endContent={<IoIosArrowDown className="text-primary" />}
+          endContent={<AltArrowDown className="text-primary" />}
         >
           {isLoading ? <Spinner size="sm" /> : selectedWarehouseName}
         </Button>
@@ -80,7 +79,7 @@ export default function WarehouseToggle({
           <DropdownItem
             key="action"
             onPress={() => router.push("/secure/warehouse/manage")}
-            endContent={<BiEdit className="size-5 text-primary" />}
+            endContent={<PenNewSquare className="size-5 text-primary" />}
           >
             Manage
           </DropdownItem>

@@ -16,8 +16,8 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
+import { CloseCircle } from "@solar-icons/react";
 import { useRef, useState } from "react";
-import { IoMdClose } from "react-icons/io";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
 import ShortcutButton from "./ShortCut";
@@ -120,7 +120,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
               {menuImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                   <p className="truncate ...">{menuImage.name}</p>
-                  <IoMdClose
+                  <CloseCircle
                     className="text-primary size-7 cursor-pointer"
                     onClick={() => setMenuImage(null)}
                   />

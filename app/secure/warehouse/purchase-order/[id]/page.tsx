@@ -23,9 +23,9 @@ import {
   SelectItem,
   Spinner,
 } from "@heroui/react";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RxCross1, RxPlus } from "react-icons/rx";
 import useSWR from "swr";
 import { POItemForm } from "../new/page";
 
@@ -364,7 +364,7 @@ export default function EditPOPage() {
                           )
                         }
                       >
-                        <RxCross1 />
+                        <CloseCircle />
                       </Button>
                     ) : null}
                   </div>
@@ -392,7 +392,7 @@ export default function EditPOPage() {
                       })
                     }
                   >
-                    <RxPlus />
+                    <AddCircle />
                   </Button>
                 </div>
               ) : null}

@@ -1,14 +1,13 @@
 "use client";
 
+import {
+  fetchLocationWithId,
+  fetchTableWithId,
+} from "@/app/lib/backoffice/data";
+import { useLocation } from "@/general";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import useSWR from "swr";
-import { useLocation } from "@/general";
-import {
-  fetchLocationWithId,
-  fetchOrderWithTableId,
-  fetchTableWithId,
-} from "@/app/lib/backoffice/data";
 import LoadingSpiner from "./LoadingSpiner";
 
 function CheckLocation({ children }: { children: React.ReactNode }) {

@@ -25,11 +25,9 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { TimeValue } from "@react-types/datepicker";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { BiPlusCircle } from "react-icons/bi";
-import { IoMdClose } from "react-icons/io";
-import { RxCross2 } from "react-icons/rx";
 import useSWR from "swr";
 
 export default function App() {
@@ -438,7 +436,7 @@ export default function App() {
                           );
                         }}
                       >
-                        <RxCross2 className="size-5 text-primary" />
+                        <CloseCircle className="size-5 text-primary" />
                       </Button>
                     ) : null}
                   </div>
@@ -458,7 +456,7 @@ export default function App() {
                   }}
                   isIconOnly
                 >
-                  <BiPlusCircle className="size-7 text-primary" />
+                  <AddCircle className="size-7 text-primary" />
                 </Button>
               </div>
               <span className="text-default-600 text-xs md:text-medium">
@@ -575,7 +573,7 @@ export default function App() {
                             );
                           }}
                         >
-                          <RxCross2 className="size-5 text-primary" />
+                          <CloseCircle className="size-5 text-primary" />
                         </Button>
                       ) : null}
                     </div>
@@ -595,7 +593,7 @@ export default function App() {
                     }}
                     isIconOnly
                   >
-                    <BiPlusCircle className="size-7 text-primary" />
+                    <AddCircle className="size-7 text-primary" />
                   </Button>
                 </div>
               </>
@@ -617,7 +615,7 @@ export default function App() {
           {promotionImage ? (
             <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
               <p className="truncate ...">{promotionImage.name}</p>
-              <IoMdClose
+              <CloseCircle
                 className="text-primary size-7 cursor-pointer"
                 onClick={() => setPromotionImage(null)}
               />

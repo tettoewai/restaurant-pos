@@ -18,8 +18,8 @@ import {
   Spinner,
 } from "@heroui/react";
 import { AddonCategory, Menu } from "@prisma/client";
+import { Star } from "@solar-icons/react";
 import { useEffect, useRef, useState } from "react";
-import { BsStar } from "react-icons/bs";
 import MultipleSelector from "./MultipleSelector";
 
 interface Props {
@@ -134,7 +134,7 @@ export default function UpdateAddonCategoryDialog({
                   <Checkbox
                     isSelected={isRequired}
                     onValueChange={setIsRequired}
-                    icon={<BsStar className="text-primary" />}
+                    icon={<Star className="text-primary" />}
                     name="isRequired"
                   >
                     Required

@@ -1,9 +1,6 @@
 "use client";
-import {
-  handleActivePromotion,
-  handleDisableLocationMenu,
-  handleDisableLocationMenuCat,
-} from "@/app/lib/backoffice/action";
+import { AddonIngredientDataType } from "@/app/secure/warehouse/addon-ingredient/page";
+import DeleteAddonIngredientDialog from "@/app/secure/warehouse/components/DeleteAddonIngredient";
 import DeleteSupplierDialog from "@/app/secure/warehouse/components/DeleteSupplierDialog";
 import DeleteWarehouseDialog from "@/app/secure/warehouse/components/DeleteWarehouseDialog";
 import DeleteWarehouseItemDialog from "@/app/secure/warehouse/components/DeleteWarehouseItemDialog";
@@ -11,6 +8,11 @@ import EditMenuIngredient from "@/app/secure/warehouse/components/EditMenuIngred
 import UpdateSupplierDialog from "@/app/secure/warehouse/components/UpdateSupplierDialog";
 import UpdateWarehouseDialog from "@/app/secure/warehouse/components/UpdateWarehouseDialog";
 import UpdateWarehouseItemDialog from "@/app/secure/warehouse/components/UpdateWarehouseItemDialog";
+import {
+  handleActivePromotion,
+  handleDisableLocationMenu,
+  handleDisableLocationMenuCat,
+} from "@/app/lib/backoffice/action";
 import { OrderData } from "@/general";
 import {
   addToast,
@@ -39,10 +41,9 @@ import {
   Warehouse,
   WarehouseItem,
 } from "@prisma/client";
+import { MenuDots, PenNewSquare, TrashBinTrash } from "@solar-icons/react";
+import { MapPinOff } from "lucide-react";
 import { useEffect, useState } from "react";
-import { IoMdMore } from "react-icons/io";
-import { MdDelete, MdEdit } from "react-icons/md";
-import { TbLocationCancel } from "react-icons/tb";
 import CancelOrderDialog from "./CancelOrderDialog";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
 import DeleteAddonDialog from "./DeleteAddonDailog";
@@ -59,10 +60,6 @@ import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
-import AddonIngredientPage, {
-  AddonIngredientDataType,
-} from "@/app/secure/warehouse/addon-ingredient/page";
-import DeleteAddonIngredientDialog from "@/app/secure/warehouse/components/DeleteAddonIngredient";
 
 interface Props {
   id: number;
@@ -231,13 +228,13 @@ export default function MoreOptionButton({
       <Dropdown className="bg-background min-w-12">
         <DropdownTrigger>
           <button className="bg-background rounded-md bg-opacity-40 outline-none">
-            <IoMdMore className="size-7" />
+            <MenuDots className="size-7" />
           </button>
         </DropdownTrigger>
         <DropdownMenu variant="faded">
           <DropdownItem
             key="edit"
-            endContent={<MdEdit className={iconClasses} />}
+            endContent={<PenNewSquare className={iconClasses} />}
             onPress={onUpdateOpen}
             href={
               itemType === "activeOrder"
@@ -325,9 +322,9 @@ export default function MoreOptionButton({
             color="danger"
             endContent={
               itemType === "activeOrder" ? (
-                <TbLocationCancel className={cn(iconClasses, "text-danger")} />
+                <MapPinOff className={cn(iconClasses, "text-danger")} />
               ) : (
-                <MdDelete className={cn(iconClasses, "text-danger")} />
+                <TrashBinTrash className={cn(iconClasses, "text-danger")} />
               )
             }
             onPress={onDeleteOpen}

@@ -1,13 +1,8 @@
 "use client";
 
 import { PromotionMenu } from "@prisma/client";
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useState,
-} from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { createContext, useState } from "react";
 
 export interface CartItem {
   id: string;

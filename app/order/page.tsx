@@ -3,7 +3,6 @@ import { Card, Chip, Divider, ScrollShadow, Spacer } from "@heroui/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { MdAttachMoney } from "react-icons/md";
 import {
   fetchCompany,
   fetchMenuCategoryMenu,
@@ -19,6 +18,7 @@ import CallServiceBtn from "./components/CallServiceBtn";
 import PromotionCard from "./components/PromotionCard";
 import { Metadata } from "next";
 import { baseMetadata } from "../lib/baseMetadata";
+import { Banknote2 } from "@solar-icons/react";
 
 export const metadata: Metadata = {
   ...baseMetadata,
@@ -124,7 +124,10 @@ const OrderPage = async ({
                       {item.name}
                     </span>
                     <div className="flex items-center mt-1 mb-1">
-                      <MdAttachMoney className="text-xl text-primary" />
+                      <Banknote2
+                        width="Broken"
+                        className="text-xl text-primary"
+                      />
                       <p>{formatCurrency(item.price)}</p>
                     </div>
                   </Card>

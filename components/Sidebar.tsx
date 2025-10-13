@@ -1,26 +1,32 @@
 "use client";
 
 import { Tooltip } from "@heroui/react";
+import {
+  AddSquare,
+  BoxMinimalistic,
+  Cart,
+  Garage,
+  MapPoint,
+  PresentationGraph,
+  RecordSquare,
+  SettingsMinimalistic,
+  SquareTransferHorizontal,
+  UsersGroupTwoRounded,
+  Widget,
+  WidgetAdd,
+} from "@solar-icons/react";
+import {
+  Beef,
+  HandPlatter,
+  Megaphone,
+  Salad,
+  Utensils,
+  UtensilsCrossed,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import { BiBox, BiCategory, BiChart, BiFoodMenu } from "react-icons/bi";
-import { GiMeal } from "react-icons/gi";
-import { IoFastFoodOutline, IoSettingsOutline } from "react-icons/io5";
-import { LuGitCompareArrows } from "react-icons/lu";
-
-import { AiOutlineAudit } from "react-icons/ai";
-import { ImBullhorn } from "react-icons/im";
-import { IoIosPeople } from "react-icons/io";
-import {
-  MdFoodBank,
-  MdOutlineFastfood,
-  MdOutlineInventory,
-  MdOutlineLocationOn,
-  MdOutlineRestaurantMenu,
-  MdOutlineTableBar,
-} from "react-icons/md";
-import { TbCategoryPlus, TbShoppingCartDollar } from "react-icons/tb";
 import Backdrop from "./BackDrop";
 import ShortcutButton from "./ShortCut";
 
@@ -40,43 +46,51 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Order",
       route: "/secure/backoffice/order",
-      icon: <IoFastFoodOutline />,
+      icon: <Salad />,
     },
     {
       name: "Dashboard",
       route: "/secure/backoffice/dashboard",
-      icon: <BiChart />,
+      icon: <PresentationGraph />,
     },
     {
       name: "Menu category",
       route: "/secure/backoffice/menu-category",
-      icon: <BiCategory />,
+      icon: <Widget />,
     },
-    { name: "Menu", route: "/secure/backoffice/menu", icon: <BiFoodMenu /> },
+    { name: "Menu", route: "/secure/backoffice/menu", icon: <HandPlatter /> },
     {
       name: "Add-on Category",
       route: "/secure/backoffice/addon-category",
-      icon: <TbCategoryPlus />,
+      icon: <WidgetAdd />,
     },
     {
       name: "Add-on",
       route: "/secure/backoffice/addon",
-      icon: <MdOutlineRestaurantMenu />,
+      icon: <AddSquare />,
     },
     {
       name: "Table",
       route: "/secure/backoffice/table",
-      icon: <MdOutlineTableBar />,
+      icon: (
+        <Image
+          priority
+          src="table.svg"
+          height={10}
+          width={10}
+          alt="Table Icon"
+        />
+      ),
     },
     {
       name: "Location",
       route: "/secure/backoffice/location",
-      icon: <MdOutlineLocationOn />,
+      icon: <MapPoint />,
     },
     {
       name: "Promotion",
       route: "/secure/backoffice/promotion",
-      icon: <ImBullhorn />,
+      icon: <Megaphone />,
     },
   ];
 
@@ -84,42 +98,42 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Warehouse",
       route: "/secure/warehouse",
-      icon: <MdOutlineInventory />,
+      icon: <Garage />,
     },
     {
       name: "Warehouse Item",
       route: "/secure/warehouse/warehouse-item",
-      icon: <MdFoodBank />,
+      icon: <Utensils />,
     },
     {
       name: "Ingredient",
       route: "/secure/warehouse/item-ingredient",
-      icon: <GiMeal />,
+      icon: <Beef />,
     },
     {
       name: "Add-on Ingredient",
       route: "/secure/warehouse/addon-ingredient",
-      icon: <MdOutlineFastfood />,
+      icon: <UtensilsCrossed />,
     },
     {
       name: "Supplier",
       route: "/secure/warehouse/supplier",
-      icon: <IoIosPeople />,
+      icon: <UsersGroupTwoRounded />,
     },
     {
       name: "Purchase Order",
       route: "/secure/warehouse/purchase-order",
-      icon: <TbShoppingCartDollar />,
+      icon: <Cart />,
     },
     {
       name: "Stock",
       route: "/secure/warehouse/stock",
-      icon: <BiBox />,
+      icon: <BoxMinimalistic />,
     },
     {
       name: "Stock Movement",
       route: "/secure/warehouse/stock-movement",
-      icon: <LuGitCompareArrows />,
+      icon: <SquareTransferHorizontal />,
     },
   ];
 
@@ -133,12 +147,12 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
     {
       name: "Audit Log",
       route: "/secure/warehouse/audit-log",
-      icon: <AiOutlineAudit />,
+      icon: <RecordSquare />,
     },
     {
       name: "Setting",
       route: `/secure/${pathName.split("/")[2]}/setting`,
-      icon: <IoSettingsOutline />,
+      icon: <SettingsMinimalistic />,
     },
   ];
 

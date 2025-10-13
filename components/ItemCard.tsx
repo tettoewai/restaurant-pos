@@ -15,19 +15,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@heroui/react";
-import { Addon, Supplier, Table, Warehouse, WarehouseItem } from "@prisma/client";
-import Image from "next/image";
-import { BiSolidCategoryAlt } from "react-icons/bi";
-import { BsPerson } from "react-icons/bs";
-import { LiaWarehouseSolid } from "react-icons/lia";
 import {
-  MdAttachMoney,
-  MdFoodBank,
-  MdLocationOn,
-  MdRestaurantMenu,
-  MdTableBar,
-} from "react-icons/md";
-import { TbCategoryPlus } from "react-icons/tb";
+  Addon,
+  Supplier,
+  Table,
+  Warehouse,
+  WarehouseItem,
+} from "@prisma/client";
+import {
+  AddSquare,
+  Banknote2,
+  Document2,
+  Garage,
+  PointOnMap,
+  UsersGroupTwoRounded,
+  WidgetAdd,
+} from "@solar-icons/react";
+import { Utensils } from "lucide-react";
+import Image from "next/image";
 import MoreOptionButton from "./MoreOptionButton";
 
 interface Props {
@@ -131,11 +136,11 @@ export default async function ItemCard({
       ) : null}
 
       {itemType === "addonCategory" ? (
-        <TbCategoryPlus className={iconClasses} />
+        <WidgetAdd className={iconClasses} />
       ) : itemType === "addon" ? (
-        <MdRestaurantMenu className={iconClasses} />
+        <AddSquare className={iconClasses} />
       ) : itemType === "menuCategory" ? (
-        <BiSolidCategoryAlt className={iconClasses} />
+        <Document2 className={iconClasses} />
       ) : itemType === "table" ? (
         <div className="flex justify-center items-center h-3/4 w-full overflow-hidden">
           {qrCodeData ? (
@@ -147,17 +152,24 @@ export default async function ItemCard({
               className="h-full w-full object-contain rounded-md"
             />
           ) : (
-            <MdTableBar className={iconClasses} />
+            <Image
+              priority
+              src="table.svg"
+              height={10}
+              width={10}
+              alt="Table Icon"
+              className={iconClasses}
+            />
           )}
         </div>
       ) : itemType === "location" ? (
-        <MdLocationOn className={iconClasses} />
+        <PointOnMap className={iconClasses} />
       ) : itemType === "warehouse" ? (
-        <LiaWarehouseSolid className={iconClasses} />
+        <Garage className={iconClasses} />
       ) : itemType === "warehouseItem" ? (
-        <MdFoodBank className={iconClasses} />
+        <Utensils className={iconClasses} />
       ) : itemType === "supplier" ? (
-        <BsPerson className={iconClasses} />
+        <UsersGroupTwoRounded className={iconClasses} />
       ) : null}
       <p
         className={`mt-2 text-wrap text-center font-semibold ${
@@ -203,7 +215,7 @@ export default async function ItemCard({
       </div>
       {price !== undefined && (
         <div className="flex items-center mt-1 mb-1">
-          <MdAttachMoney className="text-xl text-primary" />
+          <Banknote2 className="text-xl text-primary" />
           <p>{price}</p>
         </div>
       )}

@@ -10,10 +10,10 @@ import {
   TableRow,
 } from "@heroui/react";
 import { AuditLog } from "@prisma/client";
+import { MinimalisticMagnifer } from "@solar-icons/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Fragment, useCallback, useMemo, useState } from "react";
-import { BiSearch } from "react-icons/bi";
 
 export function AuditLogTable({
   columns,
@@ -85,14 +85,14 @@ export function AuditLogTable({
         }}
         placeholder="Search by user or action..."
         size="sm"
-        startContent={<BiSearch className="text-default-300" />}
+        startContent={<MinimalisticMagnifer className="text-default-300" />}
         value={filterValue}
         variant="bordered"
         onClear={() => setFilterValue("")}
         onValueChange={onSearchChange}
       />
     );
-  }, [filterValue, onSearchChange, router]);
+  }, [filterValue, onSearchChange]);
 
   const toggleExpand = (key: number) => {
     const newExpandedKeys = new Set(expandedKeys);

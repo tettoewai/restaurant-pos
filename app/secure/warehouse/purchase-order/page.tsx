@@ -8,10 +8,10 @@ import {
 import { CorrectionPOBtn, EditPOButton } from "@/components/Buttons";
 import { dateToString } from "@/function";
 import { Button } from "@heroui/react";
-import { MdDelete } from "react-icons/md";
+import { POStatus } from "@prisma/client";
+import { TrashBinMinimalistic } from "@solar-icons/react";
 import POStatusToggle from "../components/POStatusToggle";
 import { POTable } from "../components/POTable";
-import { POStatus } from "@prisma/client";
 
 export default async function PurchaseOrderPage() {
   const purchaseOrders = await fetchPurchaseOrder();
@@ -58,7 +58,7 @@ export default async function PurchaseOrderPage() {
           <div className="space-x-2">
             <EditPOButton item={po} />
             <Button isIconOnly variant="light" color="danger">
-              <MdDelete className="size-5" />
+              <TrashBinMinimalistic className="size-5" />
             </Button>
           </div>
         ) : null,

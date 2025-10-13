@@ -1,12 +1,13 @@
 "use client";
 
+import { AddonIngredientDataType } from "@/app/secure/warehouse/addon-ingredient/page";
+import { updateAddonIngredient } from "@/app/lib/warehouse/action";
 import { captilize, convertUnit, validUnits } from "@/function";
 import {
   addToast,
   Button,
   Checkbox,
   Form,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -18,11 +19,9 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Addon, AddonIngredient, Menu, WarehouseItem } from "@prisma/client";
-import { useEffect, useRef, useState } from "react";
-import { RxCross1, RxPlus } from "react-icons/rx";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
+import { useEffect, useState } from "react";
 import { AddonIngredientForm } from "./NewAddonIngredient";
-import { AddonIngredientDataType } from "@/app/secure/warehouse/addon-ingredient/page";
-import { updateAddonIngredient } from "@/app/lib/warehouse/action";
 
 interface Props {
   isOpen: boolean;
@@ -327,7 +326,7 @@ export default function UpdateAddonIngredientDialog({
                                 )
                               }
                             >
-                              <RxCross1 />
+                              <CloseCircle />
                             </Button>
                           ) : null}
                         </div>
@@ -362,7 +361,7 @@ export default function UpdateAddonIngredientDialog({
                       })
                     }
                   >
-                    <RxPlus />
+                    <AddCircle />
                   </Button>
                 </div>
               ) : null}

@@ -1,16 +1,10 @@
 "use client";
-import {
-  Card,
-  CardFooter,
-  Divider,
-  Image,
-  ScrollShadow,
-} from "@heroui/react";
+import { Card, CardFooter, Divider, Image, ScrollShadow } from "@heroui/react";
 import { Promotion } from "@prisma/client";
+import { AltArrowLeft, AltArrowRight } from "@solar-icons/react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 export default function PromotionCard({
   tableId,
@@ -93,7 +87,7 @@ export default function PromotionCard({
               scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
           }}
         >
-          <IoIosArrowBack />
+          <AltArrowLeft />
         </button>
         <button
           className="absolute right-4 top-28 bg-gray-200 bg-opacity-50 rounded-sm h-10 text-lg"
@@ -102,7 +96,7 @@ export default function PromotionCard({
               scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
           }}
         >
-          <IoIosArrowForward />
+          <AltArrowRight />
         </button>
       </div>
     </div>

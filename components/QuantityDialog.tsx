@@ -9,8 +9,8 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { Dispatch, useContext } from "react";
-import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 
 interface Props {
   addToPaid: (item: OrderData, dialog?: boolean) => void;
@@ -62,7 +62,7 @@ export default function QuantityDialog({
                 handleQuatity(quantityDialogData.quantity - 1)
               }
             >
-              <CiCircleMinus className="size-7 text-primary" />
+              <CloseCircle className="size-7 text-primary" />
             </Button>
             <div className="px-5 py-3 rounded-md flex justify-center items-center text-lg h-full bg-gray-200 dark:bg-gray-900">
               {quantityDialogData.quantity}
@@ -76,7 +76,7 @@ export default function QuantityDialog({
                 handleQuatity(quantityDialogData.quantity + 1)
               }
             >
-              <CiCirclePlus className="size-7 text-primary" />
+              <AddCircle className="size-7 text-primary" />
             </Button>
           </div>
         </ModalBody>

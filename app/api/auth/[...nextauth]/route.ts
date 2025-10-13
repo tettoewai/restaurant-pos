@@ -9,9 +9,10 @@ const authOptions: NextAuthOptions = {
       clientSecret: config.googleClientSecret,
     }),
   ],
+
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/login", // Specify the path to your custom sign-in page
+    signIn: "/login",
   },
   callbacks: {
     async session({ session, token }) {

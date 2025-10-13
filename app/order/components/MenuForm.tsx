@@ -12,9 +12,9 @@ import {
   Textarea,
 } from "@heroui/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
+import { AddCircle, MinusCircle } from "@solar-icons/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
-import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
 const { customAlphabet } = require("nanoid");
 
 interface Props {
@@ -284,13 +284,13 @@ export default function MenuForm({
               if (quantity > minQty) setQuantity(quantity - 1);
             }}
           >
-            <CiCircleMinus className="size-6 text-primary" />
+            <MinusCircle className="size-6 text-primary" />
           </button>
           <div className="px-5 rounded-md flex justify-center items-center text-lg h-full bg-gray-200 dark:bg-gray-900">
             {quantity}
           </div>
           <button onClick={() => setQuantity(quantity + 1)}>
-            <CiCirclePlus className="size-6 text-primary" />
+            <AddCircle className="size-6 text-primary" />
           </button>
         </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { fetchMenuAddonCategoryWithMenuId } from "@/app/lib/backoffice/data";
 import { createAddonIngredient } from "@/app/lib/warehouse/action";
+import { fetchMenuAddonCategoryWithCategoryAndMenu } from "@/app/lib/warehouse/data";
 import { captilize, validUnits } from "@/function";
 import {
   addToast,
@@ -25,14 +25,11 @@ import {
   AddonCategory,
   AddonIngredient,
   Menu,
-  MenuAddonCategory,
   WarehouseItem,
 } from "@prisma/client";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { useState } from "react";
-import { RxCross1, RxPlus } from "react-icons/rx";
 import ShortcutButton from "./ShortCut";
-import { prisma } from "@/db";
-import { fetchMenuAddonCategoryWithCategoryAndMenu } from "@/app/lib/warehouse/data";
 
 interface Props {
   addons: Addon[];
@@ -73,15 +70,14 @@ export default function NewAddonIngredientDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAll, setIsAll] = useState(false);
 
-  const addonWithCategory: (AddonGroupWithCategoryType | undefined)[]= addonCategories.map(
-    (item) => {
+  const addonWithCategory: (AddonGroupWithCategoryType | undefined)[] =
+    addonCategories.map((item) => {
       const relatedAddons = addons.filter(
         (addon) => addon.addonCategoryId && addon.needIngredient
       );
       if (relatedAddons.length === 0) return undefined;
       return { categoryName: item.name, addons: relatedAddons };
-    }
-  );
+    });
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -142,7 +138,7 @@ export default function NewAddonIngredientDialog({
           menuId,
         })
       : null;
-      
+
     if (!relatedMenuAddonCategory) {
       setIsSubmitting(false);
       return addToast({
@@ -186,13 +182,15 @@ export default function NewAddonIngredientDialog({
             <ModalBody className="w-full">
               <div className="flex space-x-1">
                 <Select label="Select an addon" isRequired name="addon">
-                  {addonWithCategory.map((item, index) => (
-                    item?<SelectSection key={index} title={item.categoryName}>
-                      {item.addons.map((addon) => (
-                        <SelectItem key={addon.id}>{addon.name}</SelectItem>
-                      ))}
-                    </SelectSection>: null
-                  ))}
+                  {addonWithCategory.map((item, index) =>
+                    item ? (
+                      <SelectSection key={index} title={item.categoryName}>
+                        {item.addons.map((addon) => (
+                          <SelectItem key={addon.id}>{addon.name}</SelectItem>
+                        ))}
+                      </SelectSection>
+                    ) : null
+                  )}
                 </Select>
                 <Select
                   label="Select a menu"
@@ -310,7 +308,7 @@ export default function NewAddonIngredientDialog({
                                 )
                               }
                             >
-                              <RxCross1 />
+                              <CloseCircle />
                             </Button>
                           ) : null}
                         </div>
@@ -341,7 +339,7 @@ export default function NewAddonIngredientDialog({
                       })
                     }
                   >
-                    <RxPlus />
+                    <AddCircle />
                   </Button>
                 </div>
               ) : null}

@@ -36,14 +36,12 @@ import {
   TimeInput,
   useDisclosure,
 } from "@heroui/react";
-import { parseDate, parseTime } from "@internationalized/date";
+import { parseDate, parseTime, Time } from "@internationalized/date";
 import { DiscountType } from "@prisma/client";
 import { TimeValue } from "@react-types/datepicker";
+import { AddCircle, CloseCircle } from "@solar-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { BiPlusCircle } from "react-icons/bi";
-import { IoMdClose } from "react-icons/io";
-import { RxCross2 } from "react-icons/rx";
 import useSWR from "swr";
 
 export default function App({ params }: { params: { id: string } }) {
@@ -169,8 +167,11 @@ export default function App({ params }: { params: { id: string } }) {
         if (item.startTime && item.endTime) {
           setTimeEnable(true);
           setTimePeriod({
-            startTime: parseTime(item.startTime),
-            endTime: parseTime(item.endTime),
+            startTime: toZonedDateTime(
+              parseTime(item.startTime),
+              "Asia/Yangon"
+            ),
+            endTime: toZonedDateTime(parseTime(item.endTime), "Asia/Yangon"),
           });
         }
         if (item.days) {
@@ -561,7 +562,7 @@ export default function App({ params }: { params: { id: string } }) {
                             );
                           }}
                         >
-                          <RxCross2 className="size-5 text-primary" />
+                          <CloseCircle className="size-5 text-primary" />
                         </Button>
                       ) : null}
                     </div>
@@ -581,7 +582,7 @@ export default function App({ params }: { params: { id: string } }) {
                     }}
                     isIconOnly
                   >
-                    <BiPlusCircle className="size-7 text-primary" />
+                    <AddCircle className="size-7 text-primary" />
                   </Button>
                 </div>
                 <span className="text-default-600 text-xs md:text-medium">
@@ -703,7 +704,7 @@ export default function App({ params }: { params: { id: string } }) {
                                 );
                               }}
                             >
-                              <RxCross2 className="size-5 text-primary" />
+                              <CloseCircle className="size-5 text-primary" />
                             </Button>
                           ) : null}
                         </div>
@@ -723,7 +724,7 @@ export default function App({ params }: { params: { id: string } }) {
                         }}
                         isIconOnly
                       >
-                        <BiPlusCircle className="size-7 text-primary" />
+                        <AddCircle className="size-7 text-primary" />
                       </Button>
                     </div>
                   </>
@@ -748,7 +749,7 @@ export default function App({ params }: { params: { id: string } }) {
               {prevImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                   <span className="truncate ...">{prevImage}</span>
-                  <IoMdClose
+                  <CloseCircle
                     className="text-primary size-6x mr-3 cursor-pointer"
                     onClick={() => setPrevImage(null)}
                   />
@@ -756,7 +757,7 @@ export default function App({ params }: { params: { id: string } }) {
               ) : promotionImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                   <span className="truncate ...">{promotionImage.name}</span>
-                  <IoMdClose
+                  <CloseCircle
                     className="text-primary size-6x mr-3 cursor-pointer"
                     onClick={() => {
                       setPromotionImage(null);
@@ -891,4 +892,7 @@ export default function App({ params }: { params: { id: string } }) {
       )}
     </div>
   );
+}
+function toZonedDateTime(arg0: Time, arg1: string): TimeValue | undefined {
+  throw new Error("Function not implemented.");
 }

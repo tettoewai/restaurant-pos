@@ -1,13 +1,17 @@
-import { Divider, Tooltip } from "@heroui/react";
+import { fetchCompany } from "@/app/lib/backoffice/data";
+import { Tooltip } from "@heroui/react";
+import {
+  AltArrowLeft,
+  AltArrowRight,
+  CloseCircle,
+  HamburgerMenu,
+} from "@solar-icons/react";
 import { Dispatch, SetStateAction } from "react";
-import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
-import { IoMenu } from "react-icons/io5";
+import useSWR from "swr";
 import { FullScreenButton, ModeButton } from "./Buttons";
 import LocationToggle from "./LocationToggle";
 import NotificationFeed from "./NotificationFeed";
 import UserProfile from "./UserProfile";
-import useSWR from "swr";
-import { fetchCompany } from "@/app/lib/backoffice/data";
 interface Props {
   sideBarOpen: boolean;
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -29,9 +33,9 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
           >
             <span className="sr-only">Open sidebar</span>
             {sideBarOpen ? (
-              <IoMdClose className="w-full h-full" />
+              <CloseCircle className="w-full h-full" />
             ) : (
-              <IoMenu className="w-full h-full" />
+              <HamburgerMenu className="w-full h-full" />
             )}
           </button>
           <Tooltip
@@ -50,9 +54,9 @@ export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
             >
               <span className="sr-only">Open sidebar</span>
               {sideBarOpen ? (
-                <IoIosArrowBack className="w-full h-full" />
+                <AltArrowLeft className="w-full h-full" />
               ) : (
-                <IoIosArrowForward className="w-full h-full" />
+                <AltArrowRight className="w-full h-full" />
               )}
             </button>
           </Tooltip>

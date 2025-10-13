@@ -2,15 +2,10 @@
 
 import { deleteMenuImage, updateMenu } from "@/app/lib/backoffice/action";
 import {
-  fetchMenuCategoryWithMenu,
-  fetchMenuWithId,
-} from "@/app/lib/backoffice/data";
-import {
   addToast,
   Button,
   Form,
   Input,
-  menu,
   Modal,
   ModalBody,
   ModalContent,
@@ -20,8 +15,8 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Menu, MenuCategory, MenuCategoryMenu } from "@prisma/client";
+import { CloseCircle } from "@solar-icons/react";
 import { useEffect, useRef, useState } from "react";
-import { IoMdClose } from "react-icons/io";
 import FileDropZone from "./FileDropZone";
 import MultipleSelector from "./MultipleSelector";
 
@@ -144,7 +139,7 @@ export default function UpdateMenuDialog({
               {prevImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                   <span className="truncate ...">{prevImage}</span>
-                  <IoMdClose
+                  <CloseCircle
                     className="text-primary size-6 mr-3 cursor-pointer"
                     onClick={() => {
                       setPrevImage("");
@@ -154,7 +149,7 @@ export default function UpdateMenuDialog({
               ) : menuImage ? (
                 <div className="w-full flex rounded-md border border-gray-400 p-1 items-center h-12 justify-between">
                   <span className="truncate ...">{menuImage.name}</span>
-                  <IoMdClose
+                  <CloseCircle
                     className="text-primary size-6x mr-3 cursor-pointer"
                     onClick={() => setMenuImage(null)}
                   />

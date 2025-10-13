@@ -10,11 +10,14 @@ import { Card, DateRangePicker } from "@heroui/react";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
 import { Order, OrderStatus, Receipt } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
+import {
+  ChecklistMinimalistic,
+  ClockCircle,
+  GraphUp,
+  HandMoney,
+} from "@solar-icons/react";
+import { BanknoteX, HandPlatter } from "lucide-react";
 import { useState } from "react";
-import { BiSolidDish } from "react-icons/bi";
-import { BsCash } from "react-icons/bs";
-import { IoFastFood } from "react-icons/io5";
-import { TbCoinOff, TbTax } from "react-icons/tb";
 import useSWR from "swr";
 import ExportToExcelBtn from "./ExportToExcelBtn";
 import ListTable from "./ListTable";
@@ -142,36 +145,36 @@ function OrderForDate() {
   const countStatus = [
     {
       name: "Pending Order",
-      icon: <IoFastFood className={iconClass} />,
+      icon: <ClockCircle className={iconClass} />,
       count: sameItemOrder.filter(
         (item) => !item.isFoc && item.status === OrderStatus.PENDING
       )?.length,
     },
     {
       name: "Total Order",
-      icon: <IoFastFood className={iconClass} />,
+      icon: <ChecklistMinimalistic className={iconClass} />,
       count: sameItemOrder.filter((item) => !item.isFoc)?.length,
     },
     {
       name: "Gross Revenue",
-      icon: <BsCash className={iconClass} />,
+      icon: <GraphUp className={iconClass} />,
       count: grossRevenue,
     },
     {
       name: "Avg. Order Value",
-      icon: <BiSolidDish className={iconClass} />,
+      icon: <HandPlatter className={iconClass} />,
       count: avgOrderVal || 0,
     },
     {
       name: "Foc Menu",
-      icon: <TbCoinOff className={iconClass} />,
+      icon: <BanknoteX className={iconClass} />,
       count:
         (focTotalPrice ? formatCurrency(focTotalPrice) : "") +
         ` (${focReceipts?.length})`,
     },
     {
       name: "Total Tax",
-      icon: <TbTax className={iconClass} />,
+      icon: <HandMoney className={iconClass} />,
       count: formatCurrency(0),
     },
   ];

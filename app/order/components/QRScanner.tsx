@@ -2,10 +2,10 @@
 import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import { changeTable } from "@/app/lib/order/action";
 import { addToast, Button, Card, Spinner } from "@heroui/react";
+import { RoundTransferHorizontal } from "@solar-icons/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import QrScanner from "qr-scanner";
 import { useEffect, useRef, useState } from "react";
-import { TbArrowsExchange2 } from "react-icons/tb";
 import useSWR from "swr";
 
 const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
@@ -125,7 +125,7 @@ const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
         ) : null}
         {table ? (
           <Card className="w-full p-4 flex justify-center items-center">
-            <TbArrowsExchange2 className="text-primary" size={60} />
+            <RoundTransferHorizontal className="text-primary" size={60} />
             <span className="mt-2">
               Are you sure you went to change {table?.name} table?
             </span>

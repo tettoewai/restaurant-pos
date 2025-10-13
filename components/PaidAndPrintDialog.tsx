@@ -19,10 +19,8 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { AddonCategory } from "@prisma/client";
+import { CloseCircle, VerifiedCheck } from "@solar-icons/react";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { PiHandCoinsFill } from "react-icons/pi";
-import { RxCross2 } from "react-icons/rx";
-import { useReactToPrint } from "react-to-print";
 import useSWR from "swr";
 import ImagePrintPaidReceipt from "./ImagePrintPaidReceipt";
 import ListTable from "./ListTable";
@@ -92,7 +90,7 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
             setPaid(paid.filter((paid) => paid.itemId !== item.itemId))
           }
         >
-          <RxCross2 className="size-5 text-primary" />
+          <CloseCircle className="size-5 text-primary" />
         </Button>
       ),
     };
@@ -204,7 +202,7 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
             onPress={onOpen}
             isDisabled={paid.length === 0}
           >
-            <PiHandCoinsFill color="white" className="size-5" />
+            <VerifiedCheck color="white" className="size-5" />
           </Button>
         </Tooltip>
       </Badge>

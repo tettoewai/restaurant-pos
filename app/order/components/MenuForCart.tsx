@@ -1,14 +1,18 @@
 "use client";
-import { formatCurrency } from "@/function";
 import { CartItem } from "@/context/OrderContext";
+import { formatCurrency } from "@/function";
 import { Card } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
+import {
+  AddCircle,
+  Banknote2,
+  MinusCircle,
+  PenNewSquare,
+} from "@solar-icons/react";
 import { Dispatch, SetStateAction } from "react";
-import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
-import { MdAttachMoney, MdEdit } from "react-icons/md";
 
 interface Props {
   itemId: string;
@@ -64,7 +68,7 @@ export default function MenuForCart({
         href={`/order/${validCart.menuId}?tableId=${tableId}&cartId=${validCart.id}`}
       >
         <button className="absolute top-2 right-2">
-          <MdEdit className="size-6 text-primary" />
+          <PenNewSquare className="size-6 text-primary" />
         </button>
       </Link>
       <div className="flex justify-between items-center h-full w-full">
@@ -90,7 +94,7 @@ export default function MenuForCart({
             <button
               onClick={() => handleQuantityChange(validCart.quantity - 1)}
             >
-              <CiCircleMinus className="size-6 text-primary" />
+              <MinusCircle className="size-6 text-primary" />
             </button>
             <div className="px-5 rounded-md flex justify-center items-center text-lg h-full bg-gray-200 dark:bg-gray-900">
               {validCart.quantity}
@@ -98,12 +102,12 @@ export default function MenuForCart({
             <button
               onClick={() => handleQuantityChange(validCart.quantity + 1)}
             >
-              <CiCirclePlus className="size-6 text-primary" />
+              <AddCircle className="size-6 text-primary" />
             </button>
           </div>
         </div>
         <div className="flex items-center justify-center mr-1">
-          <MdAttachMoney className="text-xl text-primary" />
+          <Banknote2 className="text-xl text-primary" />
           <span className="text-xs">{formatCurrency(subTotal)}</span>
         </div>
       </div>

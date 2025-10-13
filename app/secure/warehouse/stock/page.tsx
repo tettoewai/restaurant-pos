@@ -9,8 +9,8 @@ import { NewPOButton } from "@/components/Buttons";
 import ItemCard from "@/components/ItemCard";
 import { captilize, convertUnit, roundToTwoDecimal } from "@/function";
 import { Card } from "@heroui/react";
+import { Garage } from "@solar-icons/react";
 import { Suspense } from "react";
-import { LiaWarehouseSolid } from "react-icons/lia";
 import WarehouseToggle from "../components/WarehouseToggle";
 
 export const revalidate = 60;
@@ -44,7 +44,7 @@ export default async function StockPage() {
           className="flex justify-between flex-row items-center p-2 bg-background h-14 pr-4"
         >
           <div className="flex">
-            <LiaWarehouseSolid className="size-6 text-primary mr-2 items-center justify-center" />
+            <Garage className="size-6 text-primary mr-2 items-center justify-center" />
             <span>Warehouse</span>
           </div>
           <WarehouseToggle

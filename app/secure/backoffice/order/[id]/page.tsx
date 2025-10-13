@@ -38,9 +38,9 @@ import {
 } from "@heroui/react";
 
 import { OrderStatus } from "@prisma/client";
+import { AltArrowDown } from "@solar-icons/react";
 import { nanoid } from "nanoid";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { IoIosArrowDropdown } from "react-icons/io";
 import useSWR, { mutate } from "swr";
 export default function App({ params }: { params: { id: string } }) {
   const tabs = useMemo(() => ["pending", "cooking", "complete"], []);
@@ -406,7 +406,7 @@ export default function App({ params }: { params: { id: string } }) {
                             <Dropdown className="bg-background">
                               <DropdownTrigger>
                                 <Button
-                                  endContent={<IoIosArrowDropdown />}
+                                  endContent={<AltArrowDown />}
                                   size="sm"
                                   isDisabled={
                                     statusChanging.find(
@@ -506,7 +506,7 @@ export default function App({ params }: { params: { id: string } }) {
                             </Dropdown>
                           </TableCell>
                           <TableCell>
-                            {item.createdAt ? timeAgo(item.createdAt): "--"}
+                            {item.createdAt ? timeAgo(item.createdAt) : "--"}
                           </TableCell>
                         </TableRow>
                       );

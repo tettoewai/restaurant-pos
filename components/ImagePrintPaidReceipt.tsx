@@ -1,7 +1,7 @@
 "use client";
 
+import { BackOfficeContext } from "@/context/BackOfficeContext";
 import { dateToString } from "@/function";
-import { PaidData } from "@/general";
 import {
   Button,
   Modal,
@@ -10,12 +10,10 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { Addon, Menu } from "@prisma/client";
 import html2canvas from "html2canvas";
 import { Dispatch, RefObject, SetStateAction, useContext } from "react";
 import { useReactToPrint } from "react-to-print";
 import PaidPrint from "./PaidPrint";
-import { BackOfficeContext } from "@/context/BackOfficeContext";
 
 interface Props {
   isOpen: boolean;

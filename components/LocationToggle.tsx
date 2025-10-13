@@ -12,9 +12,8 @@ import {
   DropdownTrigger,
   Spinner,
 } from "@heroui/react";
+import { AltArrowDown, MapPoint } from "@solar-icons/react";
 import React, { useEffect } from "react";
-import { IoIosArrowDown } from "react-icons/io";
-import { MdLocationOn } from "react-icons/md";
 import useSWR from "swr";
 
 export default function Locationtoggle() {
@@ -76,8 +75,8 @@ export default function Locationtoggle() {
           <Button
             variant="flat"
             className="bg-background p-0"
-            startContent={<MdLocationOn className="text-primary" />}
-            endContent={<IoIosArrowDown className="text-primary" />}
+            startContent={<MapPoint className="text-primary" />}
+            endContent={<AltArrowDown className="text-primary" />}
           >
             <span className="truncate">{selectedLocationName}</span>
           </Button>

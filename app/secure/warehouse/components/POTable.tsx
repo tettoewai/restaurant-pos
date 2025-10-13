@@ -22,10 +22,10 @@ import {
   PurchaseOrderItem,
   WarehouseItem,
 } from "@prisma/client";
+import { MinimalisticMagnifer } from "@solar-icons/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Fragment, useCallback, useMemo, useState } from "react";
-import { BiSearch } from "react-icons/bi";
 
 export function POTable({
   purchaseOrders,
@@ -117,7 +117,7 @@ export function POTable({
           }}
           placeholder="Search by code..."
           size="sm"
-          startContent={<BiSearch className="text-default-300" />}
+          startContent={<MinimalisticMagnifer className="text-default-300" />}
           value={filterValue}
           variant="bordered"
           onClear={() => setFilterValue("")}

@@ -8,7 +8,7 @@ import MyTable from "@/components/MyTable";
 import { dateToString, formatCurrency } from "@/function";
 import { Link as NextUiLink } from "@heroui/react";
 import Link from "next/link";
-import { FaRegEye } from "react-icons/fa6";
+import { Eye } from "@solar-icons/react";
 
 export default async function recentReceiptPage() {
   const receipts = await fetchRecentReceipt();
@@ -76,7 +76,7 @@ export default async function recentReceiptPage() {
             color="primary"
             className="hover:bg-default-100 p-[8px] rounded-md"
           >
-            <FaRegEye className="size-6" />
+            <Eye className="size-6" />
           </NextUiLink>
           <ReceiptPrintButton
             receipts={currentReceipts}

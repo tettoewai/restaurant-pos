@@ -1,10 +1,10 @@
 "use client";
 import { Card } from "@heroui/react";
 import { Table } from "@prisma/client";
+import { Printer } from "@solar-icons/react";
 import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";
 import { useRef } from "react";
-import { BsQrCodeScan } from "react-icons/bs";
 import { useReactToPrint } from "react-to-print";
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"] });
 
@@ -113,8 +113,8 @@ const QrcodePrint = ({
         className="w-full justify-between flex font-normal text-sm"
         onClick={() => handlePrint()}
       >
-        Print qr{" "}
-        <BsQrCodeScan className="text-xl text-default-500 pointer-events-none shrink-0" />
+        Print QR
+        <Printer className="text-xl text-default-500 pointer-events-none shrink-0" />
       </button>
     </div>
   );

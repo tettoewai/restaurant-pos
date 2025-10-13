@@ -10,8 +10,8 @@ import {
   Spinner,
   useDisclosure,
 } from "@heroui/react";
+import { Danger } from "@solar-icons/react";
 import { useState } from "react";
-import { IoWarning } from "react-icons/io5";
 import { mutate } from "swr";
 
 interface Props {
@@ -51,7 +51,7 @@ export default function NoticeCancelDialog({
 
   return (
     <div className="relative">
-      <IoWarning
+      <Danger
         className="size-7 text-red-500 ml-1 cursor-pointer"
         onClick={onOpen}
       />

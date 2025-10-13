@@ -4,9 +4,9 @@ import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Spinner } from "@heroui/react";
 import { Menu } from "@prisma/client";
+import { CartCross } from "@solar-icons/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useContext } from "react";
-import { BsCartX } from "react-icons/bs";
 import useSWR from "swr";
 import ConfirmOrderBut from "../components/ConfirmOrderBut";
 import MenuForCart from "../components/MenuForCart";
@@ -82,7 +82,7 @@ export default function Cart() {
               shadow="none"
               className="bg-background flex flex-col items-center justify-center w-4/5 p-4"
             >
-              <BsCartX className="size-12 text-primary mb-4" />
+              <CartCross className="size-12 text-primary mb-4" />
               <span>Hungry?</span>
               <span className="text-sm text-center mt-3">
                 You have not added anything to your cart!

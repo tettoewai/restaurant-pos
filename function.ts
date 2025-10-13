@@ -1,4 +1,5 @@
 import {
+  MenuItemIngredient,
   Promotion,
   PromotionMenu,
   PromotionUsage,
@@ -21,6 +22,8 @@ import { weekday } from "./general";
 import {
   fetchAddonIngredients,
   fetchMenuItemIngredientWithMenuIds,
+  fetchWarehouseItem,
+  fetchWarehouseStock,
 } from "./app/lib/warehouse/data";
 
 export const dateToString = ({
@@ -486,7 +489,7 @@ export function timeAgo(date: Date) {
 }
 
 export async function checkWMS() {
-  // check setting ingradients of menu and addon
+  // check setting ingradients of menu
   const menus = await fetchMenu();
   const menuIds = menus.map((item) => item.id);
   const menuIngredients = await fetchMenuItemIngredientWithMenuIds(menuIds);
@@ -531,5 +534,84 @@ export async function checkWMS() {
   });
   console.log("notsetIngredientAddonIds", notsetIngredientAddonIds);
 
-  // check stock hit threshole
+  // check ingredients are enough
+  const warehouseStocks = await fetchWarehouseStock();
+
+  // total menu ingredients
+  const totalMenuIngredients = Object.values(
+    menuIngredients.reduce((acc, cur) => {
+      if (!acc[cur.itemId]) {
+        acc[cur.itemId] = {
+          itemId: cur.itemId,
+          totalQty: cur.quantity,
+        };
+      } else {
+        acc[cur.itemId].totalQty += cur.quantity;
+      }
+      return acc;
+    }, {} as Record<number, { itemId: number; totalQty: number }>)
+  );
+
+  //total addon ingredients
+  const totalAddonIngredients = Object.values(
+    addonIngredients.reduce((acc, cur) => {
+      if (!acc[cur.itemId]) {
+        acc[cur.itemId] = {
+          itemId: cur.itemId,
+          totalQty: cur.extraQty,
+        };
+      } else {
+        acc[cur.itemId].totalQty += cur.extraQty;
+      }
+      return acc;
+    }, {} as Record<number, { itemId: number; totalQty: number }>)
+  );
+
+  const allIngredientsMap = {} as Record<
+    number,
+    { itemId: number; totalQty: number; stock?: number }
+  >;
+
+  totalMenuIngredients.forEach((item) => {
+    const currentStock = warehouseStocks.find(
+      (stock) => stock.itemId === item.itemId
+    );
+    allIngredientsMap[item.itemId] = {
+      ...item,
+      stock: currentStock?.quantity || 0,
+    };
+  });
+
+  totalAddonIngredients.forEach((item) => {
+    const currentStock = warehouseStocks.find(
+      (stock) => stock.itemId === item.itemId
+    );
+    if (allIngredientsMap[item.itemId]) {
+      allIngredientsMap[item.itemId].totalQty += item.totalQty;
+    } else {
+      allIngredientsMap[item.itemId] = {
+        ...item,
+        stock: currentStock?.quantity || 0,
+      };
+    }
+  });
+
+  const allIngredients = Object.values(allIngredientsMap);
+  const notEnoughIngredient = allIngredients.filter((item) => {
+    return item.stock! < item.totalQty;
+  });
+
+  console.log("notEnoughIngredient", notEnoughIngredient);
+
+  // check stock hit threshold
+
+  const warehouseItems = await fetchWarehouseItem();
+  const hitThresholdStock = warehouseItems.filter((item) => {
+    const validStock = warehouseStocks.find(
+      (stock) => stock.itemId === item.id
+    );
+    return validStock ? item.threshold >= validStock.quantity : true;
+  });
+
+  console.log("hitThresholdStock", hitThresholdStock);
 }

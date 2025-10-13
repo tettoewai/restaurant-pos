@@ -42,7 +42,7 @@ export default function CheckWMSDialog() {
           </ModalHeader>
           <ModalBody>
             {checking ? (
-              <Spinner title="Checking" />
+              <Spinner title="Checking" variant="wave" />
             ) : (
               <span>Are you sure you went to check WMS?</span>
             )}

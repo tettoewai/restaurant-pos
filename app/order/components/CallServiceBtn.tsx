@@ -1,12 +1,9 @@
 "use client";
 
 import { callService } from "@/app/lib/order/action";
-import FileDropZone from "@/components/FileDropZone";
-import MultipleSelector from "@/components/MultipleSelector";
 import {
   addToast,
   Button,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -16,9 +13,8 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Table } from "@prisma/client";
+import { SirenRounded } from "@solar-icons/react";
 import { useState } from "react";
-import { BiBell } from "react-icons/bi";
-import { IoMdClose } from "react-icons/io";
 
 export default function CallServiceBtn({ table }: { table: Table }) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -46,7 +42,7 @@ export default function CallServiceBtn({ table }: { table: Table }) {
         size="lg"
         onPress={() => onOpen()}
       >
-        <BiBell className="size-9" />
+        <SirenRounded className="size-9" />
         Call
       </Button>
       <Modal

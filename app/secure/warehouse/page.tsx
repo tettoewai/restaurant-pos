@@ -1,12 +1,12 @@
 export const revalidate = 3600;
 
-import { Card } from "@heroui/react";
-import { LiaWarehouseSolid } from "react-icons/lia";
-import WarehouoseToggle from "./components/WarehouseToggle";
 import {
   fetchSelectedWarehouse,
   fetchWarehouse,
 } from "@/app/lib/warehouse/data";
+import { Card } from "@heroui/react";
+import { Garage } from "@solar-icons/react";
+import WarehouoseToggle from "./components/WarehouseToggle";
 
 export default async function WarehousePage() {
   const [warehouse, selectedWarehouse] = await Promise.all([
@@ -28,7 +28,7 @@ export default async function WarehousePage() {
           className="flex justify-between flex-row items-center p-2 bg-background h-14 pr-4"
         >
           <div className="flex">
-            <LiaWarehouseSolid className="size-6 text-primary mr-2 items-center justify-center" />
+            <Garage className="size-6 text-primary mr-2 items-center justify-center" />
             <span>Warehouse</span>
           </div>
           <WarehouoseToggle

@@ -13,9 +13,9 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
+import { Bell } from "@solar-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { IoIosNotifications } from "react-icons/io";
 import useSWR, { mutate } from "swr";
 
 export default function NotificationFeed() {
@@ -63,7 +63,7 @@ export default function NotificationFeed() {
         >
           <DropdownTrigger>
             <Button isIconOnly variant="light">
-              <IoIosNotifications className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+              <Bell className="size-7 md:size-8 cursor-pointer text-primary p-1" />
             </Button>
           </DropdownTrigger>
         </Badge>

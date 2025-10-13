@@ -1,51 +1,52 @@
 import { Link as NextUiLink } from "@heroui/react";
+import {
+  ChecklistMinimalistic,
+  CodeScan,
+  Devices,
+  DocumentAdd,
+  HandHeart,
+  MapPointFavourite,
+  Notebook2,
+  PeopleNearby,
+} from "@solar-icons/react";
 import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
-import { BiSolidFoodMenu } from "react-icons/bi";
-import { BsQrCodeScan } from "react-icons/bs";
-import { FaUserShield } from "react-icons/fa6";
-import { MdAddLocationAlt, MdOutlineDevices } from "react-icons/md";
-import {
-  RiCheckboxMultipleBlankFill,
-  RiCustomerService2Line,
-} from "react-icons/ri";
-import { VscFeedback } from "react-icons/vsc";
 
 const bebasNeue = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
 export default function Home() {
   const functionItem = [
     {
-      icon: <MdOutlineDevices className="text-primary size-10" />,
+      icon: Devices,
       title: "Responsive in multiple devices",
     },
     {
-      icon: <BiSolidFoodMenu className="text-primary size-10" />,
+      icon: Notebook2,
       title: "Easily manage your menus with Restaurant POS",
     },
     {
-      icon: <BsQrCodeScan className="text-primary size-10" />,
+      icon: CodeScan,
       title: "Scan and order. Quick and easy! Your customers will love it!",
     },
     {
-      icon: <MdAddLocationAlt className="text-primary size-10" />,
+      icon: MapPointFavourite,
       title: "Restaurant POS supports multiple locations for your business",
     },
     {
-      icon: <RiCheckboxMultipleBlankFill className="text-primary size-10" />,
+      icon: ChecklistMinimalistic,
       title: "Backoffice and order apps are included in every subscription.",
     },
     {
-      icon: <RiCustomerService2Line className="text-primary size-10" />,
+      icon: HandHeart,
       title:
         "Dedicated customer support so that we are awlays here to help you.",
     },
     {
-      icon: <FaUserShield className="text-primary size-10" />,
+      icon: PeopleNearby,
       title: "Customer can only place order when physically in restaurant.",
     },
     {
-      icon: <VscFeedback className="text-primary size-10" />,
+      icon: DocumentAdd,
       title: "Digital receipt and rating feedback.",
     },
   ];
@@ -89,15 +90,18 @@ export default function Home() {
       </div>
       <span>In usage, user must scan qr code to place order</span>
       <div className="mt-9 flex items-center justify-center flex-wrap">
-        {functionItem.map((item, index) => (
-          <div
-            key={index}
-            className="w-52 h-44 flex items-center justify-center flex-col bg-background rounded-md m-3 hover:scale-105 transition-transform"
-          >
-            {item.icon}
-            <h5 className="text-center mt-2">{item.title}</h5>
-          </div>
-        ))}
+        {functionItem.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={index}
+              className="w-52 h-44 flex items-center justify-center flex-col bg-background rounded-md m-3 hover:scale-105 transition-transform"
+            >
+              <Icon className="text-primary size-10" />
+              <h5 className="text-center mt-2">{item.title}</h5>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

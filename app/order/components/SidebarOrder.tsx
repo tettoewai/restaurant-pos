@@ -1,12 +1,14 @@
 import Backdrop from "@/components/BackDrop";
+import {
+  CallChatRounded,
+  CartCheck,
+  Home,
+  RoundTransferHorizontal,
+  UsersGroupTwoRounded,
+} from "@solar-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
-import { AiFillInfoCircle } from "react-icons/ai";
-import { IoMdHome } from "react-icons/io";
-import { MdGroups2 } from "react-icons/md";
-import { RiCustomerService2Fill } from "react-icons/ri";
-import { TbArrowsExchange2 } from "react-icons/tb";
 
 interface Props {
   sideBarOpen: boolean;
@@ -23,27 +25,27 @@ export default function SidebarOrder({
     {
       name: "Home",
       route: `/order?tableId=${tableId}`,
-      icon: <IoMdHome />,
+      icon: Home,
     },
     {
       name: "Active orders",
       route: `/order/active-order?tableId=${tableId}`,
-      icon: <AiFillInfoCircle />,
+      icon: CartCheck,
     },
     {
       name: "Change table",
       route: `/order/change-table?tableId=${tableId}`,
-      icon: <TbArrowsExchange2 />,
+      icon: RoundTransferHorizontal,
     },
     {
       name: "About us",
       route: "",
-      icon: <MdGroups2 />,
+      icon: UsersGroupTwoRounded,
     },
     {
       name: "Contact us",
       route: "",
-      icon: <RiCustomerService2Fill />,
+      icon: CallChatRounded,
     },
   ];
   return (
@@ -57,6 +59,7 @@ export default function SidebarOrder({
         <ul>
           {sideBarItem.map((item, index) => {
             const isActive = `${pathName}?tableId=${tableId}` === item.route;
+            const Icon = item.icon;
             return (
               <li key={index} className="m-2 relative hover:text-primary">
                 <Link
@@ -72,9 +75,9 @@ export default function SidebarOrder({
                       : "border"
                   }`}
                 >
-                  <div className={sideBarOpen ? "mr-1 text-2xl" : "text-3xl"}>
-                    {item.icon}
-                  </div>
+                  <Icon
+                    className={sideBarOpen ? "mr-1 text-2xl" : "text-3xl"}
+                  />
                   <p
                     className={`transition-all ${
                       sideBarOpen ? "flex" : "hidden"

@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
+import { AltArrowDown } from "@solar-icons/react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -20,7 +21,6 @@ import {
 } from "chart.js";
 import { Dispatch, SetStateAction } from "react";
 import { Line } from "react-chartjs-2";
-import { IoIosArrowDown } from "react-icons/io";
 
 ChartJS.register(
   CategoryScale,
@@ -87,7 +87,7 @@ const SalesChart = ({
             <Button
               variant="light"
               className="w-fit p-0"
-              endContent={<IoIosArrowDown className="text-primary" />}
+              endContent={<AltArrowDown className="text-primary" />}
             >
               {selectedYear}
             </Button>
