@@ -18,7 +18,7 @@ import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { formatOrder, getTotalOrderPrice } from "@/general";
 import { Button, Card } from "@heroui/react";
 import { DiscountType, Order, OrderStatus } from "@prisma/client";
-import { CartCross } from "@solar-icons/react";
+import { CartCross } from "@solar-icons/react/ssr";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";

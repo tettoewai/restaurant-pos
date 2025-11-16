@@ -30,10 +30,11 @@ import {
   PointOnMap,
   UsersGroupTwoRounded,
   WidgetAdd,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import { Utensils } from "lucide-react";
 import Image from "next/image";
 import MoreOptionButton from "./MoreOptionButton";
+import TableIcon from "./icons/TableIcon";
 
 interface Props {
   id: number;
@@ -152,14 +153,7 @@ export default async function ItemCard({
               className="h-full w-full object-contain rounded-md"
             />
           ) : (
-            <Image
-              priority
-              src="table.svg"
-              height={10}
-              width={10}
-              alt="Table Icon"
-              className={iconClasses}
-            />
+            <TableIcon className={iconClasses} />
           )}
         </div>
       ) : itemType === "location" ? (

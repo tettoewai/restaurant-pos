@@ -5,7 +5,7 @@ import {
   Home,
   RoundTransferHorizontal,
   UsersGroupTwoRounded,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";

@@ -194,7 +194,7 @@ export default function ChooseRequiredAddonDialog({
               {creatingMenuAddonCategory ? (
                 <>
                   <span>Creating promotion</span>
-                  <Spinner color="white" />
+                  <Spinner color="white" variant="wave" />
                 </>
               ) : (
                 "Confirm"

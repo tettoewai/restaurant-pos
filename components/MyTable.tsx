@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import { MinimalisticMagnifer } from "@solar-icons/react";
+import { MinimalisticMagnifer } from "@solar-icons/react/ssr";
 import { useCallback, useMemo, useState } from "react";
 
 interface Props {

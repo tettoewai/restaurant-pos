@@ -9,7 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { AddCircle, CloseCircle } from "@solar-icons/react";
+import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
 import { Dispatch, useContext } from "react";
 
 interface Props {

@@ -53,10 +53,11 @@ export default function ExportToExcelBtn({
       startContent={
         <Image
           priority
-          src="excel-logo.svg"
-          height={5}
-          width={5}
+          src="/icons/excel-logo.svg"
+          height={25}
+          width={25}
           alt="Excel Logo"
+          className="text-white"
         />
       }
       onPress={() => exportToExcel(sheetsData, fileName)}

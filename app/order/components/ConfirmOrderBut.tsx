@@ -96,7 +96,11 @@ export default function ConfirmOrderBut({
         onPress={handleConfirmOrder}
         disabled={isCreating}
       >
-        {isCreating ? <Spinner color="white" size="sm" /> : "Confirm Order"}
+        {isCreating ? (
+          <Spinner color="white" size="sm" variant="wave" />
+        ) : (
+          "Confirm Order"
+        )}
       </Button>
     </div>
   );

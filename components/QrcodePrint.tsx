@@ -1,7 +1,7 @@
 "use client";
 import { Card } from "@heroui/react";
 import { Table } from "@prisma/client";
-import { Printer } from "@solar-icons/react";
+import { Printer } from "@solar-icons/react/ssr";
 import { Bebas_Neue } from "next/font/google";
 import Image from "next/image";
 import { useRef } from "react";

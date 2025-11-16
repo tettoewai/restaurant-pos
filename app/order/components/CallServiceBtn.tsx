@@ -13,7 +13,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Table } from "@prisma/client";
-import { SirenRounded } from "@solar-icons/react";
+import { SirenRounded } from "@solar-icons/react/ssr";
 import { useState } from "react";
 
 export default function CallServiceBtn({ table }: { table: Table }) {

@@ -12,7 +12,7 @@ import {
   Textarea,
 } from "@heroui/react";
 import { Addon, AddonCategory, Order } from "@prisma/client";
-import { AddCircle, MinusCircle } from "@solar-icons/react";
+import { AddCircle, MinusCircle } from "@solar-icons/react/ssr";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 const { customAlphabet } = require("nanoid");

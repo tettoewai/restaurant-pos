@@ -18,7 +18,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { AddonCategory, Menu } from "@prisma/client";
-import { Star } from "@solar-icons/react";
+import { Star } from "@solar-icons/react/ssr";
 import { useEffect, useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
 
@@ -113,7 +113,7 @@ export default function UpdateAddonCategoryDialog({
           <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody>
               {isLoading ? (
-                <Spinner size="sm" />
+                <Spinner size="sm" variant="wave" />
               ) : (
                 <>
                   <Input
@@ -155,7 +155,11 @@ export default function UpdateAddonCategoryDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+                {isSubmitting ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  <span>Update</span>
+                )}
               </Button>
             </ModalFooter>
           </form>

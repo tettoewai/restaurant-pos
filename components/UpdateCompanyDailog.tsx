@@ -15,6 +15,7 @@ import {
 } from "@heroui/react";
 import { Company } from "@prisma/client";
 import { useEffect, useState } from "react";
+import { PenNewSquare } from "@solar-icons/react";
 
 export default function UpdateCompanyDialog() {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -60,7 +61,12 @@ export default function UpdateCompanyDialog() {
 
   return (
     <div className="relative">
-      <Button className="bg-primary w-24 text-white" onPress={onOpen}>
+      <Button
+        variant="ghost"
+        color="primary"
+        onPress={onOpen}
+        endContent={<PenNewSquare size={16} />}
+      >
         Update
       </Button>
       <Modal
@@ -80,7 +86,7 @@ export default function UpdateCompanyDialog() {
           <form onSubmit={handleSubmit}>
             <ModalBody>
               {isLoading ? (
-                <Spinner size="sm" />
+                <Spinner size="sm" variant="wave" />
               ) : (
                 <>
                   <Input
@@ -130,7 +136,11 @@ export default function UpdateCompanyDialog() {
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+                {isSubmitting ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  <span>Update</span>
+                )}
               </Button>
             </ModalFooter>
           </form>

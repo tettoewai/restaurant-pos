@@ -15,7 +15,7 @@ import {
   ClockCircle,
   GraphUp,
   HandMoney,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import { BanknoteX, HandPlatter } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
@@ -55,15 +55,8 @@ function OrderForDate() {
     if (!isExist) sameItemOrder.push(item);
   });
 
-  // const sameCodeReceipt: Order[] = [];
-  // orderData?.map((item) => {
-  //   const isExist = sameCodeReceipt.find((same) => same.code === item.code);
-  //   if (!isExist && !item.isFoc) sameCodeReceipt.push(item);
-  // });
-
   const grossRevenue =
     orderData
-      ?.filter((item) => !item.isFoc)
       ?.filter((item) => !item.isFoc)
       .reduce((acc, cur) => {
         const totalPrice = Number(cur.subTotal);
@@ -78,9 +71,9 @@ function OrderForDate() {
       ? grossRevenue / sameItemOrder?.filter((item) => !item.isFoc).length
       : 0;
 
-  const countedMenuOrder: { menuId: number; quantity: number } = sameItemOrder
+  const countedMenuOrder: Record<number, number> = sameItemOrder
     .filter((item) => !item.isFoc)
-    .reduce((acc: any, curr) => {
+    .reduce((acc: Record<number, number>, curr) => {
       const quantity = curr.quantity;
       if (!acc[curr.menuId]) {
         acc[curr.menuId] = quantity;
@@ -91,8 +84,8 @@ function OrderForDate() {
       return acc;
     }, {});
   const sortedOrder = Object.entries(countedMenuOrder)
+    .sort(([, valueA], [, valueB]) => valueB - valueA) // Sort by value in descending order
     .slice(0, 8)
-    .sort(([keyA, valueA], [keyB, valueB]) => valueB - valueA) // Sort by value in descending order
     .reduce((acc: { menuId: number; quantity: number }[], [key, value]) => {
       acc.push({ menuId: Number(key), quantity: value });
       return acc;
@@ -130,17 +123,6 @@ function OrderForDate() {
     }
     return acc;
   }, 0);
-
-  // const totalTax = sameCodeReceipt.reduce((acc, cur) => {
-  //   if (cur.tax) {
-  //     acc += cur.tax;
-  //   }
-  //   return acc;
-  // }, 0);
-
-  const addonIds = orderData
-    ? orderData.map((item) => item.addonId).filter((item) => item !== null)
-    : [];
 
   const countStatus = [
     {
@@ -195,42 +177,62 @@ function OrderForDate() {
     "Mar",
     "Apr",
     "May",
-    "June",
-    "July",
+    "Jun",
+    "Jul",
     "Aug",
-    "Sept",
+    "Sep",
     "Oct",
     "Nov",
     "Dec",
   ];
 
-  const uniqueTotalPrice: Receipt[] = [];
-  orders
-    ?.sort((a, b) => a.createdAt.getMonth() - b.createdAt.getMonth())
-    ?.map((item: Receipt) => {
-      const isExist = uniqueTotalPrice.find(
-        (same) => same.itemId === item.itemId
-      );
-      const sameSeq = uniqueTotalPrice.find(
-        (seq) => seq.itemId === item.itemId
-      );
-      if (!isExist && !sameSeq) uniqueTotalPrice.push(item);
-    });
-
   const monthlySales = Array(12).fill(0);
 
-  uniqueTotalPrice.map((item) => {
-    const monthIndex = item.createdAt.getMonth();
-    monthlySales[monthIndex] += item.totalPrice;
+  orders?.forEach((item: Receipt) => {
+    const monthIndex = new Date(item.createdAt).getMonth();
+    monthlySales[monthIndex] += Number(item.totalPrice) || 0;
   });
   const data = {
     labels: months,
     datasets: [
       {
-        label: "Total sale",
+        label: "Total Sales",
         data: monthlySales,
-        borderColor: "rgba(255, 0, 0, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(239, 68, 68, 1)", // red-500
+        backgroundColor: "rgba(239, 68, 68, 0.15)",
+        tension: 0.4,
+      },
+      // Orders count per month
+      {
+        label: "Orders Count",
+        data: (() => {
+          const monthlyOrders = Array(12).fill(0);
+          orders?.forEach((item: Receipt) => {
+            const monthIndex = new Date(item.createdAt).getMonth();
+            monthlyOrders[monthIndex] += 1;
+          });
+          return monthlyOrders;
+        })(),
+        borderColor: "rgba(59, 130, 246, 1)", // blue-500
+        backgroundColor: "rgba(59, 130, 246, 0.15)",
+        tension: 0.4,
+        yAxisID: "y2", // allow dual-axis if configured inside SalesChart
+      },
+      // Average ticket per month
+      {
+        label: "Avg Ticket",
+        data: (() => {
+          const monthlyOrders = Array(12).fill(0);
+          orders?.forEach((item: Receipt) => {
+            const monthIndex = new Date(item.createdAt).getMonth();
+            monthlyOrders[monthIndex] += 1;
+          });
+          return monthlySales.map((total: number, idx: number) =>
+            monthlyOrders[idx] > 0 ? Math.round(total / monthlyOrders[idx]) : 0
+          );
+        })(),
+        borderColor: "rgba(34, 197, 94, 1)", // green-500
+        backgroundColor: "rgba(34, 197, 94, 0.15)",
         tension: 0.4,
       },
     ],
@@ -295,47 +297,56 @@ function OrderForDate() {
         </div>
       </div>
       <div className="mt-2 flex flex-wrap">
-        {countStatus.map((item, index) =>
-          isLoading ? (
-            <DashboardCardSkeleton key={index} />
-          ) : (
-            <Card
-              className="bg-background w-full sm:w-44 h-36 flex flex-row sm:flex-col items-center m-1 mb-1"
-              key={index}
-            >
-              <div className="flex justify-between items-center h-full sm:w-fit w-1/2 sm:h-2/5 pr-2 bg-gray-200 dark:bg-gray-900 sm:bg-transparent sm:dark:bg-transparent">
-                <h3 className="m-2">{item.name}</h3>
-                <Card shadow="none" className="bg-primary p-3 m-1">
-                  {item.icon}
-                </Card>
-              </div>
-              <div className="w-1/2 sm:w-full h-2/5 mt-0 sm:mt-3 flex items-center justify-center">
-                <h1
-                  className={`mt-2 ml-2 text-5xl text-primary text-center ${
-                    item.name === "Gross Revenue" ||
-                    item.name === "Avg. Order Value" ||
-                    item.name === "Foc Menu" ||
-                    item.name === "Total Tax"
-                      ? "text-lg"
-                      : ""
-                  }`}
-                >
-                  {item.name === "Gross Revenue" ||
-                  item.name === "Avg. Order Value"
-                    ? formatCurrency(Math.round(Number(item.count)))
-                    : item.count}
-                </h1>
-              </div>
-            </Card>
-          )
-        )}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 mt-2 space-x-0 md:space-x-1 space-y-0 md:space-y-1">
+        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-2">
+          {countStatus.map((item, index) =>
+            isLoading ? (
+              <DashboardCardSkeleton key={index} />
+            ) : (
+              <Card
+                className="bg-background/60 flex flex-row sm:flex-col items-center p-3 rounded-xl border border-default-100 hover:border-primary hover:shadow-md transition-all"
+                key={index}
+              >
+                <div className="grid grid-cols-3 w-full rounded-lg">
+                  <h3 className="font-medium text-foreground col-span-2">
+                    {item.name}
+                  </h3>
+                  <Card
+                    shadow="none"
+                    className="text-white p-3 m-1 rounded-lg bg-primary size-14 flex items-center justify-center"
+                  >
+                    {item.icon}
+                  </Card>
+                </div>
+                <div className="w-1/2 sm:w-full h-2/5 mt-0 sm:mt-3 flex items-center justify-center">
+                  <h1
+                    className={`mt-2 ml-2 text-4xl sm:text-5xl text-primary text-center font-semibold ${
+                      item.name === "Gross Revenue" ||
+                      item.name === "Avg. Order Value" ||
+                      item.name === "Foc Menu" ||
+                      item.name === "Total Tax"
+                        ? "text-base sm:text-lg text-foreground"
+                        : ""
+                    }`}
+                  >
+                    {item.name === "Gross Revenue" ||
+                    item.name === "Avg. Order Value"
+                      ? formatCurrency(Math.round(Number(item.count)))
+                      : item.count}
+                  </h1>
+                </div>
+              </Card>
+            )
+          )}
+        </div>
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 mt-2 gap-2">
           <div className="w-full">
             {isLoading ? (
               <TableSkeleton />
             ) : (
               <>
-                <h2>Top 8 Most Ordered Menus</h2>
+                <h2 className="text-foreground/80 font-medium mb-1">
+                  Top 8 Most Ordered Menus
+                </h2>
                 <ListTable columns={columns} rows={rows} />
               </>
             )}

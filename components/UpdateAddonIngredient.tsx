@@ -1,6 +1,6 @@
 "use client";
 
-import { AddonIngredientDataType } from "@/app/secure/warehouse/addon-ingredient/page";
+import { AddonIngredientDataType } from "@/app/(secure)/warehouse/addon-ingredient/page";
 import { updateAddonIngredient } from "@/app/lib/warehouse/action";
 import { captilize, convertUnit, validUnits } from "@/function";
 import {
@@ -19,7 +19,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Addon, AddonIngredient, Menu, WarehouseItem } from "@prisma/client";
-import { AddCircle, CloseCircle } from "@solar-icons/react";
+import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
 import { useEffect, useState } from "react";
 import { AddonIngredientForm } from "./NewAddonIngredient";
 
@@ -378,7 +378,11 @@ export default function UpdateAddonIngredientDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+                {isSubmitting ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  <span>Update</span>
+                )}
               </Button>
             </ModalFooter>
           </Form>

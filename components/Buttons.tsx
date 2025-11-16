@@ -8,7 +8,7 @@ import {
   PenNewSquare,
   QuitFullScreen,
   Sun2,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -105,10 +105,10 @@ export function NewPromtionButton() {
   return (
     <Button
       className="bg-primary hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      onPress={() => router.push("secure/backoffice/promotion/new")}
+      onPress={() => router.push("/backoffice/promotion/new")}
     >
       <ShortcutButton
-        onPress={() => router.push("/secure/backoffice/promotion/new")}
+        onPress={() => router.push("/backoffice/promotion/new")}
         keys={["ctrl"]}
         letter="O"
       />
@@ -135,7 +135,7 @@ export function NewPOButton() {
   return (
     <Button
       color="primary"
-      onPress={() => router.push("/secure/warehouse/purchase-order/new")}
+      onPress={() => router.push("/warehouse/purchase-order/new")}
     >
       Create New PO
     </Button>

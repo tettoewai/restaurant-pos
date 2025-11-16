@@ -1,5 +1,3 @@
-"use client";
-
 import OrderContextProvider from "@/context/OrderContext";
 import TopBarOrder from "./components/TopBarOrder";
 import CheckLocation from "./components/CheckLocation";

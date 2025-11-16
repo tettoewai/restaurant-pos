@@ -135,7 +135,7 @@ export default function GetPromotion({
       {checkingRequiredAddonCat ? (
         <>
           <span>Checking menu have require addon-category</span>
-          <Spinner color="white" />
+          <Spinner color="white" variant="wave" />
         </>
       ) : (
         "Get Promotion"

@@ -8,7 +8,7 @@ import {
   Spinner,
   Textarea,
 } from "@heroui/react";
-import { Star } from "@solar-icons/react";
+import { Star } from "@solar-icons/react/ssr";
 import React, { useState } from "react";
 
 interface Props {
@@ -79,7 +79,7 @@ function Feedback({ receiptCode }: Props) {
             fullWidth
             isDisabled={posting}
           >
-            {posting ? <Spinner color="white" /> : "Submit"}
+        {posting ? <Spinner color="white" variant="wave" /> : "Submit"}
           </Button>
         </form>
       </div>

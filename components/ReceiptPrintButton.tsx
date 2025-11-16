@@ -21,7 +21,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Company, Receipt } from "@prisma/client";
-import { Printer } from "@solar-icons/react";
+import { Printer } from "@solar-icons/react/ssr";
 import html2canvas from "html2canvas";
 import { useMemo, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
@@ -130,7 +130,7 @@ export default function ReceiptPrintButton({
           </ModalHeader>
           <ModalBody className="max-h-96 flex justify-center items-center">
             {menuLoading && addonLoading && qrCodeLoading ? (
-              <Spinner size="sm" />
+              <Spinner size="sm" variant="wave" />
             ) : (
               <Card
                 ref={componentRef}

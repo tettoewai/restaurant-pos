@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardFooter, Divider, Image, ScrollShadow } from "@heroui/react";
 import { Promotion } from "@prisma/client";
-import { AltArrowLeft, AltArrowRight } from "@solar-icons/react";
+import { AltArrowLeft, AltArrowRight } from "@solar-icons/react/ssr";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";

@@ -4,7 +4,7 @@ import { fetchAddonWithIds, fetchMenuWithIds } from "@/app/lib/backoffice/data";
 import { OrderContext } from "@/context/OrderContext";
 import { Button, Card, Spinner } from "@heroui/react";
 import { Menu } from "@prisma/client";
-import { CartCross } from "@solar-icons/react";
+import { CartCross } from "@solar-icons/react/ssr";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useContext } from "react";
 import useSWR from "swr";

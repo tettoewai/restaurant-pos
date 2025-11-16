@@ -18,7 +18,7 @@ import CallServiceBtn from "./components/CallServiceBtn";
 import PromotionCard from "./components/PromotionCard";
 import { Metadata } from "next";
 import { baseMetadata } from "../lib/baseMetadata";
-import { Banknote2 } from "@solar-icons/react";
+import { Banknote2 } from "@solar-icons/react/ssr";
 
 export const metadata: Metadata = {
   ...baseMetadata,

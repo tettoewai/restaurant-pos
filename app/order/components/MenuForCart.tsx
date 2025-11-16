@@ -11,7 +11,7 @@ import {
   Banknote2,
   MinusCircle,
   PenNewSquare,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import { Dispatch, SetStateAction } from "react";
 
 interface Props {

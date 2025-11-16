@@ -75,7 +75,11 @@ export default function CancelOrderDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isLoading}
               >
-                {isLoading ? <Spinner color="white" /> : "Cancel order"}
+                {isLoading ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  "Cancel order"
+                )}
               </Button>
             </ModalFooter>
           </form>

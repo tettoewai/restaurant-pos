@@ -1,4 +1,3 @@
-import { Link as NextUiLink } from "@heroui/react";
 import {
   ChecklistMinimalistic,
   CodeScan,
@@ -8,7 +7,7 @@ import {
   MapPointFavourite,
   Notebook2,
   PeopleNearby,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 
@@ -66,27 +65,24 @@ export default function Home() {
         </h1>
       </div>
       <div className="flex justify-center items-center mt-28">
-        <NextUiLink
-          as={Link}
+        <Link
           className="bg-primary m-2 rounded-md p-2 px-2 text-white"
-          href={"secure/backoffice/order"}
+          href={"backoffice/order"}
         >
           Backoffice
-        </NextUiLink>
-        <NextUiLink
-          as={Link}
+        </Link>
+        <Link
           className="bg-white m-2 rounded-md p-2 px-2 text-red-500"
-          href={`secure/warehouse`}
+          href={`warehouse`}
         >
           Warehouse
-        </NextUiLink>
-        <NextUiLink
-          as={Link}
+        </Link>
+        <Link
           className="bg-orange-600 m-2 rounded-md p-2 px-2 text-white"
           href={`/order?tableId=1`}
         >
           Order
-        </NextUiLink>
+        </Link>
       </div>
       <span>In usage, user must scan qr code to place order</span>
       <div className="mt-9 flex items-center justify-center flex-wrap">

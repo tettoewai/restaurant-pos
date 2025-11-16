@@ -87,7 +87,7 @@ export default function UpdateLocationDialog({
           <form onSubmit={handleSubmit}>
             <ModalBody>
               {isLoading ? (
-                <Spinner size="sm" />
+                <Spinner size="sm" variant="wave" />
               ) : (
                 <>
                   <Input
@@ -138,7 +138,11 @@ export default function UpdateLocationDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting || isLoading}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Update</span>}
+                {isSubmitting ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  <span>Update</span>
+                )}
               </Button>
             </ModalFooter>
           </form>

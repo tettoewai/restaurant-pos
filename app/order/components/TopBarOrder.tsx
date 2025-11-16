@@ -3,7 +3,7 @@ import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import { fetchCompanyFromOrder } from "@/app/lib/order/data";
 import { OrderContext } from "@/context/OrderContext";
 import { Badge, Tooltip } from "@heroui/react";
-import { Cart, CloseCircle, HamburgerMenu } from "@solar-icons/react";
+import { Cart, CloseCircle, HamburgerMenu } from "@solar-icons/react/ssr";
 import { Bebas_Neue } from "next/font/google";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

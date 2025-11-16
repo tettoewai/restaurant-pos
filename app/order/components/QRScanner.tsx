@@ -2,7 +2,7 @@
 import { fetchTableWithId } from "@/app/lib/backoffice/data";
 import { changeTable } from "@/app/lib/order/action";
 import { addToast, Button, Card, Spinner } from "@heroui/react";
-import { RoundTransferHorizontal } from "@solar-icons/react";
+import { RoundTransferHorizontal } from "@solar-icons/react/ssr";
 import { useRouter, useSearchParams } from "next/navigation";
 import QrScanner from "qr-scanner";
 import { useEffect, useRef, useState } from "react";
@@ -136,7 +136,7 @@ const QRScanner = ({ prevTableId }: { prevTableId: number }) => {
                 isDisabled={changing}
                 onPress={handleChangeTable}
               >
-                {changing ? <Spinner color="white" /> : "Yes"}
+                {changing ? <Spinner color="white" variant="wave" /> : "Yes"}
               </Button>
               <Button
                 className="w-28"

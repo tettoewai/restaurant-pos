@@ -8,7 +8,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { AltArrowDown } from "@solar-icons/react";
+import { AltArrowDown } from "@solar-icons/react/ssr";
 import {
   CategoryScale,
   Chart as ChartJS,

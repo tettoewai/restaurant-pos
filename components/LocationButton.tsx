@@ -1,7 +1,7 @@
 "use client";
 import { Button, Spinner, Tooltip } from "@heroui/react";
 import { Location } from "@prisma/client";
-import { MapPoint } from "@solar-icons/react";
+import { MapPoint } from "@solar-icons/react/ssr";
 import { useEffect, useState } from "react";
 
 interface Props {
@@ -86,7 +86,7 @@ const LocationButton = ({ prevData }: Props) => {
           disabled={loading}
         >
           {loading ? (
-            <Spinner color="white" size="sm" />
+            <Spinner color="white" size="sm" variant="wave" />
           ) : (
             <MapPoint size={18} />
           )}

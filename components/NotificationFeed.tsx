@@ -13,7 +13,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { Bell } from "@solar-icons/react";
+import { Bell } from "@solar-icons/react/ssr";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import useSWR, { mutate } from "swr";

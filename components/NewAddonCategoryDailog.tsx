@@ -14,7 +14,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Menu } from "@prisma/client";
-import { Star } from "@solar-icons/react";
+import { Star } from "@solar-icons/react/ssr";
 import { useRef, useState } from "react";
 import MultipleSelector from "./MultipleSelector";
 import ShortcutButton from "./ShortCut";
@@ -120,7 +120,11 @@ export default function NewAddonCategoryDialog({ menus }: Props) {
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Create</span>}
+                {isSubmitting ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  <span>Create</span>
+                )}
               </Button>
             </ModalFooter>
           </form>

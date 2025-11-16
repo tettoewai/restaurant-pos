@@ -27,7 +27,7 @@ import {
   Menu,
   WarehouseItem,
 } from "@prisma/client";
-import { AddCircle, CloseCircle } from "@solar-icons/react";
+import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
 import { useState } from "react";
 import ShortcutButton from "./ShortCut";
 
@@ -357,7 +357,11 @@ export default function NewAddonIngredientDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isSubmitting}
               >
-                {isSubmitting ? <Spinner color="white" /> : <span>Create</span>}
+                {isSubmitting ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  <span>Create</span>
+                )}
               </Button>
             </ModalFooter>
           </Form>

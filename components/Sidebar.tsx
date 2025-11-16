@@ -14,7 +14,7 @@ import {
   UsersGroupTwoRounded,
   Widget,
   WidgetAdd,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import {
   Beef,
   HandPlatter,
@@ -23,12 +23,12 @@ import {
   Utensils,
   UtensilsCrossed,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction } from "react";
 import Backdrop from "./BackDrop";
 import ShortcutButton from "./ShortCut";
+import TableIcon from "./icons/TableIcon";
 
 interface Props {
   sideBarOpen: boolean;
@@ -45,51 +45,39 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   const backOfficeSidebar = [
     {
       name: "Order",
-      route: "/secure/backoffice/order",
+      route: "/backoffice/order",
       icon: <Salad />,
     },
     {
       name: "Dashboard",
-      route: "/secure/backoffice/dashboard",
+      route: "/backoffice/dashboard",
       icon: <PresentationGraph />,
     },
     {
       name: "Menu category",
-      route: "/secure/backoffice/menu-category",
+      route: "/backoffice/menu-category",
       icon: <Widget />,
     },
-    { name: "Menu", route: "/secure/backoffice/menu", icon: <HandPlatter /> },
+    { name: "Menu", route: "/backoffice/menu", icon: <HandPlatter /> },
     {
       name: "Add-on Category",
-      route: "/secure/backoffice/addon-category",
+      route: "/backoffice/addon-category",
       icon: <WidgetAdd />,
     },
     {
       name: "Add-on",
-      route: "/secure/backoffice/addon",
+      route: "/backoffice/addon",
       icon: <AddSquare />,
     },
     {
-      name: "Table",
-      route: "/secure/backoffice/table",
-      icon: (
-        <Image
-          priority
-          src="table.svg"
-          height={10}
-          width={10}
-          alt="Table Icon"
-        />
-      ),
-    },
-    {
       name: "Location",
-      route: "/secure/backoffice/location",
+      route: "/backoffice/location",
       icon: <MapPoint />,
     },
+    { name: "Table", route: "/backoffice/table", icon: <TableIcon /> },
     {
       name: "Promotion",
-      route: "/secure/backoffice/promotion",
+      route: "/backoffice/promotion",
       icon: <Megaphone />,
     },
   ];
@@ -97,42 +85,42 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   const warehouseSidebar = [
     {
       name: "Warehouse",
-      route: "/secure/warehouse",
+      route: "/warehouse",
       icon: <Garage />,
     },
     {
       name: "Warehouse Item",
-      route: "/secure/warehouse/warehouse-item",
+      route: "/warehouse/warehouse-item",
       icon: <Utensils />,
     },
     {
       name: "Ingredient",
-      route: "/secure/warehouse/item-ingredient",
+      route: "/warehouse/item-ingredient",
       icon: <Beef />,
     },
     {
       name: "Add-on Ingredient",
-      route: "/secure/warehouse/addon-ingredient",
+      route: "/warehouse/addon-ingredient",
       icon: <UtensilsCrossed />,
     },
     {
       name: "Supplier",
-      route: "/secure/warehouse/supplier",
+      route: "/warehouse/supplier",
       icon: <UsersGroupTwoRounded />,
     },
     {
       name: "Purchase Order",
-      route: "/secure/warehouse/purchase-order",
+      route: "/warehouse/purchase-order",
       icon: <Cart />,
     },
     {
       name: "Stock",
-      route: "/secure/warehouse/stock",
+      route: "/warehouse/stock",
       icon: <BoxMinimalistic />,
     },
     {
       name: "Stock Movement",
-      route: "/secure/warehouse/stock-movement",
+      route: "/warehouse/stock-movement",
       icon: <SquareTransferHorizontal />,
     },
   ];
@@ -141,17 +129,17 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
   const router = useRouter();
 
   const sideBarItem: SideBarItem[] = [
-    ...(pathName.split("/")[2] === "warehouse"
+    ...(pathName.split("/")[1] === "warehouse"
       ? warehouseSidebar
       : backOfficeSidebar),
     {
       name: "Audit Log",
-      route: "/secure/warehouse/audit-log",
+      route: "/warehouse/audit-log",
       icon: <RecordSquare />,
     },
     {
       name: "Setting",
-      route: `/secure/${pathName.split("/")[2]}/setting`,
+      route: `/${pathName.split("/")[1]}/setting`,
       icon: <SettingsMinimalistic />,
     },
   ];
@@ -170,7 +158,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
         <ul>
           {sideBarItem.map((item, index) => {
             const isActive =
-              pathName.split("/")[3] === item.route.split("/")[3];
+              pathName.split("/")[2] === item.route.split("/")[2];
             return (
               <li
                 key={index}

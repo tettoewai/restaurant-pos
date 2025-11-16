@@ -10,7 +10,7 @@ import {
   Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { Danger } from "@solar-icons/react";
+import { Danger } from "@solar-icons/react/ssr";
 import { useState } from "react";
 import { mutate } from "swr";
 
@@ -82,7 +82,11 @@ export default function NoticeCancelDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 isDisabled={isLoading}
               >
-                {isLoading ? <Spinner color="white" /> : "Got it"}
+                {isLoading ? (
+                  <Spinner color="white" variant="wave" />
+                ) : (
+                  "Got it"
+                )}
               </Button>
             </ModalFooter>
           </form>

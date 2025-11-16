@@ -5,7 +5,7 @@ import {
   AltArrowRight,
   CloseCircle,
   HamburgerMenu,
-} from "@solar-icons/react";
+} from "@solar-icons/react/ssr";
 import { Dispatch, SetStateAction } from "react";
 import useSWR from "swr";
 import { FullScreenButton, ModeButton } from "./Buttons";

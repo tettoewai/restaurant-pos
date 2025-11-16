@@ -12,7 +12,7 @@ import {
   MenuCategory,
   MenuCategoryMenu,
 } from "@prisma/client";
-import { Banknote2 } from "@solar-icons/react";
+import { Banknote2 } from "@solar-icons/react/ssr";
 import Image from "next/image";
 import MoreOptionButton from "./MoreOptionButton";
 

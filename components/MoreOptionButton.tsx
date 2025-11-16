@@ -1,13 +1,13 @@
 "use client";
-import { AddonIngredientDataType } from "@/app/secure/warehouse/addon-ingredient/page";
-import DeleteAddonIngredientDialog from "@/app/secure/warehouse/components/DeleteAddonIngredient";
-import DeleteSupplierDialog from "@/app/secure/warehouse/components/DeleteSupplierDialog";
-import DeleteWarehouseDialog from "@/app/secure/warehouse/components/DeleteWarehouseDialog";
-import DeleteWarehouseItemDialog from "@/app/secure/warehouse/components/DeleteWarehouseItemDialog";
-import EditMenuIngredient from "@/app/secure/warehouse/components/EditMenuIngredient";
-import UpdateSupplierDialog from "@/app/secure/warehouse/components/UpdateSupplierDialog";
-import UpdateWarehouseDialog from "@/app/secure/warehouse/components/UpdateWarehouseDialog";
-import UpdateWarehouseItemDialog from "@/app/secure/warehouse/components/UpdateWarehouseItemDialog";
+import { AddonIngredientDataType } from "@/app/(secure)/warehouse/addon-ingredient/page";
+import DeleteAddonIngredientDialog from "@/app/(secure)/warehouse/components/DeleteAddonIngredient";
+import DeleteSupplierDialog from "@/app/(secure)/warehouse/components/DeleteSupplierDialog";
+import DeleteWarehouseDialog from "@/app/(secure)/warehouse/components/DeleteWarehouseDialog";
+import DeleteWarehouseItemDialog from "@/app/(secure)/warehouse/components/DeleteWarehouseItemDialog";
+import EditMenuIngredient from "@/app/(secure)/warehouse/components/EditMenuIngredient";
+import UpdateSupplierDialog from "@/app/(secure)/warehouse/components/UpdateSupplierDialog";
+import UpdateWarehouseDialog from "@/app/(secure)/warehouse/components/UpdateWarehouseDialog";
+import UpdateWarehouseItemDialog from "@/app/(secure)/warehouse/components/UpdateWarehouseItemDialog";
 import {
   handleActivePromotion,
   handleDisableLocationMenu,
@@ -41,7 +41,7 @@ import {
   Warehouse,
   WarehouseItem,
 } from "@prisma/client";
-import { MenuDots, PenNewSquare, TrashBinTrash } from "@solar-icons/react";
+import { MenuDots, PenNewSquare, TrashBinTrash } from "@solar-icons/react/ssr";
 import { MapPinOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import CancelOrderDialog from "./CancelOrderDialog";

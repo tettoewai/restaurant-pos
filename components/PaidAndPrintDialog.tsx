@@ -19,7 +19,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { AddonCategory } from "@prisma/client";
-import { CloseCircle, VerifiedCheck } from "@solar-icons/react";
+import { CloseCircle, VerifiedCheck } from "@solar-icons/react/ssr";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import ImagePrintPaidReceipt from "./ImagePrintPaidReceipt";
@@ -264,7 +264,7 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
               isDisabled={isLoading || qrCodeIsLoading}
             >
               {isLoading || qrCodeIsLoading ? (
-                <Spinner color="white" />
+                <Spinner color="white" variant="wave" />
               ) : (
                 "Confirm"
               )}

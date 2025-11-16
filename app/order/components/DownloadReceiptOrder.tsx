@@ -258,7 +258,7 @@ export default function DownloadReceiptOrder() {
             receiptIsLoading &&
             qrCodeLoading &&
             menuIsLoading ? (
-              <Spinner size="sm" />
+              <Spinner size="sm" variant="wave" />
             ) : (
               <div className="w-full pt-44 flex justify-center items-center rounded-md">
                 <Card

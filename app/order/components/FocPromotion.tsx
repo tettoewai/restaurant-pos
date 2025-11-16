@@ -269,7 +269,7 @@ function FocPromotion({
                 >
                   {isGettingPromo?.promotionId === item.id &&
                   isGettingPromo?.loading ? (
-                    <Spinner color="white" />
+                    <Spinner color="white" variant="wave" />
                   ) : (
                     "Get Promotion"
                   )}

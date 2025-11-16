@@ -12,7 +12,7 @@ import {
   DropdownTrigger,
   Spinner,
 } from "@heroui/react";
-import { AltArrowDown, MapPoint } from "@solar-icons/react";
+import { AltArrowDown, MapPoint } from "@solar-icons/react/ssr";
 import React, { useEffect } from "react";
 import useSWR from "swr";
 
@@ -70,7 +70,7 @@ export default function Locationtoggle() {
     <Dropdown className="bg-background">
       <DropdownTrigger>
         {isLoading ? (
-          <Spinner size="sm" />
+          <Spinner size="sm" variant="wave" />
         ) : (
           <Button
             variant="flat"

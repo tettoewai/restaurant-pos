@@ -17,7 +17,7 @@ import {
   fetchMenuAddonCategory,
   fetchMenuAddonCategoryWithMenuIds,
 } from "./app/lib/backoffice/data";
-import { POItemForm } from "./app/secure/warehouse/purchase-order/new/page";
+import { POItemForm } from "./app/(secure)/warehouse/purchase-order/new/page";
 import { weekday } from "./general";
 import {
   fetchAddonIngredients,
@@ -505,7 +505,9 @@ export async function checkWMS() {
   const notsetIngredientMenuIds = menuIds.filter(
     (item) => !menuIdsWithIngredient.find((id) => item === id)
   );
-  console.log("notsetIngredientMenuIds", notsetIngredientMenuIds);
+  const menusWithoutIngredients = menus
+    .filter((menu) => notsetIngredientMenuIds.includes(menu.id))
+    .map((menu) => ({ id: menu.id, name: menu.name }));
 
   // check setting ingradients of addon
   const [menuAddonCat, addons, addonIngredients] = await Promise.all([
@@ -513,13 +515,13 @@ export async function checkWMS() {
     fetchAddon(),
     fetchAddonIngredients(),
   ]);
-  const notsetIngredientAddonIds = menuAddonCat.map((item) => {
-    const currentAddons = addons.filter(
-      (addon) =>
-        addon.addonCategoryId === item.addonCategoryId && addon.needIngredient
-    );
-    return {
-      addonIds: currentAddons
+  const notsetIngredientAddonIds = menuAddonCat
+    .map((item) => {
+      const currentAddons = addons.filter(
+        (addon) =>
+          addon.addonCategoryId === item.addonCategoryId && addon.needIngredient
+      );
+      const missingAddons = currentAddons
         .filter(
           (addon) =>
             !addonIngredients.find(
@@ -528,14 +530,18 @@ export async function checkWMS() {
                 ingredient.menuId === item.menuId
             )
         )
-        .map((addon) => addon.id),
-      menuId: item.menuId,
-    };
-  });
-  console.log("notsetIngredientAddonIds", notsetIngredientAddonIds);
+        .map((addon) => ({ id: addon.id, name: addon.name }));
+      return {
+        addons: missingAddons,
+        menuId: item.menuId,
+        menuName: menus.find((m) => m.id === item.menuId)?.name || "",
+      };
+    })
+    .filter((item) => item.addons.length > 0);
 
   // check ingredients are enough
   const warehouseStocks = await fetchWarehouseStock();
+  const warehouseItems = await fetchWarehouseItem();
 
   // total menu ingredients
   const totalMenuIngredients = Object.values(
@@ -597,21 +603,45 @@ export async function checkWMS() {
   });
 
   const allIngredients = Object.values(allIngredientsMap);
-  const notEnoughIngredient = allIngredients.filter((item) => {
-    return item.stock! < item.totalQty;
-  });
-
-  console.log("notEnoughIngredient", notEnoughIngredient);
+  const notEnoughIngredient = allIngredients
+    .filter((item) => {
+      return item.stock! < item.totalQty;
+    })
+    .map((item) => {
+      const warehouseItem = warehouseItems.find((wi) => wi.id === item.itemId);
+      return {
+        itemId: item.itemId,
+        itemName: warehouseItem?.name || "Unknown",
+        required: item.totalQty,
+        stock: item.stock || 0,
+        shortage: item.totalQty - (item.stock || 0),
+      };
+    });
 
   // check stock hit threshold
+  const hitThresholdStock = warehouseItems
+    .filter((item) => {
+      const validStock = warehouseStocks.find(
+        (stock) => stock.itemId === item.id
+      );
+      return validStock ? item.threshold >= validStock.quantity : true;
+    })
+    .map((item) => {
+      const validStock = warehouseStocks.find(
+        (stock) => stock.itemId === item.id
+      );
+      return {
+        itemId: item.id,
+        itemName: item.name,
+        threshold: item.threshold,
+        stock: validStock?.quantity || 0,
+      };
+    });
 
-  const warehouseItems = await fetchWarehouseItem();
-  const hitThresholdStock = warehouseItems.filter((item) => {
-    const validStock = warehouseStocks.find(
-      (stock) => stock.itemId === item.id
-    );
-    return validStock ? item.threshold >= validStock.quantity : true;
-  });
-
-  console.log("hitThresholdStock", hitThresholdStock);
+  return {
+    menusWithoutIngredients,
+    addonsWithoutIngredients: notsetIngredientAddonIds,
+    notEnoughIngredients: notEnoughIngredient,
+    hitThresholdStocks: hitThresholdStock,
+  };
 }
