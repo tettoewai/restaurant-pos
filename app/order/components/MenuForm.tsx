@@ -1,5 +1,7 @@
 "use client";
+import { fetchMenuWithId } from "@/app/lib/backoffice/data";
 import { updateOrder } from "@/app/lib/order/action";
+import { fetchAddonAvailability } from "@/app/lib/order/data";
 import { AddonCatSkeleton } from "@/app/ui/skeletons";
 import { OrderContext } from "@/context/OrderContext";
 import { checkArraySame, formatCurrency } from "@/function";
@@ -15,13 +17,15 @@ import { Addon, AddonCategory, Order } from "@prisma/client";
 import { AddCircle, MinusCircle } from "@solar-icons/react/ssr";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
-const { customAlphabet } = require("nanoid");
+import useSWR from "swr";
+import { customAlphabet } from "nanoid";
 
 interface Props {
   menuId: number;
   addonCategory: AddonCategory[];
   addon: Addon[];
   order?: Order[] | null;
+  addonPrices: Record<number, number>;
 }
 interface SelectedAddon {
   categoryId: number;
@@ -32,6 +36,7 @@ export default function MenuForm({
   addon,
   menuId,
   order,
+  addonPrices,
 }: Props) {
   const { carts, setCarts } = useContext(OrderContext);
   const { promotionQue, setPromotionQue } = useContext(OrderContext);
@@ -89,6 +94,23 @@ export default function MenuForm({
     validCarts?.instruction || ""
   );
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Fetch addon availability
+  const addonIds = useMemo(() => addon.map((a) => a.id), [addon]);
+  const { data: addonAvailability } = useSWR(
+    menuId && addonIds.length > 0 ? [menuId, addonIds] : null,
+    ([menuId, addonIds]: [number, number[]]) =>
+      fetchAddonAvailability(menuId, addonIds),
+    { revalidateOnFocus: false }
+  );
+
+  // Fetch menu data for price calculation
+  const { data: menu } = useSWR(
+    menuId ? `menu-${menuId}` : null,
+    () => fetchMenuWithId(menuId),
+    { revalidateOnFocus: false }
+  );
+
   useEffect(() => {
     if (order) {
       setSelectedValue(validSelectedValueOrder);
@@ -103,9 +125,34 @@ export default function MenuForm({
       .map((addonCat) => addonCat.id)
       .filter((item) => selectedCat.includes(item)).length !==
     requiredCat.length;
+
+  // Calculate total price with menu-specific addon prices
+  const totalPrice = useMemo(() => {
+    if (!menu) return 0;
+    const addonTotal = selectedValue.reduce((acc, item) => {
+      const selectedAddonItem = addon.find((a) => a.id === item.addonId);
+      const price =
+        addonPrices?.[item.addonId] ?? selectedAddonItem?.price ?? 0;
+      return acc + price;
+    }, 0);
+    return (menu.price + addonTotal) * quantity;
+  }, [menu, selectedValue, addon, addonPrices, quantity]);
   const numbers = "0123456789";
   const generateNumericID = customAlphabet(numbers, 7);
   const handleCheckboxChange = (categoryId: number, addonId: number) => {
+    // Prevent selecting unavailable addons
+    const availability = addonAvailability?.get(addonId);
+    if (
+      availability &&
+      (!availability.hasIngredients || !availability.isOrderable)
+    ) {
+      addToast({
+        title: "This addon is currently unavailable",
+        color: "warning",
+      });
+      return;
+    }
+
     setSelectedValue((prevSelected) => {
       const alreadySelected = prevSelected.find(
         (item) => item.categoryId === categoryId && item.addonId === addonId
@@ -232,31 +279,66 @@ export default function MenuForm({
                   )}
                 </div>
                 <div className="flex flex-col space-y-2">
-                  {validAddon.map((valAddon) => (
-                    <div
-                      key={valAddon.id}
-                      className="border rounded-md w-full flex justify-between items-center p-2 cursor-pointer"
-                      onClick={() => handleCheckboxChange(item.id, valAddon.id)}
-                    >
-                      <Checkbox
-                        size="lg"
-                        isSelected={
-                          selectedValue.find(
-                            (selected) =>
-                              selected.categoryId === item.id &&
-                              selected.addonId === valAddon.id
-                          ) !== undefined
-                        }
-                        onChange={() =>
-                          handleCheckboxChange(item.id, valAddon.id)
-                        }
-                      >
-                        {valAddon.name}
-                      </Checkbox>
+                  {validAddon
+                    .filter((valAddon) => {
+                      // Hide addons without ingredients configured
+                      const availability = addonAvailability?.get(valAddon.id);
+                      return availability?.hasIngredients !== false;
+                    })
+                    .map((valAddon) => {
+                      const availability = addonAvailability?.get(valAddon.id);
+                      const isOrderable = availability?.isOrderable !== false;
+                      const isUnavailable =
+                        availability?.hasIngredients &&
+                        !availability?.isOrderable;
 
-                      <span>+ {formatCurrency(valAddon.price)}</span>
-                    </div>
-                  ))}
+                      return (
+                        <div
+                          key={valAddon.id}
+                          className={`border rounded-md w-full flex justify-between items-center p-2 ${
+                            isOrderable
+                              ? "cursor-pointer hover:bg-default-100"
+                              : "opacity-50 cursor-not-allowed bg-default-50"
+                          }`}
+                          onClick={() => {
+                            if (isOrderable) {
+                              handleCheckboxChange(item.id, valAddon.id);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <Checkbox
+                              size="lg"
+                              isSelected={
+                                selectedValue.find(
+                                  (selected) =>
+                                    selected.categoryId === item.id &&
+                                    selected.addonId === valAddon.id
+                                ) !== undefined
+                              }
+                              isDisabled={!isOrderable}
+                              onChange={() =>
+                                handleCheckboxChange(item.id, valAddon.id)
+                              }
+                            >
+                              {valAddon.name}
+                            </Checkbox>
+                            {isUnavailable && (
+                              <Chip size="sm" color="danger" variant="flat">
+                                Out of Stock
+                              </Chip>
+                            )}
+                          </div>
+
+                          <p>
+                            +{" "}
+                            {formatCurrency(
+                              addonPrices?.[valAddon.id] ?? valAddon.price
+                            )}
+                          </p>
+                        </div>
+                      );
+                    })}
                 </div>
               </Card>
             </Suspense>
@@ -275,6 +357,18 @@ export default function MenuForm({
           placeholder="e.g. No mayo"
         />
       </Card>
+      {/* Total Price Display */}
+      {menu && (
+        <Card className="mt-3 bg-background p-3">
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">Total:</span>
+            <span className="text-lg font-bold text-primary">
+              {formatCurrency(totalPrice)}
+            </span>
+          </div>
+        </Card>
+      )}
+
       {/* Add To Cart Button */}
       <div className="flex flex-wrap justify-between w-full fixed bottom-0 left-0 rounded-t-md z-20 bg-background p-2 space-x-2">
         <div className="flex space-x-1 w-[30%]">

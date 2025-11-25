@@ -1,6 +1,5 @@
-import { fetchAuditLog } from "@/app/lib/warehouse/data";
-import { AuditLogTable } from "../components/AuditLogTable";
 import { fetchUserWithIds } from "@/app/lib/backoffice/data";
+import { fetchAuditLog } from "@/app/lib/warehouse/data";
 import { captilize, dateToString } from "@/function";
 
 export default async function AuditLogPage() {
@@ -30,9 +29,9 @@ export default async function AuditLogPage() {
         <span className="text-primary">Audit Log</span>
         <span className="text-sm text-gray-600">Audit every changes.</span>
       </div>
-      <div className="mt-2">
+      {/* <div className="mt-2">
         <AuditLogTable columns={columns} rows={rows} auditLogs={auditLogs} />
-      </div>
+      </div> */}
     </div>
   );
 }

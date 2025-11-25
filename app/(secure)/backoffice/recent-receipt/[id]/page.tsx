@@ -112,6 +112,20 @@ export default async function RecentReceipt({
               <h3>Sub total : </h3>
               <h3>{formatCurrency(subTotal)}</h3>
             </div>
+            {receipt[0].discount ? (
+              <div className="flex justify-between min-w-56">
+                <h3>Discount : </h3>
+                <h3>-{formatCurrency(receipt[0].discount)}</h3>
+              </div>
+            ) : null}
+            <div className="flex justify-between min-w-56">
+              <h3>Net total : </h3>
+              <h3>
+                {formatCurrency(
+                  Math.max(subTotal - (receipt[0].discount || 0), 0)
+                )}
+              </h3>
+            </div>
             <div className="flex justify-between min-w-56">
               <h3>Tax : </h3> <h3>{formatCurrency(receipt[0].tax)}</h3>
             </div>

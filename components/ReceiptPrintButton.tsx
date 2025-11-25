@@ -210,15 +210,27 @@ export default function ReceiptPrintButton({
                   </tbody>
                 </table>
 
-                <div className="flex justify-between py-1 border-t border-b mb-2">
+                <div className="flex justify-between py-1 border-t border-b mb-1">
                   <span>Sub Total:</span>
-                  <span>{subTotal}</span>
+                  <span>{formatCurrency(subTotal)}</span>
                 </div>
-
-                {/* Tax rate input controlled by user */}
-                <div className="flex justify-between py-1 border-b mb-2">
-                  <span className="flex items-center">Tax :</span>
-                  <span>{receipts[0].tax}</span>
+                {receipts[0].discount ? (
+                  <div className="flex justify-between py-1 border-b mb-1">
+                    <span>Discount:</span>
+                    <span>-{formatCurrency(receipts[0].discount)}</span>
+                  </div>
+                ) : null}
+                <div className="flex justify-between py-1 border-b mb-1">
+                  <span>Net Total:</span>
+                  <span>
+                    {formatCurrency(
+                      Math.max(subTotal - (receipts[0].discount || 0), 0)
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b mb-1">
+                  <span>Tax :</span>
+                  <span>{formatCurrency(receipts[0].tax)}</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b mb-2 font-bold">

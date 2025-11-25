@@ -295,7 +295,15 @@ export default function CorrectionPOPage() {
                       endContent={
                         <select
                           required
-                          className="bg-transparent"
+                          className="bg-transparent text-foreground border-none outline-none cursor-pointer px-2 py-1 rounded-sm w-fit appearance-none focus:outline-none focus:ring-0 hover:bg-default-100 dark:hover:bg-default-50 transition-colors text-sm font-normal"
+                          style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: "no-repeat",
+                            backgroundPosition: "right 0.25rem center",
+                            backgroundSize: "1em 1em",
+                            paddingRight: "1.5rem",
+                            color: "inherit",
+                          }}
                           value={
                             poItem.unit ? captilize(String(poItem.unit)) : ""
                           }
@@ -312,7 +320,13 @@ export default function CorrectionPOPage() {
                         >
                           <option className="hidden" key=""></option>
                           {units.map((item) => (
-                            <option key={item}>{item}</option>
+                            <option
+                              key={item}
+                              value={item}
+                              className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
+                            >
+                              {item}
+                            </option>
                           ))}
                         </select>
                       }

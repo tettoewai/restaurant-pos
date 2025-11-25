@@ -6,15 +6,19 @@
     "dev": "next dev",
     "build": "npx prisma migrate deploy && npx prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma": {
+      "seed": "ts-node prisma/seed.ts"
+    }
   },
   "dependencies": {
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@heroui/react": "2.7.8",
-    "@prisma/client": "^6.2.1",
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
     "@solar-icons/react": "^1.0.1",
-    "@vercel/speed-insights": "^1.0.12",
+    "@vercel/speed-insights": "^1.2.0",
     "chart.js": "^4.4.4",
     "cloudinary": "^2.3.1",
     "file-saver": "^2.0.5",
@@ -25,6 +29,7 @@
     "next": "^14.2.6",
     "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
+    "pg": "^8.16.3",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "^18",
@@ -40,14 +45,16 @@
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20.14.10",
+    "@types/pg": "^8.15.6",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18",
     "autoprefixer": "^10.4.21",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8.5.6",
-    "prisma": "^6.2.1",
+    "prisma": "^7.0.0",
     "tailwindcss": "^3.3.3",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }
 }

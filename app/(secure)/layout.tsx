@@ -1,27 +1,14 @@
 "use client";
-import { createDefaultData, fetchUser } from "@/app/lib/backoffice/data";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import BackOfficeContextProvider from "@/context/BackOfficeContext";
 import { ScrollShadow } from "@heroui/react";
-import { useSession } from "next-auth/react";
-import { ReactNode, useEffect, useState } from "react";
-import useSWR from "swr";
+import { ReactNode, useState } from "react";
 interface Props {
   children: ReactNode;
 }
 const Layout = ({ children }: Props) => {
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
-  const { data } = useSession();
-  const userEmail = data?.user?.email;
-  const userName = data?.user?.name;
-
-  const { data: user } = useSWR("user", () => fetchUser().then((res) => res));
-  useEffect(() => {
-    if (user?.email !== userEmail && userEmail && userName) {
-      createDefaultData({ email: userEmail, name: userName });
-    }
-  }, [user, userEmail, userName]);
   return (
     <BackOfficeContextProvider>
       <div className="bg-gray-200 dark:bg-gray-950 h-dvh">
@@ -35,13 +22,16 @@ const Layout = ({ children }: Props) => {
               sideBarOpen={sideBarOpen}
               setSideBarOpen={setSideBarOpen}
             />
-            <ScrollShadow
-              hideScrollBar
-              size={20}
-              className="px-2 pb-3 w-full max-h-full vertical"
-            >
-              {children}
-            </ScrollShadow>
+            <main className="w-full">
+              <ScrollShadow
+                hideScrollBar
+                size={20}
+                className="px-2 pb-3 w-full max-h-full"
+                orientation="vertical"
+              >
+                {children}
+              </ScrollShadow>
+            </main>
           </div>
         </div>
       </div>

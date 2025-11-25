@@ -4,6 +4,7 @@ import {
   fetchAddonWithIds,
   fetchFocCatAndFocMenuWithPromotionIds,
   fetchMenuWithIds,
+  getAddonPricesForMenus,
 } from "@/app/lib/backoffice/data";
 import {
   fetchCanceledOrders,
@@ -22,11 +23,12 @@ import { CartCross } from "@solar-icons/react/ssr";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import useSWR from "swr";
 import FocPromotion from "../components/FocPromotion";
 import NoticeCancelDialog from "../components/NoticeCancelDialog";
 
-function ActiveOrder() {
+function ActiveOrderContent() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
   const router = useRouter();
@@ -139,10 +141,46 @@ function ActiveOrder() {
       : Promise.resolve([])
   );
 
+  // Fetch menu-specific addon prices for all orders
+  const { data: menuAddonPrices } = useSWR(
+    orderData && orderData.length > 0
+      ? [
+          "menu-addon-prices",
+          orderData.map((order) => ({
+            menuId: order.menu?.id,
+            addonIds: order.addons?.map((a) => a.id) || [],
+          })),
+        ]
+      : null,
+    async ([, orders]: [string, Array<{ menuId?: number; addonIds: number[] }>]) => {
+      const priceMap = new Map<string, number>();
+      const menuAddonPairs: { menuId: number; addonId: number }[] = [];
+
+      orders.forEach((order) => {
+        if (order.menuId) {
+          order.addonIds.forEach((addonId) => {
+            menuAddonPairs.push({ menuId: order.menuId!, addonId });
+          });
+        }
+      });
+
+      if (menuAddonPairs.length > 0) {
+        const prices = await getAddonPricesForMenus(menuAddonPairs);
+        prices.forEach((price, key) => {
+          priceMap.set(key, price);
+        });
+      }
+
+      return priceMap;
+    },
+    { revalidateOnFocus: false }
+  );
+
   const orderDataForTotalPrice = orderData.filter((item) => !item.isFoc);
 
   const totalPrice = getTotalOrderPrice({
     orders: orderDataForTotalPrice,
+    menuAddonPrices: menuAddonPrices,
   });
 
   const confirmedOrder = orderDataForTotalPrice.filter(
@@ -152,6 +190,7 @@ function ActiveOrder() {
   );
   const confirmedTotalPrice = getTotalOrderPrice({
     orders: confirmedOrder,
+    menuAddonPrices: menuAddonPrices,
   });
 
   const menuOrderData = orderData.reduce(
@@ -420,4 +459,16 @@ function ActiveOrder() {
   );
 }
 
-export default ActiveOrder;
+export default function ActiveOrder() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-40 w-full">
+          <span>Loading active orders...</span>
+        </div>
+      }
+    >
+      <ActiveOrderContent />
+    </Suspense>
+  );
+}

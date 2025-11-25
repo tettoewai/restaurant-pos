@@ -1,4 +1,6 @@
 import { config } from "@/config";
+import { prisma } from "@/db";
+import { ensureDefaultTenant } from "@/lib/default-tenant";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -26,6 +28,24 @@ const authOptions: NextAuthOptions = {
         token.id = user.id;
       }
       return token;
+    },
+  },
+  events: {
+    async signIn({ user }) {
+      if (!user.email) return;
+      try {
+        await ensureDefaultTenant({
+          prisma,
+          user: {
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to ensure default tenant:", error);
+        throw error;
+      }
     },
   },
 };

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function Location() {
   const location = await fetchLocation();
+  const isSingleLocation = location.length === 1;
   return (
     <div>
       <div className="w-full flex justify-between items-center">
@@ -25,7 +26,12 @@ export default async function Location() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-2">
         {location.map((item) => (
           <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
-            <ItemCard id={item.id} name={item.name} itemType="location" />
+            <ItemCard
+              id={item.id}
+              name={item.name}
+              itemType="location"
+              isNotDeletable={isSingleLocation}
+            />
           </Suspense>
         ))}
       </div>

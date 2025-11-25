@@ -4,11 +4,11 @@ import {
   fetchSelectedLocationData,
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
-import { dateToString } from "@/function";
+import { dateToString, formatCurrency } from "@/function";
 import { PaidData } from "@/general";
 import { Card } from "@heroui/react";
 import Image from "next/image";
-import { Dispatch, RefObject, SetStateAction } from "react";
+import { RefObject } from "react";
 import useSWR from "swr";
 
 interface Props {
@@ -16,8 +16,10 @@ interface Props {
   receiptCode?: string;
   componentRef: RefObject<HTMLDivElement>;
   subTotal: number;
+  discount: number;
   taxRate: number;
-  setTaxRate: Dispatch<SetStateAction<number>>;
+  taxAmount: number;
+  total: number;
   qrCodeImage: string | null | undefined;
   paid?: PaidData[];
   isPrint?: boolean;
@@ -28,8 +30,10 @@ function PaidPrint({
   receiptCode,
   componentRef,
   subTotal,
+  discount,
   taxRate,
-  setTaxRate,
+  taxAmount,
+  total,
   qrCodeImage,
   paid,
   isPrint,
@@ -46,8 +50,7 @@ function PaidPrint({
 
   const date = new Date();
 
-  const tax = subTotal * (taxRate / 100);
-  const total = subTotal + tax;
+  const netSubTotal = Math.max(subTotal - discount, 0);
 
   return (
     <Card
@@ -117,39 +120,28 @@ function PaidPrint({
         </tbody>
       </table>
 
-      <div className="flex justify-between py-1 border-t border-b mb-2">
+      <div className="flex justify-between py-1 border-t border-b mb-1">
         <span>Sub Total:</span>
-        <span>{subTotal} Ks</span>
+        <span>{formatCurrency(subTotal)}</span>
       </div>
-
-      {/* Tax rate input controlled by user */}
+      {discount > 0 ? (
+        <div className="flex justify-between border-b mb-1">
+          <span>Discount:</span>
+          <span>-{formatCurrency(discount)}</span>
+        </div>
+      ) : null}
+      <div className="flex justify-between border-b mb-1">
+        <span>Net Total:</span>
+        <span>{formatCurrency(netSubTotal)}</span>
+      </div>
       <div className="flex justify-between border-b mb-2">
-        <span className="flex items-center space-x-1">
-          <span className="mr-1 text-nowrap">Tax :</span>
-          <input
-            type="number"
-            disabled={isPrint}
-            value={String(taxRate)}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (value >= 0 && value <= 100) {
-                setTaxRate(value);
-              }
-            }}
-            min={0}
-            max={100}
-            className="bg-white p-3"
-          />
-          <div className="pointer-events-none flex items-center">
-            <span className="text-default-400 text-small">%</span>
-          </div>
-        </span>
-        <span>{tax.toFixed(2)} Ks</span>
+        <span>Tax ({taxRate}%):</span>
+        <span>{formatCurrency(taxAmount)}</span>
       </div>
 
       <div className="flex justify-between py-1 border-b mb-2 font-bold">
         <span>Total:</span>
-        <span>{total.toFixed(2)} Ks</span>
+        <span>{formatCurrency(total)}</span>
       </div>
 
       <div className="text-center my-4">

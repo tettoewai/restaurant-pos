@@ -45,6 +45,7 @@ export interface OrderData {
   isFoc?: boolean;
   instruction: string | null | undefined;
   createdAt?: Date;
+  orderSeq?: string | null;
 }
 
 export interface PaidData extends OrderData {
@@ -54,6 +55,7 @@ export interface PaidData extends OrderData {
   qrCode?: string;
   subTotal?: number;
   date?: Date;
+  discountAmount?: number;
 }
 
 export function formatOrder({
@@ -93,6 +95,7 @@ export function formatOrder({
         instruction,
         isFoc,
         createdAt: validItem?.createdAt,
+        orderSeq: validItem?.orderSeq,
       };
     } else {
       return {
@@ -104,6 +107,7 @@ export function formatOrder({
         instruction,
         isFoc,
         createdAt: validItem?.createdAt,
+        orderSeq: validItem?.orderSeq,
       };
     }
   });
@@ -122,15 +126,29 @@ export const weekday = [
 
 export const getTotalOrderPrice = ({
   orders,
+  menuAddonPrices,
 }: {
   orders: OrderData[] | undefined;
+  menuAddonPrices?: Map<string, number>; // Map of "menuId-addonId" -> price
 }) => {
   if (!orders) return 0;
   return orders.reduce((total, order) => {
     const menuPrice = order.menu?.price || 0;
+    const menuId = order.menu?.id;
+
+    // Calculate addon prices using menu-specific prices if available
     const addonPrices =
       order.addons && order.addons.length
-        ? order.addons.reduce((accu, curr) => (curr.price || 0) + accu, 0)
+        ? order.addons.reduce((accu, curr) => {
+            if (menuId && menuAddonPrices) {
+              const key = `${menuId}-${curr.id}`;
+              const customPrice = menuAddonPrices.get(key);
+              if (customPrice !== undefined) {
+                return accu + customPrice;
+              }
+            }
+            return accu + (curr.price || 0);
+          }, 0)
         : 0;
     const orderTotal =
       menuPrice && order.quantity

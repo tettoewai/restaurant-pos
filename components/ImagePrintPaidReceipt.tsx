@@ -11,7 +11,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import html2canvas from "html2canvas";
-import { Dispatch, RefObject, SetStateAction, useContext } from "react";
+import { RefObject, useContext } from "react";
 import { useReactToPrint } from "react-to-print";
 import PaidPrint from "./PaidPrint";
 
@@ -24,8 +24,10 @@ interface Props {
   componentRef: RefObject<HTMLDivElement>;
   tableId: number;
   subTotal: number;
+  discount: number;
   taxRate: number;
-  setTaxRate: Dispatch<SetStateAction<number>>;
+  taxAmount: number;
+  total: number;
   qrCodeImage: string | null | undefined;
 }
 
@@ -37,8 +39,10 @@ export default function ImagePrintPaidReceipt({
   componentRef,
   tableId,
   subTotal,
+  discount,
   taxRate,
-  setTaxRate,
+  taxAmount,
+  total,
   qrCodeImage,
   onPaidClose,
 }: Props) {
@@ -101,9 +105,11 @@ export default function ImagePrintPaidReceipt({
               tableId={tableId}
               receiptCode={receiptCode}
               componentRef={componentRef}
-              setTaxRate={setTaxRate}
+              discount={discount}
               taxRate={taxRate}
+              taxAmount={taxAmount}
               subTotal={subTotal}
+              total={total}
               qrCodeImage={qrCodeImage}
               paid={paid}
               isPrint

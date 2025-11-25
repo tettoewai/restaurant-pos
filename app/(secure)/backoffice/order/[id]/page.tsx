@@ -9,6 +9,7 @@ import {
   fetchAddonWithIds,
   fetchMenuWithIds,
   fetchOrderWithTableId,
+  getAddonPricesForMenus,
 } from "@/app/lib/backoffice/data";
 import CancelOrderBODialog from "@/components/CancelOrderBODialog";
 import PaidAndPrintDialog from "@/components/PaidAndPrintDialog";
@@ -261,8 +262,44 @@ export default function App({ params }: { params: { id: string } }) {
     });
   };
 
+  // Fetch menu-specific addon prices for all orders
+  const { data: menuAddonPrices } = useSWR(
+    unpaidOrderData && unpaidOrderData.length > 0
+      ? [
+          "menu-addon-prices-bo",
+          unpaidOrderData.map((order) => ({
+            menuId: order.menu?.id,
+            addonIds: order.addons?.map((a) => a.id) || [],
+          })),
+        ]
+      : null,
+    async ([, orders]: [string, Array<{ menuId?: number; addonIds: number[] }>]) => {
+      const priceMap = new Map<string, number>();
+      const menuAddonPairs: { menuId: number; addonId: number }[] = [];
+
+      orders.forEach((order) => {
+        if (order.menuId) {
+          order.addonIds.forEach((addonId) => {
+            menuAddonPairs.push({ menuId: order.menuId!, addonId });
+          });
+        }
+      });
+
+      if (menuAddonPairs.length > 0) {
+        const prices = await getAddonPricesForMenus(menuAddonPairs);
+        prices.forEach((price, key) => {
+          priceMap.set(key, price);
+        });
+      }
+
+      return priceMap;
+    },
+    { revalidateOnFocus: false }
+  );
+
   const totalUnpidPrice = getTotalOrderPrice({
     orders: unpaidOrderData.filter((item) => !item.isFoc),
+    menuAddonPrices: menuAddonPrices,
   });
 
   const completedOrder = unpaidOrderData.filter(

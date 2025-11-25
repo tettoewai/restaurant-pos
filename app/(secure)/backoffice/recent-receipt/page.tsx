@@ -60,9 +60,13 @@ export default async function recentReceiptPage() {
       table: tableName,
       totalPrice:
         receipt && receipt.totalPrice
-          ? formatCurrency(receipt.totalPrice) +
-            " " +
-            `tax-(${formatCurrency(receipt.tax)})`
+          ? `${formatCurrency(receipt.totalPrice)} tax-(${formatCurrency(
+              receipt.tax
+            )})${
+              receipt.discount
+                ? ` discount-(${formatCurrency(receipt.discount)})`
+                : ""
+            }`
           : "",
       date:
         receipt && receipt.date

@@ -1,4 +1,5 @@
 import { baseMetadata } from "@/app/lib/baseMetadata";
+import FinancialMetrics from "@/components/FinancialMetrics";
 import OrderForDate from "@/components/OrderForDate";
 import { Metadata } from "next";
 
@@ -19,6 +20,7 @@ const Dashboard = () => {
         </span>
       </div>
       <OrderForDate />
+      <FinancialMetrics />
     </div>
   );
 };

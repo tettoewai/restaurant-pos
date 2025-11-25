@@ -5,10 +5,10 @@ import {
   fetchTableWithId,
 } from "@/app/lib/backoffice/data";
 import { useLocation } from "@/general";
+import { Spinner } from "@heroui/react";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import useSWR from "swr";
-import LoadingSpiner from "./LoadingSpiner";
 
 function CheckLocation({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
@@ -63,7 +63,12 @@ function CheckLocation({ children }: { children: React.ReactNode }) {
   if (restaurantLocation?.latitude && restaurantLocation?.longitude) {
     // Show spinner while loading location data
     if (locationLoading)
-      return <LoadingSpiner text={"Getting your location"} />;
+      return (
+        <div className="w-full flex justify-center items-center h-60 flex-col space-y-2">
+          <Spinner variant="wave" />
+          <p>Getting your location</p>
+        </div>
+      );
     if (locationError)
       return <span>Error fetching location: {locationError}</span>;
 

@@ -55,10 +55,11 @@ const PromotionPage = async ({ params }: { params: { id: string } }) => {
   });
 
   const conditions =
-    promotion.conditions && JSON.parse(promotion.conditions.toString());
+    promotion && promotion.conditions
+      ? JSON.parse(promotion.conditions.toString())
+      : [];
   const days: string =
-    conditions &&
-    conditions.length &&
+    conditions.length > 0 &&
     conditions
       .map((item: any) => (item.days ? item.days : []))
       .filter((item: any) => item !== undefined)
@@ -67,8 +68,7 @@ const PromotionPage = async ({ params }: { params: { id: string } }) => {
   const promotionAvailabel = checkPromotionDuration({ days, conditions });
 
   const duration =
-    conditions &&
-    conditions.length &&
+    conditions.length > 0 &&
     conditions.map((item: any) =>
       item.startTime && item.endTime
         ? `From ${convert12Hour(item.startTime)} to ${convert12Hour(

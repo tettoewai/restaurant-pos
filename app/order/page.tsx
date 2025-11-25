@@ -51,21 +51,26 @@ const OrderPage = async ({
     const validMenuIds = menuCategoryMenu
       .filter((item) => item.menuCategoryId === id)
       .map((menuCat) => menuCat.menuId);
-    const validMenus = menuOrder.filter((item) =>
-      validMenuIds.includes(item.id)
+    const validMenus = menuOrder.filter(
+      (item) => item && validMenuIds.includes(item.id)
     );
     return validMenus;
   };
-  const validMenu = !menuCat ? menuOrder : getMenuWithMenuCat(menuCat);
+  const validMenu = !menuCat
+    ? menuOrder.filter((item) => item !== null)
+    : getMenuWithMenuCat(menuCat);
   return (
     <div className="mt-4 h-full pb-5">
       <span className="mt-3 text-lg">Welcome From {company?.name}!</span>
-      <Spacer y={2} />
+
       {promotions.length ? (
-        <PromotionCard tableId={tableId} promotions={promotions} />
+        <>
+          <Spacer y={2} />
+          <PromotionCard tableId={tableId} promotions={promotions} />
+        </>
       ) : null}
 
-      <Spacer y={3} />
+      <Spacer y={2} />
       <div className="flex flex-col items-center w-full">
         <span className="text-primary text-center">
           Menus
@@ -104,36 +109,65 @@ const OrderPage = async ({
             </Link>
           ))}
         </ScrollShadow>
-        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 w-full px-1 gap-2">
           {validMenu.length > 0 ? (
-            validMenu?.map((item, index) => (
-              <Suspense key={item.id} fallback={<MenuLoading />}>
-                <Link href={`/order/${item.id}?tableId=${tableId}`}>
-                  <Card className="bg-background w-[170px] h-56 md:w-48 md:h-60 flex flex-col items-center relative overflow-hidden mr-2 mt-2">
-                    <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
-                      <Image
-                        src={item.assetUrl || "/default-menu.png"}
-                        alt="menu"
-                        width={100}
-                        height={100}
-                        className="h-full w-full object-cover "
-                        priority={index < 3} // Load priority for first 3 images
-                      />
-                    </div>
-                    <span className="mt-2 text-wrap text-center">
-                      {item.name}
-                    </span>
-                    <div className="flex items-center mt-1 mb-1">
-                      <Banknote2
-                        width="Broken"
-                        className="text-xl text-primary"
-                      />
-                      <p>{formatCurrency(item.price)}</p>
-                    </div>
-                  </Card>
-                </Link>
-              </Suspense>
-            ))
+            validMenu
+              ?.filter((item) => item !== null)
+              .map((item, index) => {
+                if (!item) return null;
+                return (
+                  <Suspense key={item.id} fallback={<MenuLoading />}>
+                    {item.isOrderable ? (
+                      <Link href={`/order/${item.id}?tableId=${tableId}`}>
+                        <Card className="bg-background flex flex-col items-center relative p-2 hover:shadow-lg transition-shadow cursor-pointer">
+                          <div className="flex justify-center items-center h-[57%] w-full overflow-hidden">
+                            <Image
+                              src={item.assetUrl || "/default-menu.png"}
+                              alt="menu"
+                              width={100}
+                              height={100}
+                              className="h-full w-full object-cover "
+                              priority={index < 3} // Load priority for first 3 images
+                            />
+                          </div>
+                          <span className="mt-2 text-wrap text-center">
+                            {item.name}
+                          </span>
+                          <div className="flex items-center mt-1 mb-1">
+                            <Banknote2 className="text-xl text-primary" />
+                            <p>{formatCurrency(item.price)}</p>
+                          </div>
+                        </Card>
+                      </Link>
+                    ) : (
+                      <Card className="bg-background/50 flex flex-col items-center relative mr-2 mt-2 opacity-60 cursor-not-allowed">
+                        <div className="flex justify-center items-center h-[57%] w-full overflow-hidden relative">
+                          <Image
+                            src={item.assetUrl || "/default-menu.png"}
+                            alt="menu"
+                            width={100}
+                            height={100}
+                            className="h-full w-full object-cover grayscale"
+                            priority={index < 3}
+                          />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <Chip size="sm" color="danger" variant="flat">
+                              Out of Stock
+                            </Chip>
+                          </div>
+                        </div>
+                        <span className="mt-2 text-wrap text-center">
+                          {item.name}
+                        </span>
+                        <div className="flex items-center mt-1 mb-1">
+                          <Banknote2 className="text-xl text-primary" />
+                          <p>{formatCurrency(item.price)}</p>
+                        </div>
+                      </Card>
+                    )}
+                  </Suspense>
+                );
+              })
           ) : (
             <h2>There is no menu!</h2>
           )}

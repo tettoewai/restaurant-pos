@@ -327,12 +327,30 @@ export default function NewPromotion() {
                     Discount type
                   </label>
                   <select
-                    className="outline-none border-0 bg-transparent text-default-400 text-small"
+                    className="outline-none border-0 bg-transparent text-foreground text-small cursor-pointer appearance-none focus:outline-none focus:ring-0 hover:bg-default-100 dark:hover:bg-default-50 transition-colors"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 0.25rem center",
+                      backgroundSize: "1em 1em",
+                      paddingRight: "1.5rem",
+                      color: "inherit",
+                    }}
                     id="discountType"
                     name="discount_type"
                   >
-                    <option value="percentage">%</option>
-                    <option value="fixedValue">Ks</option>
+                    <option
+                      value="percentage"
+                      className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
+                    >
+                      %
+                    </option>
+                    <option
+                      value="fixedValue"
+                      className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
+                    >
+                      Ks
+                    </option>
                   </select>
                 </div>
               }

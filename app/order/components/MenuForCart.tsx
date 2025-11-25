@@ -1,5 +1,6 @@
 "use client";
 import { CartItem } from "@/context/OrderContext";
+import { getAddonPricesForMenu } from "@/app/lib/order/action";
 import { formatCurrency } from "@/function";
 import { Card } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
@@ -12,7 +13,7 @@ import {
   MinusCircle,
   PenNewSquare,
 } from "@solar-icons/react/ssr";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 interface Props {
   itemId: string;
@@ -38,8 +39,17 @@ export default function MenuForCart({
     validCart.addons.includes(item.id)
   );
 
+  const [addonPrices, setAddonPrices] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    if (validCart.addons.length > 0 && menu.id) {
+      getAddonPricesForMenu(menu.id, validCart.addons).then(setAddonPrices);
+    }
+  }, [validCart.addons, menu.id]);
+
   const addonPrice = validAddons?.reduce(
-    (accumulator, current) => accumulator + current.price,
+    (accumulator, current) =>
+      accumulator + (addonPrices[current.id] ?? current.price),
     0
   );
   const subTotal =

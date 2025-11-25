@@ -3,8 +3,15 @@ import {
   generateQRCode,
   setPaidWithQuantity,
 } from "@/app/lib/backoffice/action";
+import { fetchCompany } from "@/app/lib/backoffice/data";
+import {
+  fetchPromotionMenuWithPromotionIds,
+  fetchPromotionUsage,
+  fetchPromotionWithTableId,
+} from "@/app/lib/order/data";
 import { config } from "@/config";
 import { BackOfficeContext } from "@/context/BackOfficeContext";
+import { PaidData } from "@/general";
 import {
   addToast,
   Badge,
@@ -18,7 +25,8 @@ import {
   Tooltip,
   useDisclosure,
 } from "@heroui/react";
-import { AddonCategory } from "@prisma/client";
+import { AddonCategory, DiscountType, Promotion } from "@prisma/client";
+import { calculateApplicablePromotions, formatCurrency } from "@/function";
 import { CloseCircle, VerifiedCheck } from "@solar-icons/react/ssr";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
@@ -96,28 +104,119 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
     };
   });
 
-  const [taxRate, setTaxRate] = useState(5);
+  const { data: companyData } = useSWR("company-tax-rate", () => fetchCompany());
+  const taxRate = companyData?.company?.taxRate ?? 0;
 
-  const subTotal = paid
-    .filter((item) => !item.isFoc)
-    .reduce((accu, curr) => {
-      const paidAddonPrices =
-        curr.addons && curr.addons.length
-          ? curr.addons.reduce((accu, curr) => curr.price + accu, 0)
-          : 0;
-      if (!curr.quantity) return 0;
-      const totalPrice =
-        paidAddonPrices && curr.menu
-          ? (curr.menu.price + paidAddonPrices) * curr.quantity + accu
-          : curr.menu
-          ? curr.menu.price * curr.quantity + accu
-          : 0;
-      return totalPrice;
+  const { data: promotions } = useSWR(
+    paid.length ? ["bo-promotions", tableId] : null,
+    () => fetchPromotionWithTableId(tableId)
+  );
+  const promotionIds = promotions?.map((item) => item.id) ?? [];
+  const promotionMenuKey =
+    promotionIds.length > 0
+      ? ["bo-promotion-menus", promotionIds.join("-")]
+      : null;
+  const { data: promotionMenus } = useSWR(promotionMenuKey, () =>
+    fetchPromotionMenuWithPromotionIds(promotionIds)
+  );
+  const currentOrderSeq = paid[0]?.orderSeq || "";
+  const { data: promotionUsage } = useSWR(
+    currentOrderSeq
+      ? ["bo-promotion-usage", tableId, currentOrderSeq]
+      : null,
+    () =>
+      currentOrderSeq
+        ? fetchPromotionUsage({ tableId, orderSeq: currentOrderSeq })
+        : Promise.resolve([])
+  );
+
+  const calculateLineTotal = (item: PaidData) => {
+    if (item.isFoc || !item.menu || !item.quantity) return 0;
+    const addonTotal =
+      item.addons?.reduce((acc, addon) => acc + addon.price, 0) ?? 0;
+    return (item.menu.price + addonTotal) * item.quantity;
+  };
+
+  const subTotal = useMemo(
+    () =>
+      paid
+        .filter((item) => !item.isFoc)
+        .reduce((acc, curr) => acc + calculateLineTotal(curr), 0),
+    [paid]
+  );
+
+  const menuOrderData = useMemo(() => {
+    return paid.reduce(
+      (acc, item) => {
+        if (!item.menu?.id || !item.quantity || item.isFoc) {
+          return acc;
+        }
+        const existing = acc[item.menu.id] || {
+          menuId: item.menu.id,
+          quantity: 0,
+        };
+        existing.quantity += item.quantity;
+        acc[item.menu.id] = existing;
+        return acc;
+      },
+      {} as Record<number, { menuId: number; quantity: number }>
+    );
+  }, [paid]);
+
+  const applicablePromotions = useMemo(() => {
+    if (!promotions?.length) return [];
+    const promoList =
+      calculateApplicablePromotions({
+        promotions,
+        promotionMenus,
+        menuOrderData,
+        totalPrice: subTotal,
+        promotionUsage,
+      }) || [];
+    const grouped = promoList.reduce<Record<string, Promotion>>(
+      (acc, promo) => {
+        const key = promo.group?.toLowerCase() || promo.name;
+        if (!acc[key]) {
+          acc[key] = promo;
+        }
+        return acc;
+      },
+      {}
+    );
+    return Object.values(grouped);
+  }, [promotions, promotionMenus, menuOrderData, subTotal, promotionUsage]);
+
+  const discountPromotions = useMemo(
+    () =>
+      applicablePromotions.filter(
+        (promo) =>
+          promo.discount_type !== DiscountType.FOCMENU && promo.discount_value
+      ),
+    [applicablePromotions]
+  );
+
+  const discountAmount = useMemo(() => {
+    if (!discountPromotions.length || !subTotal) return 0;
+    return discountPromotions.reduce((acc, promo) => {
+      if (!promo.discount_value) return acc;
+      if (promo.discount_type === DiscountType.FIXED_AMOUNT) {
+        return acc + promo.discount_value;
+      }
+      if (promo.discount_type === DiscountType.PERCENTAGE) {
+        return acc + Math.floor((subTotal * promo.discount_value) / 100);
+      }
+      return acc;
     }, 0);
+  }, [discountPromotions, subTotal]);
 
-  // Tax and total calculations based on user input
-  const tax = subTotal * (taxRate / 100);
-  const total = subTotal + tax;
+  const appliedDiscount = Math.min(discountAmount, subTotal);
+  const promotionIdsToLog = Array.from(
+    new Set(discountPromotions.map((promo) => promo.id))
+  );
+
+  const netSubTotal = Math.max(subTotal - appliedDiscount, 0);
+  const taxAmount = Number(((netSubTotal * taxRate) / 100).toFixed(2));
+  const total = Number((netSubTotal + taxAmount).toFixed(2));
 
   const receiptUrl = useMemo(
     () =>
@@ -132,37 +231,37 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
     () => generateQRCode(receiptUrl)
   );
 
+  // Use ref to store latest paid value to avoid stale closures
+  const paidRef = useRef(paid);
   useEffect(() => {
-    const updatedPaid = paid.map((item) => {
-      const currentAddonPrice =
-        item.addons && item.addons.length
-          ? item.addons.reduce((accu, curr) => curr.price + accu, 0)
-          : 0;
+    paidRef.current = paid;
+  }, [paid]);
 
-      const currentTotalPrice =
-        currentAddonPrice && item.menu && item.quantity
-          ? (item.menu.price + currentAddonPrice) * item.quantity
-          : item.menu && item.quantity
-          ? item.menu.price * item.quantity
-          : 0;
+  useEffect(() => {
+    if (paid.length === 0) return;
 
-      return {
+    setPaid((currentPaid) =>
+      currentPaid.map((item) => ({
         ...item,
-        tax,
+        tax: taxAmount,
         totalPrice: total,
         qrCode: receiptUrl,
         tableId,
-        subTotal: currentTotalPrice,
-      };
-    });
-    setPaid(updatedPaid);
-  }, [tax, total, receiptUrl, tableId]);
+        subTotal: calculateLineTotal(item),
+      }))
+    );
+  }, [taxAmount, total, receiptUrl, tableId, setPaid, paid.length]);
 
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePaidAndPrint = async () => {
     setIsLoading(true);
-    const { isSuccess, message } = await setPaidWithQuantity(paid);
+    // Use ref to get the latest paid value to avoid stale closures
+    const currentPaid = paidRef.current;
+    const { isSuccess, message } = await setPaidWithQuantity(currentPaid, {
+      discountAmount: appliedDiscount,
+      promotionIds: promotionIdsToLog,
+    });
     setIsLoading(false);
     addToast({
       title: message,
@@ -229,6 +328,30 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
             <div className="flex w-full h-full flex-wrap justify-center">
               <div className="w-full md:w-2/3">
                 <ListTable columns={columns} rows={rows} />
+                {paid.length ? (
+                  <div className="flex flex-col items-end pr-2 mt-3 text-sm space-y-1">
+                    <span>
+                      Sub total: {formatCurrency(subTotal || 0)}
+                    </span>
+                    {appliedDiscount ? (
+                      <span>
+                        Discount: -{formatCurrency(appliedDiscount)}
+                      </span>
+                    ) : null}
+                    <span>
+                      Net total:{" "}
+                      {formatCurrency(
+                        Math.max(subTotal - appliedDiscount, 0)
+                      )}
+                    </span>
+                    <span>
+                      Tax ({taxRate}%): {formatCurrency(taxAmount)}
+                    </span>
+                    <span className="font-semibold">
+                      Grand total: {formatCurrency(total)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
               {qrCodeIsLoading ? (
                 <Spinner variant="wave" label="Qr Loading ..." />
@@ -239,9 +362,11 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
                       tableId={tableId}
                       receiptCode={receiptCode}
                       componentRef={componentRef}
-                      setTaxRate={setTaxRate}
+                      discount={appliedDiscount}
                       taxRate={taxRate}
+                      taxAmount={taxAmount}
                       subTotal={subTotal}
+                      total={total}
                       qrCodeImage={qrCodeData}
                       paid={paid}
                     />
@@ -280,9 +405,11 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
         onClose={printImageOnClose}
         onPaidClose={onClose}
         tableId={tableId}
-        setTaxRate={setTaxRate}
+        discount={appliedDiscount}
         taxRate={taxRate}
+        taxAmount={taxAmount}
         subTotal={subTotal}
+        total={total}
         qrCodeImage={qrCodeData}
       />
     </div>

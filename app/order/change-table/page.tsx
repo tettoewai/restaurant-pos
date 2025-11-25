@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import QRScanner from "../components/QRScanner";
 
 function ChangeTablePage({
@@ -10,7 +10,15 @@ function ChangeTablePage({
 
   return (
     <div className="h-full items-center">
-      <QRScanner prevTableId={prevTableId} />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-40">
+            <span>Loading scanner...</span>
+          </div>
+        }
+      >
+        <QRScanner prevTableId={prevTableId} />
+      </Suspense>
     </div>
   );
 }

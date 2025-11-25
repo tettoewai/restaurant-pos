@@ -5,17 +5,9 @@ import {
   MovementType,
   OrderStatus,
   POStatus,
-  Unit,
-  UnitCategory,
 } from "@prisma/client";
-import { nanoid } from "nanoid";
 import { getServerSession } from "next-auth";
 import { unstable_noStore as noStore } from "next/cache";
-
-interface Props {
-  email: string;
-  name: string;
-}
 
 export async function fetchUser() {
   noStore();
@@ -147,6 +139,132 @@ export async function fetchAddonWithIds(ids: number[]) {
   }
 }
 
+/**
+ * Get addon price for a specific menu-addon combination
+ * Returns menu-specific price if exists, otherwise returns default addon price
+ */
+export async function getAddonPriceForMenu(
+  menuId: number,
+  addonId: number
+): Promise<number> {
+  noStore();
+  try {
+    const menuAddonPrice = await prisma.menuAddonPrice.findUnique({
+      where: {
+        menuId_addonId: {
+          menuId,
+          addonId,
+        },
+      },
+    });
+
+    if (menuAddonPrice) {
+      return menuAddonPrice.price;
+    }
+
+    // Fall back to default addon price
+    const addon = await prisma.addon.findUnique({
+      where: { id: addonId },
+      select: { price: true },
+    });
+
+    return addon?.price || 0;
+  } catch (error) {
+    console.error("Database Error:", error);
+    // Fall back to default addon price on error
+    try {
+      const addon = await prisma.addon.findUnique({
+        where: { id: addonId },
+        select: { price: true },
+      });
+      return addon?.price || 0;
+    } catch {
+      return 0;
+    }
+  }
+}
+
+/**
+ * Get addon prices for multiple menu-addon combinations
+ * Returns a map of "menuId-addonId" -> price
+ */
+export async function getAddonPricesForMenus(
+  menuAddonPairs: { menuId: number; addonId: number }[]
+): Promise<Map<string, number>> {
+  noStore();
+  const priceMap = new Map<string, number>();
+
+  if (menuAddonPairs.length === 0) return priceMap;
+
+  try {
+    // Fetch all menu-specific prices
+    const menuAddonPrices = await prisma.menuAddonPrice.findMany({
+      where: {
+        OR: menuAddonPairs.map((pair) => ({
+          menuId: pair.menuId,
+          addonId: pair.addonId,
+        })),
+      },
+    });
+
+    // Get unique addon IDs to fetch default prices
+    const addonIdsSet = new Set<number>();
+    menuAddonPairs.forEach((p) => addonIdsSet.add(p.addonId));
+    const addonIds: number[] = [];
+    addonIdsSet.forEach((id) => addonIds.push(id));
+    const addons = await prisma.addon.findMany({
+      where: { id: { in: addonIds } },
+      select: { id: true, price: true },
+    });
+
+    const defaultPrices = new Map<number, number>();
+    addons.forEach((addon) => {
+      defaultPrices.set(addon.id, addon.price);
+    });
+
+    // Build price map
+    menuAddonPairs.forEach((pair) => {
+      const key = `${pair.menuId}-${pair.addonId}`;
+      const menuSpecificPrice = menuAddonPrices.find(
+        (p) => p.menuId === pair.menuId && p.addonId === pair.addonId
+      );
+
+      if (menuSpecificPrice) {
+        priceMap.set(key, menuSpecificPrice.price);
+      } else {
+        // Use default addon price
+        const defaultPrice = defaultPrices.get(pair.addonId) || 0;
+        priceMap.set(key, defaultPrice);
+      }
+    });
+
+    return priceMap;
+  } catch (error) {
+    console.error("Database Error:", error);
+    // Fall back to default prices
+    try {
+      const addonIdsSet = new Set<number>();
+      menuAddonPairs.forEach((p) => addonIdsSet.add(p.addonId));
+      const addonIds: number[] = [];
+      addonIdsSet.forEach((id) => addonIds.push(id));
+      const addons = await prisma.addon.findMany({
+        where: { id: { in: addonIds } },
+        select: { id: true, price: true },
+      });
+
+      menuAddonPairs.forEach((pair) => {
+        const key = `${pair.menuId}-${pair.addonId}`;
+        const addon = addons.find((a) => a.id === pair.addonId);
+        priceMap.set(key, addon?.price || 0);
+      });
+    } catch {
+      // Return empty map on error
+    }
+
+    return priceMap;
+  }
+}
+
 export async function fetchAddonWithAddonCat(id: number) {
   noStore();
   if (!id) return;
@@ -218,6 +336,44 @@ export async function fetchMenuWithIds(ids: number[]) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch Menu data.");
+  }
+}
+
+/**
+ * Fetch menus that have the addon category linked (menus where this addon can be used)
+ */
+export async function fetchMenusForAddon(addonId: number) {
+  noStore();
+  try {
+    const addon = await prisma.addon.findUnique({
+      where: { id: addonId },
+      select: { addonCategoryId: true },
+    });
+
+    if (!addon) return [];
+
+    const menuAddonCategories = await prisma.menuAddonCategory.findMany({
+      where: { addonCategoryId: addon.addonCategoryId },
+      include: {
+        menu: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        menu: {
+          name: "asc",
+        },
+      },
+    });
+
+    return menuAddonCategories.map((mac) => mac.menu);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return [];
   }
 }
 
@@ -698,230 +854,323 @@ export async function fetchRecentReceipt() {
   }
 }
 
-export async function createDefaultData({ email, name }: Props) {
+export async function getReceiptsWithDate(startDate: Date, endDate: Date) {
+  noStore();
   try {
-    const user = await fetchUser();
-    if (user?.email === email) return;
-    const newCompany = await prisma.company.create({
-      data: {
-        name: "Default Company",
-        street: "Default Street",
-        township: "Default township",
-        city: "Default City",
+    const table = await fetchTable();
+    const tableId = table.map((item) => item.id);
+    const startOfDay = new Date(startDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(endDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    const receipts = await prisma.receipt.findMany({
+      where: {
+        tableId: { in: tableId },
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
       },
     });
-    const newUser = await prisma.user.create({
-      data: { email, name, companyId: newCompany.id },
-    });
-    const newLocation = await prisma.location.create({
-      data: {
-        name: "Default location",
-        street: "Default street",
-        township: "Default township",
-        city: "Default city",
-        companyId: newCompany.id,
-      },
-    });
-    await prisma.selectedLocation.create({
-      data: { userId: newUser.id, locationId: newLocation.id },
-    });
-    await prisma.table.create({
-      data: {
-        name: "Default table",
-        locationId: newLocation.id,
-      },
-    });
-    const newMenuCategory = await prisma.menuCategory.create({
-      data: { name: "Default menu Category", companyId: newCompany.id },
-    });
-    const newMenu = await prisma.menu.create({
-      data: { name: "Default menu", price: 1000 },
-    });
-    await prisma.menuCategoryMenu.create({
-      data: { menuId: newMenu.id, menuCategoryId: newMenuCategory.id },
-    });
-    const newAddonCategory = await prisma.addonCategory.create({
-      data: { name: "Default addon category" },
-    });
-    await prisma.menuAddonCategory.create({
-      data: { menuId: newMenu.id, addonCategoryId: newAddonCategory.id },
-    });
-
-    const newAddonData = [
-      { name: "Addon1", addonCategoryId: newAddonCategory.id },
-      { name: "Addon2", addonCategoryId: newAddonCategory.id },
-      { name: "Addon3", addonCategoryId: newAddonCategory.id },
-    ];
-    const addons = await prisma.$transaction(
-      newAddonData.map((addon) => prisma.addon.create({ data: addon }))
-    );
-
-    // WMS Default data
-
-    const warehouse = await prisma.warehouse.create({
-      data: { name: "Default warehouse", locationId: newLocation.id },
-    });
-
-    await prisma.selectedWarehouse.create({
-      data: { userId: newUser.id, warehouseId: warehouse.id },
-    });
-
-    const newSuppliers = [
-      {
-        name: "Shwe Rice Co.",
-        phone: "091234556789",
-        email: "example@gmail.com",
-        address: "...",
-        companyId: newCompany.id,
-      },
-      {
-        name: "City Mart",
-        phone: "091234556789",
-        email: "example@gmail.com",
-        address: "...",
-        companyId: newCompany.id,
-      },
-      {
-        name: "Aye Aye Eggs",
-        phone: "091234556789",
-        email: "example@gmail.com",
-        address: "...",
-        companyId: newCompany.id,
-      },
-    ];
-
-    const suppliers = await prisma.$transaction(
-      newSuppliers.map((item) => prisma.supplier.create({ data: item }))
-    );
-
-    const newWarehouseItems = [
-      {
-        name: "ကြက်ဥ",
-        unit: Unit.UNIT,
-        unitCategory: UnitCategory.COUNT,
-        threshold: 20,
-        companyId: newCompany.id,
-      },
-      {
-        name: "ဆီ",
-        unit: Unit.L,
-        unitCategory: UnitCategory.VOLUME,
-        threshold: 5,
-        companyId: newCompany.id,
-      },
-      {
-        name: "ကြက်သား",
-        unit: Unit.VISS,
-        unitCategory: UnitCategory.MASS,
-        threshold: 2,
-        companyId: newCompany.id,
-      },
-    ];
-    const warehouseItems = await prisma.$transaction(
-      newWarehouseItems.map((item) =>
-        prisma.warehouseItem.create({ data: item })
-      )
-    );
-    const menuItemIngredients = [
-      { menuId: newMenu.id, itemId: warehouseItems[0].id, quantity: 1 },
-      { menuId: newMenu.id, itemId: warehouseItems[1].id, quantity: 250 },
-      { menuId: newMenu.id, itemId: warehouseItems[2].id, quantity: 300 },
-    ];
-
-    await prisma.$transaction(
-      menuItemIngredients.map((item) =>
-        prisma.menuItemIngredient.create({ data: item })
-      )
-    );
-
-    const newAddonIngredients = [
-      {
-        addonId: addons[0].id,
-        menuId: newMenu.id,
-        itemId: warehouseItems[0].id,
-        extraQty: 1,
-      },
-      {
-        addonId: addons[0].id,
-        menuId: newMenu.id,
-        itemId: warehouseItems[1].id,
-        extraQty: 200,
-      },
-      {
-        addonId: addons[2].id,
-        menuId: newMenu.id,
-        itemId: warehouseItems[0].id,
-        extraQty: 3,
-      },
-    ];
-
-    await prisma.$transaction(
-      newAddonIngredients.map((item) =>
-        prisma.addonIngredient.create({ data: item })
-      )
-    );
-
-    const newPurchaseOrders = suppliers.map((item) => {
-      return {
-        code: nanoid(6),
-        supplierId: item.id,
-        status: POStatus.RECEIVED,
-        warehouseId: warehouse.id,
-      };
-    });
-
-    const purchaseOrders = await prisma.$transaction(
-      newPurchaseOrders.map((item) =>
-        prisma.purchaseOrder.create({ data: item })
-      )
-    );
-
-    const newPurchaseOrderItems = purchaseOrders.map((item, index) => {
-      return {
-        purchaseOrderId: item.id,
-        itemId: warehouseItems[index].id,
-        quantity: 20,
-        unitPrice: 500,
-      };
-    });
-
-    await prisma.$transaction(
-      newPurchaseOrderItems.map((item) =>
-        prisma.purchaseOrderItem.create({ data: item })
-      )
-    );
-
-    const newStockMovements = warehouseItems.map((item, index) => {
-      return {
-        itemId: item.id,
-        type: MovementType.IN,
-        quantity: 20,
-        reference: `PO-${purchaseOrders[index].id}`,
-        note: `Product from ${purchaseOrders[index].supplierId}`,
-        warehouseId: warehouse.id,
-        source: MovementSource.PURCHASE_ORDER,
-      };
-    });
-    await prisma.$transaction(
-      newStockMovements.map((item) =>
-        prisma.stockMovement.create({ data: item })
-      )
-    );
-    const newWarehouseStock = warehouseItems.map((item) => {
-      return {
-        itemId: item.id,
-        quantity: 20,
-        warehouseId: warehouse.id,
-      };
-    });
-
-    await prisma.$transaction(
-      newWarehouseStock.map((item) =>
-        prisma.warehouseStock.create({ data: item })
-      )
-    );
+    return receipts;
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to create user data.");
+    console.error("Database error for receipts", error);
+    throw new Error("Failed to fetch receipt data.");
+  }
+}
+
+/**
+ * Get average ingredient costs from purchase orders
+ * Returns a map of itemId -> average unitPrice
+ */
+export async function getIngredientCosts() {
+  noStore();
+  try {
+    const { company } = await fetchCompany();
+    if (!company) return new Map<number, number>();
+
+    // Get all purchase order items for received orders
+    const purchaseOrderItems = await prisma.purchaseOrderItem.findMany({
+      where: {
+        purchaseOrder: {
+          status: POStatus.RECEIVED,
+          warehouse: {
+            location: {
+              companyId: company.id,
+            },
+          },
+        },
+      },
+      include: {
+        purchaseOrder: {
+          select: {
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        purchaseOrder: {
+          createdAt: "desc",
+        },
+      },
+    });
+
+    // Calculate average cost per item
+    const costMap = new Map<number, number[]>();
+    purchaseOrderItems.forEach((item) => {
+      const existing = costMap.get(item.itemId) || [];
+      existing.push(item.unitPrice);
+      costMap.set(item.itemId, existing);
+    });
+
+    // Calculate average for each item
+    const averageCostMap = new Map<number, number>();
+    costMap.forEach((prices, itemId) => {
+      if (prices.length > 0) {
+        const sum = prices.reduce((sum, price) => {
+          const numPrice = Number(price);
+          return sum + (isNaN(numPrice) ? 0 : numPrice);
+        }, 0);
+        const average = sum / prices.length;
+        if (!isNaN(average) && isFinite(average)) {
+          averageCostMap.set(itemId, average);
+        }
+      }
+    });
+
+    return averageCostMap;
+  } catch (error) {
+    console.error("Database error for ingredient costs", error);
+    return new Map<number, number>();
+  }
+}
+
+/**
+ * Calculate food cost for orders within date range
+ */
+export async function calculateFoodCost(
+  startDate: Date,
+  endDate: Date
+): Promise<number> {
+  noStore();
+  try {
+    const table = await fetchTable();
+    const tableId = table.map((item) => item.id);
+    const startOfDay = new Date(startDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(endDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Get paid orders in date range
+    const paidOrders = await prisma.order.findMany({
+      where: {
+        tableId: { in: tableId },
+        status: OrderStatus.PAID,
+        isFoc: false,
+        createdAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      include: {
+        menu: true,
+      },
+    });
+
+    if (paidOrders.length === 0) return 0;
+
+    // Get unique menu IDs and addon IDs
+    const menuIdsSet = new Set<number>();
+    const addonIdsSet = new Set<number>();
+    paidOrders.forEach((order) => {
+      menuIdsSet.add(order.menuId);
+      if (order.addonId !== null) {
+        addonIdsSet.add(order.addonId);
+      }
+    });
+    const menuIds: number[] = [];
+    menuIdsSet.forEach((id) => menuIds.push(id));
+    const addonIds: number[] = [];
+    addonIdsSet.forEach((id) => addonIds.push(id));
+
+    // Get ingredient costs
+    const ingredientCosts = await getIngredientCosts();
+
+    // Get menu ingredients and addon ingredients
+    const [menuIngredients, addonIngredients] = await Promise.all([
+      prisma.menuItemIngredient.findMany({
+        where: { menuId: { in: menuIds } },
+      }),
+      addonIds.length > 0
+        ? prisma.addonIngredient.findMany({
+            where: { addonId: { in: addonIds } },
+          })
+        : [],
+    ]);
+
+    let totalFoodCost = 0;
+
+    // Calculate food cost for menu items
+    paidOrders.forEach((order) => {
+      const menuIngs = menuIngredients.filter(
+        (ing) => ing.menuId === order.menuId
+      );
+      menuIngs.forEach((ingredient) => {
+        const costPerUnit = ingredientCosts.get(ingredient.itemId) || 0;
+        const quantityUsed = ingredient.quantity * order.quantity;
+        totalFoodCost += costPerUnit * quantityUsed;
+      });
+
+      // Calculate food cost for addons
+      if (order.addonId) {
+        const addonIngs = addonIngredients.filter(
+          (ing) => ing.addonId === order.addonId
+        );
+        addonIngs.forEach((ingredient) => {
+          const costPerUnit = ingredientCosts.get(ingredient.itemId) || 0;
+          const quantityUsed = ingredient.extraQty * order.quantity;
+          totalFoodCost += costPerUnit * quantityUsed;
+        });
+      }
+    });
+
+    return totalFoodCost;
+  } catch (error) {
+    console.error("Database error calculating food cost", error);
+    return 0;
+  }
+}
+
+/**
+ * Calculate inventory variance (theoretical vs actual stock value)
+ */
+export async function calculateInventoryVariance(): Promise<number> {
+  noStore();
+  try {
+    const { company } = await fetchCompany();
+    if (!company) return 0;
+
+    // Get ingredient costs
+    const ingredientCosts = await getIngredientCosts();
+
+    // Get all warehouses for the company
+    const warehouses = await prisma.warehouse.findMany({
+      where: {
+        location: {
+          companyId: company.id,
+        },
+        isArchived: false,
+      },
+    });
+
+    if (warehouses.length === 0) return 0;
+
+    const warehouseIds = warehouses.map((w) => w.id);
+
+    // Get actual stock
+    const actualStocks = await prisma.warehouseStock.findMany({
+      where: {
+        warehouseId: { in: warehouseIds },
+      },
+    });
+
+    // Calculate theoretical stock from stock movements
+    const stockMovements = await prisma.stockMovement.findMany({
+      where: {
+        warehouseId: { in: warehouseIds },
+      },
+    });
+
+    // Calculate theoretical quantity per item per warehouse
+    const theoreticalStock = new Map<string, number>(); // key: "itemId-warehouseId"
+
+    // Process stock movements to calculate theoretical stock
+    stockMovements.forEach((movement) => {
+      const key = `${movement.itemId}-${movement.warehouseId}`;
+      const current = theoreticalStock.get(key) || 0;
+      const quantity = Number(movement.quantity) || 0;
+
+      if (isNaN(quantity) || !isFinite(quantity)) {
+        return; // Skip invalid quantities
+      }
+
+      if (movement.type === MovementType.IN) {
+        theoreticalStock.set(key, current + quantity);
+      } else if (movement.type === MovementType.OUT) {
+        theoreticalStock.set(key, Math.max(0, current - quantity)); // Prevent negative stock
+      }
+    });
+
+    // Calculate variance value
+    let totalVariance = 0;
+
+    // Check all actual stocks against theoretical
+    actualStocks.forEach((stock) => {
+      const key = `${stock.itemId}-${stock.warehouseId}`;
+      const theoreticalQty = Number(theoreticalStock.get(key)) || 0;
+      const actualQty = Number(stock.quantity) || 0;
+
+      // Skip if quantities are invalid
+      if (
+        isNaN(actualQty) ||
+        !isFinite(actualQty) ||
+        isNaN(theoreticalQty) ||
+        !isFinite(theoreticalQty)
+      ) {
+        return;
+      }
+
+      const variance = actualQty - theoreticalQty;
+      const costPerUnit = Number(ingredientCosts.get(stock.itemId)) || 0;
+
+      // Only add to variance if we have a valid cost for the item
+      if (!isNaN(costPerUnit) && isFinite(costPerUnit) && costPerUnit > 0) {
+        const varianceValue = variance * costPerUnit;
+        if (!isNaN(varianceValue) && isFinite(varianceValue)) {
+          totalVariance += varianceValue;
+        }
+      }
+    });
+
+    // Also check theoretical stocks that don't have actual stock records
+    theoreticalStock.forEach((theoreticalQty, key) => {
+      const [itemIdStr, warehouseIdStr] = key.split("-");
+      const itemId = parseInt(itemIdStr, 10);
+      const warehouseId = parseInt(warehouseIdStr, 10);
+
+      // Skip if parsing failed
+      if (isNaN(itemId) || isNaN(warehouseId)) {
+        return;
+      }
+
+      const qty = Number(theoreticalQty) || 0;
+
+      // Skip if quantity is invalid
+      if (isNaN(qty) || !isFinite(qty)) {
+        return;
+      }
+
+      // Check if this item-warehouse combination exists in actual stock
+      const actualStock = actualStocks.find(
+        (s) => s.itemId === itemId && s.warehouseId === warehouseId
+      );
+
+      // If no actual stock record exists, the variance is negative theoretical value
+      if (!actualStock && qty > 0) {
+        const costPerUnit = Number(ingredientCosts.get(itemId)) || 0;
+        if (!isNaN(costPerUnit) && isFinite(costPerUnit) && costPerUnit > 0) {
+          const varianceValue = -qty * costPerUnit;
+          if (!isNaN(varianceValue) && isFinite(varianceValue)) {
+            totalVariance += varianceValue;
+          }
+        }
+      }
+    });
+
+    // Ensure we return a valid number
+    return isNaN(totalVariance) || !isFinite(totalVariance) ? 0 : totalVariance;
+  } catch (error) {
+    console.error("Database error calculating inventory variance", error);
+    return 0;
   }
 }

@@ -7,8 +7,8 @@ import {
   BillList,
   Buildings3,
   Garage,
+  Refresh,
   RoundAltArrowRight,
-  Suitcase,
   User,
 } from "@solar-icons/react/ssr";
 import { Metadata } from "next";
@@ -26,8 +26,6 @@ function SettingPage({ params }: { params: { section: string } }) {
   }
   const itemClass =
     "flex justify-between flex-row items-center p-2 bg-background h-14";
-
-  const SectionIcon = section === "warehouse" ? Garage : Suitcase;
   return (
     <div>
       <div className="flex flex-col pl-4">
@@ -57,7 +55,7 @@ function SettingPage({ params }: { params: { section: string } }) {
         >
           <Card className={itemClass} fullWidth radius="sm">
             <div className="flex items-center">
-              <Suitcase className=" size-6 mr-2" />
+              <Refresh className=" size-6 mr-2" />
               <span>
                 {section === "warehouse"
                   ? "Go to Backoffice"

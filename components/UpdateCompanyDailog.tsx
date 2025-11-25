@@ -10,6 +10,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
   Spinner,
   useDisclosure,
 } from "@heroui/react";
@@ -118,6 +119,16 @@ export default function UpdateCompanyDialog() {
                     label="City"
                     variant="bordered"
                     defaultValue={prevData?.city}
+                    required
+                    isRequired
+                  />
+                  <NumberInput
+                    name="taxRate"
+                    label="Tax Rate (%)"
+                    variant="bordered"
+                    defaultValue={prevData?.taxRate ?? 5}
+                    min={0}
+                    max={100}
                     required
                     isRequired
                   />

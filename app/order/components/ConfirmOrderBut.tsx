@@ -1,11 +1,11 @@
 "use client";
-import { createOrder } from "@/app/lib/order/action";
+import { createOrder, getAddonPricesForMenu } from "@/app/lib/order/action";
 import { CartItem, OrderContext } from "@/context/OrderContext";
 import { formatCurrency } from "@/function";
 import { Button, Spinner, addToast } from "@heroui/react";
 import { Addon, Menu } from "@prisma/client";
 import { useRouter } from "next/navigation";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 export default function ConfirmOrderBut({
   tableId,
@@ -26,13 +26,35 @@ export default function ConfirmOrderBut({
     if (validMenuPrice) return validMenuPrice * item.quantity;
     return 0;
   });
+  const [menuAddonPrices, setMenuAddonPrices] = useState<
+    Record<string, Record<number, number>>
+  >({});
+
+  useEffect(() => {
+    const fetchPrices = async () => {
+      const prices: Record<string, Record<number, number>> = {};
+      for (const item of carts) {
+        if (item.addons.length > 0) {
+          const key = `${item.menuId}`;
+          prices[key] = await getAddonPricesForMenu(item.menuId, item.addons);
+        }
+      }
+      setMenuAddonPrices(prices);
+    };
+    if (carts.length > 0) {
+      fetchPrices();
+    }
+  }, [carts]);
+
   const addonPrices = carts.map((item) => {
     const validAddons = addons.filter((addon) =>
       item.addons.includes(addon.id)
     );
 
+    const priceMap = menuAddonPrices[item.menuId] || {};
     const addonPrice = validAddons?.reduce(
-      (accumulator, current) => accumulator + current.price,
+      (accumulator, current) =>
+        accumulator + (priceMap[current.id] ?? current.price),
       0
     );
     return addonPrice && addonPrice * item.quantity;
@@ -48,11 +70,13 @@ export default function ConfirmOrderBut({
   const handleConfirmOrder = async () => {
     setIsCreating(true);
     const cartWithSubTotal = carts.reduce((acc: CartItem[], cur) => {
-      const addonPrice = addons
-        .filter((item) => cur.addons.find((id) => item.id === id))
-        .reduce((acc, cur) => {
-          return acc + cur.price;
-        }, 0);
+      const validAddons = addons.filter((item) =>
+        cur.addons.find((id) => item.id === id)
+      );
+      const priceMap = menuAddonPrices[cur.menuId] || {};
+      const addonPrice = validAddons.reduce((acc, cur) => {
+        return acc + (priceMap[cur.id] ?? cur.price);
+      }, 0);
       const currentMenu = menus.find((item) => item.id === cur.menuId);
       const subTotal =
         addonPrice && currentMenu

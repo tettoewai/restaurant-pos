@@ -9,23 +9,113 @@ import {
   fetchMenuWithId,
   fetchOrderWithTableId,
   fetchTableWithId,
+  getAddonPricesForMenus,
 } from "../backoffice/data";
+import {
+  fetchAddonIngredientWithAddonIds,
+  fetchMenuItemIngredientWithMenuIds,
+  fetchWarehouseStock,
+} from "../warehouse/data";
 import { fetchOrderWithItemId } from "./data";
 
 export const getTotalPrice = async (cartItem: CartItem[]) => {
+  // Build menu-addon pairs for batch price fetching
+  const menuAddonPairs: { menuId: number; addonId: number }[] = [];
+  cartItem.forEach((item) => {
+    item.addons.forEach((addonId) => {
+      menuAddonPairs.push({ menuId: item.menuId, addonId });
+    });
+  });
+
+  // Fetch all addon prices at once
+  const addonPrices = await getAddonPricesForMenus(menuAddonPairs);
+
   const totalPrice = await Promise.all(
     cartItem.map(async (item) => {
       const currentMenuPrice = (await fetchMenuWithId(item.menuId))
         ?.price as number;
-      const currentAddonPrice = (await fetchAddonWithIds(item.addons)).reduce(
-        (accu, addon) => addon.price + accu,
-        0
-      );
+
+      // Calculate addon price using menu-specific prices
+      const currentAddonPrice = item.addons.reduce((accu, addonId) => {
+        const key = `${item.menuId}-${addonId}`;
+        const price = addonPrices.get(key) || 0;
+        return accu + price;
+      }, 0);
+
       return (currentMenuPrice + currentAddonPrice) * item.quantity;
     })
   );
   return totalPrice.reduce((accu, price) => accu + price, 0);
 };
+
+async function validateCartStock(cartItem: CartItem[]) {
+  if (!cartItem.length) {
+    return {
+      isValid: false,
+      message: "Missing cart items for stock validation.",
+    };
+  }
+
+  const menuIds = Array.from(new Set(cartItem.map((item) => item.menuId)));
+  const addonIds = Array.from(new Set(cartItem.flatMap((item) => item.addons)));
+
+  const [menuIngredients, addonIngredients, warehouseStocks] =
+    await Promise.all([
+      fetchMenuItemIngredientWithMenuIds(menuIds),
+      addonIds.length
+        ? fetchAddonIngredientWithAddonIds(addonIds)
+        : Promise.resolve([]),
+      fetchWarehouseStock(),
+    ]);
+
+  // Map of warehouse itemId -> required quantity for this cart
+  const requiredMap = new Map<number, number>();
+
+  for (const cart of cartItem) {
+    // Menu ingredients
+    const menuIngs = menuIngredients.filter(
+      (ing) => ing.menuId === cart.menuId
+    );
+    for (const ing of menuIngs) {
+      const prev = requiredMap.get(ing.itemId) ?? 0;
+      requiredMap.set(ing.itemId, prev + ing.quantity * cart.quantity);
+    }
+
+    // Addon ingredients
+    for (const addonId of cart.addons) {
+      const addonIngs = addonIngredients.filter(
+        (ing) =>
+          ing.addonId === addonId &&
+          (ing.menuId === null || ing.menuId === cart.menuId)
+      );
+
+      for (const ing of addonIngs) {
+        const prev = requiredMap.get(ing.itemId) ?? 0;
+        requiredMap.set(ing.itemId, prev + ing.extraQty * cart.quantity);
+      }
+    }
+  }
+
+  let error: { isValid: false; message: string } | null = null;
+
+  requiredMap.forEach((requiredQty, itemId) => {
+    if (error) return;
+    const stockRecord = warehouseStocks.find(
+      (stock) => stock.itemId === itemId
+    );
+    const stockQty = stockRecord?.quantity ?? 0;
+
+    if (stockQty < requiredQty) {
+      error = {
+        isValid: false,
+        message: "Insufficient ingredient stock for this order.",
+      };
+    }
+  });
+
+  if (error) return error;
+  return { isValid: true };
+}
 
 export const createOrder = async ({
   tableId,
@@ -37,6 +127,14 @@ export const createOrder = async ({
   const isValid = tableId && cartItem.length > 0;
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
+
+  const stockValidation = await validateCartStock(cartItem);
+  if (!stockValidation.isValid) {
+    return {
+      message: stockValidation.message,
+      isSuccess: false,
+    };
+  }
 
   try {
     // Check for an existing order
@@ -182,14 +280,20 @@ export async function updateOrder(formData: FormData) {
       where: { itemId },
       data: { instruction, quantity },
     });
+    const menuId = prevOrder[0].menuId;
     const toRemove = prevAddon
       .filter((item) => !addons.includes(Number(item)))
       .filter((item) => item !== null);
     if (toRemove.length > 0) {
-      const removedPrice = (await fetchAddonWithIds(toRemove)).reduce(
-        (accu, curr) => curr.price + accu,
-        0
-      );
+      const removePairs = toRemove.map((addonId) => ({
+        menuId,
+        addonId: Number(addonId),
+      }));
+      const removedPrices = await getAddonPricesForMenus(removePairs);
+      const removedPrice = toRemove.reduce((accu, addonId) => {
+        const key = `${menuId}-${Number(addonId)}`;
+        return accu + (removedPrices.get(key) || 0);
+      }, 0);
       newPrice -= removedPrice;
       if (prevOrder.length === 1 && !addons.length) {
         await prisma.order.update({
@@ -204,10 +308,12 @@ export async function updateOrder(formData: FormData) {
     }
     const toAdd = addons.filter((item) => !prevAddon.includes(item));
     if (toAdd.length > 0) {
-      const addedPrice = (await fetchAddonWithIds(toAdd)).reduce(
-        (accu, curr) => curr.price + accu,
-        0
-      );
+      const addPairs = toAdd.map((addonId) => ({ menuId, addonId }));
+      const addedPrices = await getAddonPricesForMenus(addPairs);
+      const addedPrice = toAdd.reduce((accu, addonId) => {
+        const key = `${menuId}-${addonId}`;
+        return accu + (addedPrices.get(key) || 0);
+      }, 0);
       newPrice += addedPrice;
       if (!prevOrder[0].addonId) {
         await prisma.order.delete({ where: { id: prevOrder[0].id } });
@@ -248,6 +354,43 @@ export async function updateOrder(formData: FormData) {
   }
 }
 
+/**
+ * Get addon prices for a menu (server action for client components)
+ */
+export async function getAddonPricesForMenu(
+  menuId: number,
+  addonIds: number[]
+): Promise<Record<number, number>> {
+  const priceMap: Record<number, number> = {};
+
+  if (addonIds.length === 0) {
+    return priceMap;
+  }
+
+  try {
+    const menuAddonPairs = addonIds.map((addonId) => ({ menuId, addonId }));
+
+    const prices = await getAddonPricesForMenus(menuAddonPairs);
+
+    addonIds.forEach((addonId) => {
+      const key = `${menuId}-${addonId}`;
+      const price = prices.get(key);
+      priceMap[addonId] = price || 0;
+    });
+  } catch (error) {
+    try {
+      const addons = await fetchAddonWithIds(addonIds);
+      addons.forEach((addon) => {
+        priceMap[addon.id] = addon.price;
+      });
+    } catch {
+      // Return empty object on error
+    }
+  }
+
+  return priceMap;
+}
+
 export async function setKnownReceipt(code: string) {
   if (!code) return;
   try {
@@ -265,6 +408,54 @@ export async function setKnownReceipt(code: string) {
   }
 }
 
+/**
+ * Calculate total order price with menu-specific addon prices
+ */
+export async function getTotalOrderPriceWithMenuPrices(
+  orders: Array<{
+    menuId: number | null;
+    addonIds: number[];
+    quantity: number;
+  }>
+): Promise<number> {
+  if (!orders || orders.length === 0) return 0;
+
+  // Build menu-addon pairs for batch price fetching
+  const menuAddonPairs: { menuId: number; addonId: number }[] = [];
+  orders.forEach((order) => {
+    if (order.menuId) {
+      order.addonIds.forEach((addonId) => {
+        menuAddonPairs.push({ menuId: order.menuId!, addonId });
+      });
+    }
+  });
+
+  // Fetch all addon prices at once
+  const addonPrices =
+    menuAddonPairs.length > 0
+      ? await getAddonPricesForMenus(menuAddonPairs)
+      : new Map<string, number>();
+
+  // Calculate total
+  let total = 0;
+  for (const order of orders) {
+    if (!order.menuId || !order.quantity) continue;
+
+    const menu = await fetchMenuWithId(order.menuId);
+    if (!menu) continue;
+
+    const menuPrice = menu.price;
+    const addonPrice = order.addonIds.reduce((accu, addonId) => {
+      const key = `${order.menuId}-${addonId}`;
+      return accu + (addonPrices.get(key) || 0);
+    }, 0);
+
+    total += (menuPrice + addonPrice) * order.quantity;
+  }
+
+  return total;
+}
+
 export async function candelOrder(itemId: string) {
   if (!itemId) return { message: "Missing required fields", isSuccess: false };
   try {
@@ -274,14 +465,23 @@ export async function candelOrder(itemId: string) {
       data: { isArchived: true },
     });
 
-    const currentAddonPrice = (
-      await fetchAddonWithIds(
-        currentOrder.map((item) => item.addonId).filter((item) => item !== null)
-      )
-    ).reduce((accu, curr) => curr.price + accu, 0);
-    const currentMenuPrice = Number(
-      (await fetchMenuWithId(currentOrder[0].menuId))?.price
-    );
+    const menuId = currentOrder[0].menuId;
+    const addonIds = currentOrder
+      .map((item) => item.addonId)
+      .filter((item) => item !== null) as number[];
+
+    // Fetch menu-specific addon prices
+    let currentAddonPrice = 0;
+    if (addonIds.length > 0) {
+      const menuAddonPairs = addonIds.map((addonId) => ({ menuId, addonId }));
+      const addonPrices = await getAddonPricesForMenus(menuAddonPairs);
+      currentAddonPrice = addonIds.reduce((accu, addonId) => {
+        const key = `${menuId}-${addonId}`;
+        return accu + (addonPrices.get(key) || 0);
+      }, 0);
+    }
+
+    const currentMenuPrice = Number((await fetchMenuWithId(menuId))?.price);
 
     const totalPrice =
       currentOrder[0].totalPrice -

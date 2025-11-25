@@ -36,11 +36,18 @@ export default function NotificationFeed() {
     }
   );
 
-  const tableIds = notification?.map((item) => item.tableId) as number[];
+  const tableIds =
+    notification && notification.length > 0
+      ? (notification?.map((item) => item.tableId) as number[])
+      : [];
   const { data: tables } = useSWR([notification], () =>
     fetchTableWithIds(tableIds).then((res) => res)
   );
-  const unreadCount = notification?.filter((item) => !item.isRead).length || 0;
+
+  const unreadCount =
+    notification && notification.length > 0
+      ? notification?.filter((item) => !item.isRead).length || 0
+      : 0;
 
   useEffect(() => {
     const intervalId = setInterval(() => {

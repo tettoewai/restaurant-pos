@@ -42,7 +42,7 @@ import {
   WarehouseItem,
 } from "@prisma/client";
 import { MenuDots, PenNewSquare, TrashBinTrash } from "@solar-icons/react/ssr";
-import { MapPinOff } from "lucide-react";
+import { DollarSign, MapPinOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import CancelOrderDialog from "./CancelOrderDialog";
 import DeleteAddonCategoryDialog from "./DeleteAddonCategoryDailog";
@@ -56,6 +56,7 @@ import QrcodePrint from "./QrcodePrint";
 import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import UpdateAddonDialog from "./UpdateAddonDailog";
 import UpdateAddonIngredientDialog from "./UpdateAddonIngredient";
+import ManageMenuAddonPriceDialog from "./ManageMenuAddonPriceDialog";
 import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
@@ -141,6 +142,13 @@ export default function MoreOptionButton({
     onOpen: onDeleteOpen,
     onOpenChange: onDeleteOpenChange,
     onClose: onDeleteClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isManagePriceOpen,
+    onOpen: onManagePriceOpen,
+    onOpenChange: onManagePriceOpenChange,
+    onClose: onManagePriceClose,
   } = useDisclosure();
   const iconClasses = "text-xl text-default-500 pointer-events-none shrink-0";
   const [available, setAvailable] = useState<boolean>(false);
@@ -316,6 +324,19 @@ export default function MoreOptionButton({
               None
             </DropdownItem>
           )}
+          {itemType === "addon" ? (
+            <DropdownItem
+              key="managePrice"
+              endContent={<DollarSign className={iconClasses} />}
+              onPress={onManagePriceOpen}
+            >
+              Manage Menu Prices
+            </DropdownItem>
+          ) : (
+            <DropdownItem className="hidden" key="managePriceNone" isReadOnly={true}>
+              none
+            </DropdownItem>
+          )}
           <DropdownItem
             key="delete"
             className={`text-danger ${isNotDeletable ? "hidden" : ""}`}
@@ -398,6 +419,14 @@ export default function MoreOptionButton({
             onOpenChange={onDeleteOpenChange}
             isOpen={isDeleteOpen}
           />
+          {addon && (
+            <ManageMenuAddonPriceDialog
+              addon={addon}
+              isOpen={isManagePriceOpen}
+              onOpenChange={onManagePriceOpenChange}
+              onClose={onManagePriceClose}
+            />
+          )}
         </>
       ) : itemType === "location" ? (
         <>

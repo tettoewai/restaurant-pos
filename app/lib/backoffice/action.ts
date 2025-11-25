@@ -3,9 +3,14 @@
 import { config } from "@/config";
 import { prisma } from "@/db";
 import { PaidData } from "@/general";
-import { DiscountType, OrderStatus } from "@prisma/client";
+import {
+  DiscountType,
+  MovementSource,
+  MovementType,
+  OrderStatus,
+} from "@prisma/client";
 import { v2 as cloudinary } from "cloudinary";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import QRCode from "qrcode";
 import { fetchOrderWithItemId } from "../order/data";
 import {
@@ -18,6 +23,13 @@ import {
   fetchSelectedLocation,
   fetchUser,
 } from "./data";
+import {
+  fetchAddonIngredientWithAddonIds,
+  fetchMenuItemIngredientWithMenuIds,
+  fetchSelectedWarehouse,
+  fetchWarehouseStockWithItemIds,
+} from "../warehouse/data";
+import { createStockMovement } from "../warehouse/action";
 
 interface Props {
   formData: FormData;
@@ -35,6 +47,13 @@ export async function updateCompany(formData: FormData) {
   const street = formData.get("street") as string;
   const township = formData.get("township") as string;
   const city = formData.get("city") as string;
+  const taxRate = Number(formData.get("taxRate"));
+  const normalizedTaxRate =
+    !Number.isFinite(taxRate) || taxRate < 0
+      ? 0
+      : taxRate > 100
+      ? 100
+      : Math.round(taxRate);
   const isValid = name && street && township && city;
   if (!isValid)
     return {
@@ -45,7 +64,7 @@ export async function updateCompany(formData: FormData) {
     const { company } = await fetchCompany();
     await prisma.company.update({
       where: { id: company?.id },
-      data: { name, street, township, city },
+      data: { name, street, township, city, taxRate: normalizedTaxRate },
     });
     revalidatePath("/backoffice");
     return { message: "Updated company successfully.", isSuccess: true };
@@ -339,6 +358,105 @@ export async function updateAddon(formData: FormData) {
     console.log(error);
     return {
       message: "Something went wrong while updating addon",
+      isSuccess: false,
+    };
+  }
+}
+
+/**
+ * Fetch menu-specific prices for an addon
+ */
+export async function fetchMenuAddonPrices(addonId: number) {
+  noStore();
+  try {
+    const menuAddonPrices = await prisma.menuAddonPrice.findMany({
+      where: { addonId },
+      include: {
+        menu: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        menu: {
+          name: "asc",
+        },
+      },
+    });
+    return menuAddonPrices;
+  } catch (error) {
+    console.error("Database Error:", error);
+    return [];
+  }
+}
+
+/**
+ * Create or update menu-specific addon price
+ */
+export async function upsertMenuAddonPrice(formData: FormData) {
+  noStore();
+  const menuId = Number(formData.get("menuId"));
+  const addonId = Number(formData.get("addonId"));
+  const price = Number(formData.get("price"));
+
+  const isValid = menuId > 0 && addonId > 0 && !isNaN(price);
+  if (!isValid) {
+    return { message: "Missing required fields.", isSuccess: false };
+  }
+
+  try {
+    await prisma.menuAddonPrice.upsert({
+      where: {
+        menuId_addonId: {
+          menuId,
+          addonId,
+        },
+      },
+      update: {
+        price,
+      },
+      create: {
+        menuId,
+        addonId,
+        price,
+      },
+    });
+    revalidatePath("/backoffice/addon");
+    return { message: "Menu addon price saved successfully.", isSuccess: true };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Something went wrong while saving menu addon price.",
+      isSuccess: false,
+    };
+  }
+}
+
+/**
+ * Delete menu-specific addon price
+ */
+export async function deleteMenuAddonPrice(menuId: number, addonId: number) {
+  noStore();
+  try {
+    await prisma.menuAddonPrice.delete({
+      where: {
+        menuId_addonId: {
+          menuId,
+          addonId,
+        },
+      },
+    });
+    revalidatePath("/backoffice/addon");
+    return {
+      message: "Menu addon price deleted successfully.",
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Something went wrong while deleting menu addon price.",
       isSuccess: false,
     };
   }
@@ -743,6 +861,161 @@ export async function updateOrderStatus({
         message: "Something went wrong while update status",
         isSuccess: false,
       };
+    const isCooking = status === OrderStatus.COOKING;
+    if (isCooking) {
+      if (!orders.length)
+        return {
+          message: "Order not found for the provided item.",
+          isSuccess: false,
+        };
+      const menuIds = Array.from(new Set(orders.map((order) => order.menuId)));
+      const addonIds = Array.from(
+        new Set(
+          orders
+            .map((order) => order.addonId)
+            .filter((addonId): addonId is number => addonId !== null)
+        )
+      );
+      const [menuIngredients, addonIngredients] = await Promise.all([
+        menuIds.length
+          ? fetchMenuItemIngredientWithMenuIds(menuIds)
+          : Promise.resolve([]),
+        addonIds.length
+          ? fetchAddonIngredientWithAddonIds(addonIds)
+          : Promise.resolve([]),
+      ]);
+      const { company, user } = await fetchCompany();
+      if (!company || !user)
+        return {
+          message: "Unable to fetch company information for stock deduction.",
+          isSuccess: false,
+        };
+      const ingredientUsage = new Map<number, number>();
+      const menuIngredientMap = new Map<number, typeof menuIngredients>();
+      menuIngredients.forEach((ingredient) => {
+        const existing = menuIngredientMap.get(ingredient.menuId) ?? [];
+        existing.push(ingredient);
+        menuIngredientMap.set(ingredient.menuId, existing);
+      });
+      const addonIngredientMap = new Map<number, typeof addonIngredients>();
+      addonIngredients.forEach((ingredient) => {
+        const existing = addonIngredientMap.get(ingredient.addonId) ?? [];
+        existing.push(ingredient);
+        addonIngredientMap.set(ingredient.addonId, existing);
+      });
+      for (const order of orders) {
+        const menuIngs = menuIngredientMap.get(order.menuId) ?? [];
+        for (const ingredient of menuIngs) {
+          const prev = ingredientUsage.get(ingredient.itemId) ?? 0;
+          ingredientUsage.set(
+            ingredient.itemId,
+            prev + ingredient.quantity * order.quantity
+          );
+        }
+        if (order.addonId) {
+          const addonIngs =
+            addonIngredientMap
+              .get(order.addonId)
+              ?.filter(
+                (ingredient) =>
+                  ingredient.menuId === null ||
+                  ingredient.menuId === order.menuId
+              ) ?? [];
+          for (const ingredient of addonIngs) {
+            const prev = ingredientUsage.get(ingredient.itemId) ?? 0;
+            ingredientUsage.set(
+              ingredient.itemId,
+              prev + ingredient.extraQty * order.quantity
+            );
+          }
+        }
+      }
+      let deductionSummaries: { itemId: number; quantity: number }[] = [];
+      let warehouseIdForLog: number | null = null;
+      if (ingredientUsage.size) {
+        const selectedWarehouse = await fetchSelectedWarehouse();
+        if (!selectedWarehouse)
+          return {
+            message:
+              "Please select a warehouse before moving orders to cooking.",
+            isSuccess: false,
+          };
+        warehouseIdForLog = selectedWarehouse.warehouseId;
+        const requiredItemIds: number[] = Array.from(ingredientUsage.keys());
+        const [warehouseStocksRaw, warehouseItems] = await Promise.all([
+          fetchWarehouseStockWithItemIds(requiredItemIds),
+          prisma.warehouseItem.findMany({
+            where: { id: { in: requiredItemIds } },
+            select: { id: true, name: true },
+          }),
+        ]);
+        const warehouseStocks = warehouseStocksRaw.filter(
+          (stock) => stock.warehouseId === selectedWarehouse.warehouseId
+        );
+        const itemNameMap = new Map(
+          warehouseItems.map((item) => [item.id, item.name])
+        );
+        for (const itemId of requiredItemIds) {
+          const requiredQty = ingredientUsage.get(itemId) ?? 0;
+          const normalizedRequired = Math.ceil(requiredQty);
+          const stockRecord = warehouseStocks.find(
+            (stock) => stock.itemId === itemId
+          );
+          const availableQty = stockRecord?.quantity ?? 0;
+          if (availableQty < normalizedRequired) {
+            const itemName = itemNameMap.get(itemId) ?? `Item #${itemId}`;
+            return {
+              message: `Insufficient stock for ${itemName}. Required ${normalizedRequired}, available ${availableQty}.`,
+              isSuccess: false,
+            };
+          }
+        }
+        const stockMovements = requiredItemIds
+          .map((itemId) => {
+            const normalizedRequired = Math.ceil(
+              ingredientUsage.get(itemId) ?? 0
+            );
+            return {
+              itemId,
+              type: MovementType.OUT,
+              quantity: normalizedRequired,
+              warehouseId: selectedWarehouse.warehouseId,
+              source: MovementSource.CUSTOMER_ORDER,
+              reference: orders[0]?.orderSeq
+                ? `ORDER-${orders[0]?.orderSeq}`
+                : undefined,
+              note: `Auto deduction for order ${orders[0]?.itemId}`,
+            };
+          })
+          .filter((movement) => movement.quantity > 0);
+        if (stockMovements.length) {
+          const stockMovementResult = await createStockMovement(stockMovements);
+          if (!stockMovementResult?.isSuccess) {
+            return stockMovementResult;
+          }
+          deductionSummaries = stockMovements.map((movement) => ({
+            itemId: movement.itemId,
+            quantity: movement.quantity,
+          }));
+        }
+      }
+      await prisma.auditLog.create({
+        data: {
+          companyId: company.id,
+          userId: user.id,
+          action: "ORDER_COOKING",
+          targetType: "Order",
+          targetId: orders[0].id,
+          changes: {
+            orderIds,
+            itemId,
+            newStatus: status,
+            warehouseId: warehouseIdForLog,
+            deductions: deductionSummaries,
+          },
+        },
+      });
+    }
     await prisma.order.updateMany({
       where: { id: { in: orderIds } },
       data: { status },
@@ -924,7 +1197,10 @@ export async function uploadImage(formData: FormData) {
   });
 }
 
-export async function createReceipt(paidData: PaidData[]) {
+export async function createReceipt(
+  paidData: PaidData[],
+  discountAmount = 0
+) {
   if (!paidData.length) return;
   try {
     return Promise.all(
@@ -937,6 +1213,7 @@ export async function createReceipt(paidData: PaidData[]) {
           totalPrice: item.totalPrice as number,
           quantity: item.quantity as number,
           tax: item.tax as number,
+          discount: discountAmount,
           date: item.date as Date,
           subTotal: item.subTotal,
           isFoc: item.isFoc,
@@ -964,7 +1241,10 @@ export async function createReceipt(paidData: PaidData[]) {
   }
 }
 
-export async function setPaidWithQuantity(item: PaidData[]) {
+export async function setPaidWithQuantity(
+  item: PaidData[],
+  options?: { discountAmount?: number; promotionIds?: number[] }
+) {
   if (!item.length) {
     return {
       message: "Missing required fields",
@@ -973,6 +1253,8 @@ export async function setPaidWithQuantity(item: PaidData[]) {
   }
 
   try {
+    let latestOrderSeq: string | null = null;
+    let tableIdForUsage: number | null = null;
     for (const data of item) {
       const currentOrder = await fetchOrderWithItemId(data.itemId);
 
@@ -996,6 +1278,8 @@ export async function setPaidWithQuantity(item: PaidData[]) {
         currentOrder[0].quantity;
       const paidQuantity = currentOrder[0].paidQuantity + data.quantity;
       const status = isPaid ? OrderStatus.PAID : OrderStatus.COMPLETE;
+      latestOrderSeq = latestOrderSeq || currentOrder[0].orderSeq;
+      tableIdForUsage = tableIdForUsage || currentOrder[0].tableId;
 
       await prisma.order.updateMany({
         where: { itemId: data.itemId },
@@ -1003,7 +1287,25 @@ export async function setPaidWithQuantity(item: PaidData[]) {
       });
     }
 
-    await createReceipt(item);
+    await createReceipt(item, options?.discountAmount ?? 0);
+
+    if (
+      options?.promotionIds?.length &&
+      latestOrderSeq &&
+      tableIdForUsage !== null
+    ) {
+      await prisma.$transaction(
+        options.promotionIds.map((promotionId) =>
+          prisma.promotionUsage.create({
+            data: {
+              promotionId,
+              tableId: tableIdForUsage as number,
+              orderSeq: latestOrderSeq as string,
+            },
+          })
+        )
+      );
+    }
 
     return {
       message: "Paid order successfully.",

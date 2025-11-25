@@ -137,6 +137,19 @@ export async function fetchAddonIngredients() {
   }
 }
 
+export async function fetchAddonIngredientWithAddonIds(addonIds: number[]) {
+  noStore();
+  try {
+    return await prisma.addonIngredient.findMany({
+      where: { addonId: { in: addonIds } },
+      orderBy: { id: "desc" },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    return [];
+  }
+}
+
 export async function fetchPurchaseOrder() {
   noStore();
   try {
@@ -209,6 +222,17 @@ export async function fetchWarehouseStock() {
   }
 }
 
+export async function fetchWarehouseStockWithItemIds(itemIds: number[]) { 
+  noStore();
+  if(!itemIds.length) return [];
+  try {
+    return await prisma.warehouseStock.findMany({ where: { itemId: { in: itemIds } } });
+  } catch (error) {
+    console.error("Database Error:", error);
+    return [];
+  }
+}
+
 export async function fetchStockMovement() {
   noStore();
   try {
@@ -255,5 +279,82 @@ export async function fetchMenuAddonCategoryWithCategoryAndMenu({
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch Add-on Cateogry data.");
+  }
+}
+
+export async function fetchDashboardData() {
+  noStore();
+  try {
+    const selectedWarehouse = await fetchSelectedWarehouse();
+    if (!selectedWarehouse) {
+      return {
+        totalStockItems: 0,
+        lowStockItems: 0,
+        pendingPOs: 0,
+        recentMovements: [],
+        recentPOs: [],
+        lowStockItemsList: [],
+      };
+    }
+
+    // Fetch warehouse stock
+    const warehouseStock = await prisma.warehouseStock.findMany({
+      where: { warehouseId: selectedWarehouse.warehouseId },
+      include: { warehouseItem: true },
+    });
+
+    // Calculate low stock items
+    const lowStockItemsList = warehouseStock.filter(
+      (stock) => stock.quantity <= stock.warehouseItem.threshold
+    );
+
+    // Fetch recent stock movements (last 10)
+    const recentMovements = await prisma.stockMovement.findMany({
+      where: { warehouseId: selectedWarehouse.warehouseId },
+      include: { warehouseItem: true, warehouse: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+
+    // Fetch recent purchase orders (last 5)
+    const recentPOs = await prisma.purchaseOrder.findMany({
+      where: { warehouseId: selectedWarehouse.warehouseId },
+      include: { supplier: true },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+
+    // Count pending purchase orders
+    const pendingPOs = await prisma.purchaseOrder.count({
+      where: {
+        warehouseId: selectedWarehouse.warehouseId,
+        status: "PENDING",
+      },
+    });
+
+    return {
+      totalStockItems: warehouseStock.length,
+      lowStockItems: lowStockItemsList.length,
+      pendingPOs,
+      recentMovements,
+      recentPOs,
+      lowStockItemsList: lowStockItemsList.map((stock) => ({
+        id: stock.id,
+        name: stock.warehouseItem.name,
+        quantity: stock.quantity,
+        threshold: stock.warehouseItem.threshold,
+        unit: stock.warehouseItem.unit,
+      })),
+    };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      totalStockItems: 0,
+      lowStockItems: 0,
+      pendingPOs: 0,
+      recentMovements: [],
+      recentPOs: [],
+      lowStockItemsList: [],
+    };
   }
 }

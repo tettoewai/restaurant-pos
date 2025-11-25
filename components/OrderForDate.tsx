@@ -6,7 +6,7 @@ import {
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton, TableSkeleton } from "@/app/ui/skeletons";
 import { formatCurrency } from "@/function";
-import { Card, DateRangePicker } from "@heroui/react";
+import { Alert, DateRangePicker } from "@heroui/react";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
 import { Order, OrderStatus, Receipt } from "@prisma/client";
 import { useDateFormatter } from "@react-aria/i18n";
@@ -19,6 +19,7 @@ import {
 import { BanknoteX, HandPlatter } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
+import DashboardCard from "./DashboardCard";
 import ExportToExcelBtn from "./ExportToExcelBtn";
 import ListTable from "./ListTable";
 import SalesChart from "./SaleChart";
@@ -50,21 +51,27 @@ function OrderForDate() {
     }
   );
   const sameItemOrder: Order[] = [];
-  orderData?.map((item) => {
-    const isExist = sameItemOrder.find((same) => same.itemId === item.itemId);
-    if (!isExist) sameItemOrder.push(item);
-  });
+  orderData && orderData.length > 0
+    ? orderData?.map((item) => {
+        const isExist = sameItemOrder.find(
+          (same) => same.itemId === item.itemId
+        );
+        if (!isExist) sameItemOrder.push(item);
+      })
+    : [];
 
   const grossRevenue =
-    orderData
-      ?.filter((item) => !item.isFoc)
-      .reduce((acc, cur) => {
-        const totalPrice = Number(cur.subTotal);
-        if (isNaN(totalPrice)) {
-          console.warn("Invalid totalPrice found:", totalPrice);
-        }
-        return !isNaN(totalPrice) ? acc + totalPrice : acc;
-      }, 0) || 0;
+    orderData && orderData.length > 0
+      ? orderData
+          .filter((item) => !item.isFoc)
+          .reduce((acc, cur) => {
+            const totalPrice = Number(cur.subTotal);
+            if (isNaN(totalPrice)) {
+              console.warn("Invalid totalPrice found:", totalPrice);
+            }
+            return !isNaN(totalPrice) ? acc + totalPrice : acc;
+          }, 0)
+      : 0;
 
   const avgOrderVal =
     sameItemOrder.length > 0
@@ -116,13 +123,19 @@ function OrderForDate() {
     }
   );
 
-  const focReceipts = orderData?.filter((item) => item.isFoc);
-  const focTotalPrice = focReceipts?.reduce((acc, cur) => {
-    if (cur.subTotal) {
-      acc += cur.subTotal;
-    }
-    return acc;
-  }, 0);
+  const focReceipts =
+    orderData && orderData.length > 0
+      ? orderData.filter((item) => item.isFoc)
+      : [];
+  const focTotalPrice =
+    focReceipts.length > 0
+      ? focReceipts.reduce((acc, cur) => {
+          if (cur.subTotal) {
+            acc += cur.subTotal;
+          }
+          return acc;
+        }, 0)
+      : 0;
 
   const countStatus = [
     {
@@ -255,8 +268,8 @@ function OrderForDate() {
   ];
   return (
     <div className="mt-4">
-      <div className="flex items-center w-full justify-between">
-        <p className="text-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center w-full justify-between gap-2 mb-2">
+        <p className="text-sm text-foreground/60">
           Details in:{" "}
           {date
             ? formatter.formatRange(
@@ -265,10 +278,10 @@ function OrderForDate() {
               )
             : "--"}
         </p>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <DateRangePicker
             size="sm"
-            className="bg-background rounded-xl"
+            className="bg-background rounded-xl min-w-[200px]"
             label="Date range"
             color="primary"
             value={date}
@@ -297,61 +310,49 @@ function OrderForDate() {
         </div>
       </div>
       <div className="mt-2 flex flex-wrap">
-        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
           {countStatus.map((item, index) =>
             isLoading ? (
               <DashboardCardSkeleton key={index} />
             ) : (
-              <Card
-                className="bg-background/60 flex flex-row sm:flex-col items-center p-3 rounded-xl border border-default-100 hover:border-primary hover:shadow-md transition-all"
+              <DashboardCard
                 key={index}
-              >
-                <div className="grid grid-cols-3 w-full rounded-lg">
-                  <h3 className="font-medium text-foreground col-span-2">
-                    {item.name}
-                  </h3>
-                  <Card
-                    shadow="none"
-                    className="text-white p-3 m-1 rounded-lg bg-primary size-14 flex items-center justify-center"
-                  >
-                    {item.icon}
-                  </Card>
-                </div>
-                <div className="w-1/2 sm:w-full h-2/5 mt-0 sm:mt-3 flex items-center justify-center">
-                  <h1
-                    className={`mt-2 ml-2 text-4xl sm:text-5xl text-primary text-center font-semibold ${
-                      item.name === "Gross Revenue" ||
-                      item.name === "Avg. Order Value" ||
-                      item.name === "Foc Menu" ||
-                      item.name === "Total Tax"
-                        ? "text-base sm:text-lg text-foreground"
-                        : ""
-                    }`}
-                  >
-                    {item.name === "Gross Revenue" ||
-                    item.name === "Avg. Order Value"
-                      ? formatCurrency(Math.round(Number(item.count)))
-                      : item.count}
-                  </h1>
-                </div>
-              </Card>
+                name={item.name}
+                icon={item.icon}
+                value={
+                  item.name === "Gross Revenue" ||
+                  item.name === "Avg. Order Value"
+                    ? formatCurrency(Math.round(Number(item.count)))
+                    : item.count
+                }
+                valueClassName={
+                  item.name === "Gross Revenue" ||
+                  item.name === "Avg. Order Value" ||
+                  item.name === "Foc Menu" ||
+                  item.name === "Total Tax"
+                    ? "text-xs sm:text-sm text-foreground"
+                    : ""
+                }
+              />
             )
           )}
         </div>
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 mt-2 gap-2">
-          <div className="w-full">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 mt-4 gap-4">
+          <div className="w-full min-w-0">
             {isLoading ? (
               <TableSkeleton />
             ) : (
               <>
-                <h2 className="text-foreground/80 font-medium mb-1">
+                <h2 className="text-foreground/80 font-medium mb-2 text-sm sm:text-base">
                   Top 8 Most Ordered Menus
                 </h2>
-                <ListTable columns={columns} rows={rows} />
+                <div className="overflow-x-auto">
+                  <ListTable columns={columns} rows={rows} />
+                </div>
               </>
             )}
           </div>
-          <div className="w-full">
+          <div className="w-full min-w-0">
             <SalesChart
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}

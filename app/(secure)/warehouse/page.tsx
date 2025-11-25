@@ -7,6 +7,7 @@ import {
 import { Card } from "@heroui/react";
 import { Garage } from "@solar-icons/react/ssr";
 import WarehouoseToggle from "./components/WarehouseToggle";
+import WarehouseDashboard from "./components/WarehouseDashboard";
 
 export default async function WarehousePage() {
   const [warehouse, selectedWarehouse] = await Promise.all([
@@ -41,7 +42,9 @@ export default async function WarehousePage() {
         <span className="text-primary">Dashboard</span>
         <span className="text-sm text-gray-600">Track your movement</span>
       </div>
-      <div>Dashboard goes here</div>
+      <div className="mt-5">
+        <WarehouseDashboard />
+      </div>
     </div>
   );
 }

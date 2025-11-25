@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Company {
@@ -13,6 +12,7 @@ model Company {
   street         String
   township       String
   city           String
+  taxRate        Int             @default(5)
   isArchived     Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -95,6 +95,7 @@ model Menu {
   Order                Order[]
   PromotionMenu        PromotionMenu[]
   Receipt              Receipt[]
+  MenuAddonPrice       MenuAddonPrice[]
 }
 
 model DisabledLocationMenu {
@@ -147,6 +148,22 @@ model Addon {
   Order                Order[]
   Receipt              Receipt[]
   AddonIngredient      AddonIngredient[]
+  MenuAddonPrice       MenuAddonPrice[]
+}
+
+model MenuAddonPrice {
+  id        Int      @id @default(autoincrement())
+  menuId    Int
+  addonId   Int
+  price     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  menu      Menu     @relation(fields: [menuId], references: [id])
+  addon     Addon    @relation(fields: [addonId], references: [id])
+
+  @@unique([menuId, addonId], name: "menuId_addonId")
+  @@index([menuId])
+  @@index([addonId])
 }
 
 model Table {
@@ -222,6 +239,7 @@ model Receipt {
   totalPrice Int
   quantity   Int
   tax        Float
+  discount   Int      @default(0)
   date       DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
