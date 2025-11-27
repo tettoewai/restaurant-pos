@@ -862,18 +862,217 @@ export async function createStockMovement(
     parentId?: number;
   }[]
 ) {
-  if (!stockMovement.length)
+  // Validation: Check if array is not empty
+  if (!stockMovement || !stockMovement.length) {
     return {
-      message: "PO item is not provided!",
+      message: "Stock movement data is not provided!",
       isSuccess: false,
     };
+  }
+
+  // Validation: Validate each item in the array
+  const errors: string[] = [];
+  const itemIds = new Set<number>();
+  const warehouseIds = new Set<number>();
+
+  for (let i = 0; i < stockMovement.length; i++) {
+    const item = stockMovement[i];
+    const index = i + 1;
+
+    // Validate itemId
+    if (!item.itemId || item.itemId <= 0 || !Number.isInteger(item.itemId)) {
+      errors.push(`Item ${index}: Invalid itemId. Must be a positive integer.`);
+    } else {
+      itemIds.add(item.itemId);
+    }
+
+    // Validate quantity
+    if (
+      !item.quantity ||
+      item.quantity <= 0 ||
+      !Number.isInteger(item.quantity)
+    ) {
+      errors.push(
+        `Item ${index}: Invalid quantity. Must be a positive integer.`
+      );
+    }
+
+    // Validate warehouseId
+    if (
+      !item.warehouseId ||
+      item.warehouseId <= 0 ||
+      !Number.isInteger(item.warehouseId)
+    ) {
+      errors.push(
+        `Item ${index}: Invalid warehouseId. Must be a positive integer.`
+      );
+    } else {
+      warehouseIds.add(item.warehouseId);
+    }
+
+    // Validate type
+    if (!item.type || !Object.values(MovementType).includes(item.type)) {
+      errors.push(`Item ${index}: Invalid movement type. Must be IN or OUT.`);
+    }
+
+    // Validate source
+    if (!item.source || !Object.values(MovementSource).includes(item.source)) {
+      errors.push(
+        `Item ${index}: Invalid movement source. Must be MANUAL, PURCHASE_ORDER, or CUSTOMER_ORDER.`
+      );
+    }
+
+    // Validate parentId if provided
+    if (item.parentId !== undefined && item.parentId !== null) {
+      if (!Number.isInteger(item.parentId) || item.parentId <= 0) {
+        errors.push(
+          `Item ${index}: Invalid parentId. Must be a positive integer or null.`
+        );
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    return {
+      message: `Validation errors:\n${errors.join("\n")}`,
+      isSuccess: false,
+    };
+  }
 
   try {
+    // Validation: Check if all items exist in database
+    const existingItems = await prisma.warehouseItem.findMany({
+      where: { id: { in: Array.from(itemIds) } },
+      select: { id: true },
+    });
+    const existingItemIds = new Set(existingItems.map((item) => item.id));
+    const missingItems = Array.from(itemIds).filter(
+      (id) => !existingItemIds.has(id)
+    );
+    if (missingItems.length > 0) {
+      return {
+        message: `Invalid item IDs: ${missingItems.join(
+          ", "
+        )}. These items do not exist.`,
+        isSuccess: false,
+      };
+    }
+
+    // Validation: Check if all warehouses exist
+    const existingWarehouses = await prisma.warehouse.findMany({
+      where: { id: { in: Array.from(warehouseIds) } },
+      select: { id: true },
+    });
+    const existingWarehouseIds = new Set(existingWarehouses.map((wh) => wh.id));
+    const missingWarehouses = Array.from(warehouseIds).filter(
+      (id) => !existingWarehouseIds.has(id)
+    );
+    if (missingWarehouses.length > 0) {
+      return {
+        message: `Invalid warehouse IDs: ${missingWarehouses.join(
+          ", "
+        )}. These warehouses do not exist.`,
+        isSuccess: false,
+      };
+    }
+
+    // Validation: Check if parentId exists (if provided)
+    const parentIds = stockMovement
+      .map((item) => item.parentId)
+      .filter((id): id is number => id !== undefined && id !== null);
+    if (parentIds.length > 0) {
+      const existingParents = await prisma.stockMovement.findMany({
+        where: { id: { in: parentIds } },
+        select: { id: true },
+      });
+      const existingParentIds = new Set(existingParents.map((p) => p.id));
+      const missingParents = parentIds.filter(
+        (id) => !existingParentIds.has(id)
+      );
+      if (missingParents.length > 0) {
+        return {
+          message: `Invalid parent IDs: ${missingParents.join(
+            ", "
+          )}. These parent stock movements do not exist.`,
+          isSuccess: false,
+        };
+      }
+    }
+
+    // Validation: Check stock availability for OUT movements
+    // OUT movements require existing stock - cannot be the first movement
+    const outMovements = stockMovement.filter(
+      (item) => item.type === MovementType.OUT
+    );
+    if (outMovements.length > 0) {
+      const stockChecks = await Promise.all(
+        outMovements.map(async (item) => {
+          const stock = await prisma.warehouseStock.findUnique({
+            where: {
+              itemId_warehouseId: {
+                itemId: item.itemId,
+                warehouseId: item.warehouseId,
+              },
+            },
+            include: {
+              warehouseItem: {
+                select: { name: true },
+              },
+            },
+          });
+          return {
+            item,
+            stock: stock?.quantity ?? null,
+            stockExists: stock !== null,
+            itemName: stock?.warehouseItem.name ?? `Item #${item.itemId}`,
+          };
+        })
+      );
+
+      // Check if stock exists for OUT movements
+      const missingStock = stockChecks.filter((check) => !check.stockExists);
+      if (missingStock.length > 0) {
+        const errorMessages = missingStock.map(
+          (check) =>
+            `${check.itemName}: Stock does not exist. OUT movements require existing stock. First movement must be IN.`
+        );
+        return {
+          message: `Stock validation failed:\n${errorMessages.join("\n")}`,
+          isSuccess: false,
+        };
+      }
+
+      // Check if sufficient stock is available
+      const insufficientStock = stockChecks.filter(
+        (check) => check.stockExists && (check.stock ?? 0) < check.item.quantity
+      );
+
+      if (insufficientStock.length > 0) {
+        const errorMessages = insufficientStock.map(
+          (check) =>
+            `${check.itemName}: Insufficient stock. Available: ${check.stock}, Required: ${check.item.quantity}`
+        );
+        return {
+          message: `Stock validation failed:\n${errorMessages.join("\n")}`,
+          isSuccess: false,
+        };
+      }
+    }
+
+    // All validations passed, proceed with transaction
+    // Separate IN and OUT movements for different handling
+    const inMovements = stockMovement.filter(
+      (item) => item.type === MovementType.IN
+    );
+    const outMovementsForUpdate = stockMovement.filter(
+      (item) => item.type === MovementType.OUT
+    );
+
     await prisma.$transaction([
+      // Create all stock movements
       prisma.stockMovement.createMany({ data: stockMovement }),
-      ...stockMovement.map((item) => {
-        const quantity =
-          item.type === MovementType.OUT ? -item.quantity : item.quantity;
+      // Handle IN movements - can create new stock entries
+      ...inMovements.map((item) => {
         return prisma.warehouseStock.upsert({
           where: {
             itemId_warehouseId: {
@@ -881,12 +1080,25 @@ export async function createStockMovement(
               warehouseId: item.warehouseId,
             },
           },
-          update: { quantity: { increment: quantity } },
+          update: { quantity: { increment: item.quantity } },
           create: {
             warehouseId: item.warehouseId,
             itemId: item.itemId,
             quantity: item.quantity,
           },
+        });
+      }),
+      // Handle OUT movements - stock must already exist (validated above)
+      // First stock movement cannot be OUT - use update instead of upsert
+      ...outMovementsForUpdate.map((item) => {
+        return prisma.warehouseStock.update({
+          where: {
+            itemId_warehouseId: {
+              itemId: item.itemId,
+              warehouseId: item.warehouseId,
+            },
+          },
+          data: { quantity: { decrement: item.quantity } },
         });
       }),
     ]);
@@ -896,7 +1108,7 @@ export async function createStockMovement(
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    console.error("Error creating stock movement:", error);
     return {
       message: "Something went wrong while making stock movement!",
       isSuccess: false,
@@ -957,11 +1169,63 @@ export async function cancelPurchaseOrder(poId: number) {
       message: "PO id is not provided.",
       isSuccess: false,
     };
+
   try {
+    const { company, user } = await fetchCompany();
+    if (!user || !company)
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+
+    // Check if PO exists and its status
+    const purchaseOrder = await prisma.purchaseOrder.findUnique({
+      where: { id: poId },
+    });
+
+    if (!purchaseOrder) {
+      return {
+        message: "Purchase order not found.",
+        isSuccess: false,
+      };
+    }
+
+    // Prevent cancelling already received or cancelled POs
+    if (purchaseOrder.status === POStatus.RECEIVED) {
+      return {
+        message: "Cannot cancel a received purchase order.",
+        isSuccess: false,
+      };
+    }
+
+    if (purchaseOrder.status === POStatus.CANCELLED) {
+      return {
+        message: "Purchase order is already cancelled.",
+        isSuccess: false,
+      };
+    }
+
     await prisma.purchaseOrder.update({
       where: { id: poId },
       data: { status: POStatus.CANCELLED },
     });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        action: "CANCEL_PO",
+        userId: user.id,
+        companyId: company.id,
+        targetType: "Purchase Order",
+        targetId: poId,
+        changes: JSON.stringify({
+          code: purchaseOrder.code,
+          previousStatus: purchaseOrder.status,
+          newStatus: POStatus.CANCELLED,
+        }),
+      },
+    });
+
     revalidatePath("/warehouse/purchase-order");
     return { message: "Canceled PO Successfully.", isSuccess: true };
   } catch (error) {
@@ -1113,6 +1377,102 @@ export async function correctPurchaseOrder(formData: FormData) {
     console.log(error);
     return {
       message: "Something went wrong while correcting the PO!",
+      isSuccess: false,
+    };
+  }
+}
+
+export async function deletePurchaseOrder(poId: number) {
+  if (!poId)
+    return {
+      message: "PO id is not provided.",
+      isSuccess: false,
+    };
+
+  try {
+    const { company, user } = await fetchCompany();
+    if (!user || !company)
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+
+    // Check if PO exists and get its status
+    const purchaseOrder = await prisma.purchaseOrder.findUnique({
+      where: { id: poId },
+      include: {
+        PurchaseOrderItem: true,
+      },
+    });
+
+    if (!purchaseOrder) {
+      return {
+        message: "Purchase order not found.",
+        isSuccess: false,
+      };
+    }
+
+    // Prevent deleting received POs (they've already affected stock)
+    if (purchaseOrder.status === POStatus.RECEIVED) {
+      return {
+        message:
+          "Cannot delete a received purchase order. Stock has already been updated.",
+        isSuccess: false,
+      };
+    }
+
+    // Prevent deleting cancelled POs (for audit trail)
+    if (purchaseOrder.status === POStatus.CANCELLED) {
+      return {
+        message: "Cannot delete a cancelled purchase order.",
+        isSuccess: false,
+      };
+    }
+
+    // Delete purchase order items first (cascade delete)
+    await prisma.purchaseOrderItem.deleteMany({
+      where: { purchaseOrderId: poId },
+    });
+
+    // Delete purchase order history
+    await prisma.purchaseOrderHistory.deleteMany({
+      where: { purchaseOrderId: poId },
+    });
+
+    await prisma.purchaseOrderItemHistory.deleteMany({
+      where: { purchaseOrderId: poId },
+    });
+
+    // Delete the purchase order
+    await prisma.purchaseOrder.delete({
+      where: { id: poId },
+    });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        action: "DELETE_PO",
+        userId: user.id,
+        companyId: company.id,
+        targetType: "Purchase Order",
+        targetId: poId,
+        changes: JSON.stringify({
+          code: purchaseOrder.code,
+          status: purchaseOrder.status,
+          itemsCount: purchaseOrder.PurchaseOrderItem.length,
+        }),
+      },
+    });
+
+    revalidatePath("/warehouse/purchase-order");
+    return {
+      message: "Purchase order deleted successfully.",
+      isSuccess: true,
+    };
+  } catch (error) {
+    console.error("Error deleting purchase order:", error);
+    return {
+      message: "Something went wrong while deleting the purchase order!",
       isSuccess: false,
     };
   }

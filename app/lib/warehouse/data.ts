@@ -358,3 +358,17 @@ export async function fetchDashboardData() {
     };
   }
 }
+
+export async function fetchWMSCheckResult(id: number) {
+  noStore();
+  if (!id) return null;
+  try {
+    // Note: After running migration, Prisma will generate the client with the correct model name
+    return await (prisma as any).wMSCheckResult.findUnique({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch WMS check result data.");
+  }
+}

@@ -1,3 +1,4 @@
+"use client";
 import { fetchCompany } from "@/app/lib/backoffice/data";
 import { Tooltip } from "@heroui/react";
 import {
@@ -6,7 +7,7 @@ import {
   CloseCircle,
   HamburgerMenu,
 } from "@solar-icons/react/ssr";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import useSWR from "swr";
 import { FullScreenButton, ModeButton } from "./Buttons";
 import LocationToggle from "./LocationToggle";
@@ -17,11 +18,33 @@ interface Props {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
 }
 export default function TopBar({ sideBarOpen, setSideBarOpen }: Props) {
-  const isUpdateCompany =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateCompany")
-      : null;
-  const { data } = useSWR(`company${isUpdateCompany}`, () => fetchCompany());
+  // Use state to prevent hydration mismatch with localStorage
+  const [isUpdateCompany, setIsUpdateCompany] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize localStorage value after mount to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+    setIsUpdateCompany(localStorage.getItem("isUpdateCompany"));
+  }, []);
+
+  // Listen for storage changes
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "isUpdateCompany") {
+        setIsUpdateCompany(e.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [mounted]);
+
+  const { data } = useSWR(mounted ? ["company", isUpdateCompany] : null, () =>
+    fetchCompany()
+  );
   return (
     <div className="top-bar z-30">
       <div className="content bg-background flex items-center px-2">

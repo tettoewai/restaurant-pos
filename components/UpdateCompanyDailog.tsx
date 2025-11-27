@@ -24,10 +24,15 @@ export default function UpdateCompanyDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isUpdateCompany =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateCompany")
-      : null;
+  // Use state to prevent hydration mismatch with localStorage
+  const [isUpdateCompany, setIsUpdateCompany] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize localStorage value after mount to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+    setIsUpdateCompany(localStorage.getItem("isUpdateCompany"));
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,10 +51,12 @@ export default function UpdateCompanyDialog() {
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const { isSuccess, message } = await updateCompany(formData);
-    localStorage.setItem(
-      "isUpdateCompany",
-      isUpdateCompany === "false" ? "true" : "false"
-    );
+    
+    if (mounted) {
+      const newValue = isUpdateCompany === "false" ? "true" : "false";
+      localStorage.setItem("isUpdateCompany", newValue);
+      setIsUpdateCompany(newValue);
+    }
     setIsSubmitting(false);
     addToast({
       title: message,

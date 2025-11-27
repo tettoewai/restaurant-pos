@@ -617,8 +617,19 @@ export async function fetchNotification() {
   noStore();
   try {
     const table = await fetchTable();
+    const tableIds = table.map((item) => item.id);
+
+    // Fetch both order notifications (with tableId) and WMS notifications (without tableId)
     const notification = await prisma.notification.findMany({
-      where: { tableId: { in: table.map((item) => item.id) } },
+      where: {
+        OR: [
+          { tableId: { in: tableIds } },
+          { type: "WMS_CHECK" }, // Include all WMS check notifications
+        ],
+      },
+      include: {
+        wmsCheckResult: true,
+      },
       orderBy: { createdAt: "desc" },
     });
     return notification;

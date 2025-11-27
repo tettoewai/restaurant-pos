@@ -45,10 +45,30 @@ function FinancialMetrics({ date: propDate }: FinancialMetricsProps = {}) {
     }
   );
   let formatter = useDateFormatter({ dateStyle: "long" });
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
+
+  // Use state to prevent hydration mismatch with localStorage
+  const [isUpdateLocation, setIsUpdateLocation] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize localStorage value after mount to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+    setIsUpdateLocation(localStorage.getItem("isUpdateLocation"));
+  }, []);
+
+  // Listen for storage changes
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "isUpdateLocation") {
+        setIsUpdateLocation(e.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [mounted]);
 
   // Sync with propDate if provided
   useEffect(() => {
@@ -58,7 +78,7 @@ function FinancialMetrics({ date: propDate }: FinancialMetricsProps = {}) {
   }, [propDate]);
 
   const { data: orderData, isLoading } = useSWR(
-    [date, isUpdateLocation],
+    mounted ? ["financialOrderData", date, isUpdateLocation] : null,
     () =>
       getOrderWithDate(
         date.start.toDate(getLocalTimeZone()),
@@ -72,7 +92,7 @@ function FinancialMetrics({ date: propDate }: FinancialMetricsProps = {}) {
   );
 
   const { data: receipts, isLoading: receiptsLoading } = useSWR(
-    [date, isUpdateLocation],
+    mounted ? ["financialReceipts", date, isUpdateLocation] : null,
     () =>
       getReceiptsWithDate(
         date.start.toDate(getLocalTimeZone()),
@@ -81,7 +101,7 @@ function FinancialMetrics({ date: propDate }: FinancialMetricsProps = {}) {
   );
 
   const { data: foodCost, isLoading: foodCostLoading } = useSWR(
-    [date, isUpdateLocation],
+    mounted ? ["foodCost", date, isUpdateLocation] : null,
     () =>
       calculateFoodCost(
         date.start.toDate(getLocalTimeZone()),
@@ -90,9 +110,13 @@ function FinancialMetrics({ date: propDate }: FinancialMetricsProps = {}) {
   );
 
   const { data: inventoryVariance, isLoading: inventoryVarianceLoading } =
-    useSWR([isUpdateLocation], () => calculateInventoryVariance(), {
-      refreshInterval: 30000, // Refresh every 30 seconds
-    });
+    useSWR(
+      mounted ? ["inventoryVariance", isUpdateLocation] : null,
+      () => calculateInventoryVariance(),
+      {
+        refreshInterval: 30000, // Refresh every 30 seconds
+      }
+    );
 
   // Calculate metrics
   const metrics = useMemo(() => {

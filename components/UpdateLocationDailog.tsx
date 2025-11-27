@@ -32,13 +32,7 @@ export default function UpdateLocationDialog({
   const [prevData, setPrevData] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const handleLocal = () => {
-    const isUpdateLocation = localStorage.getItem("isUpdateLocation") || "";
-    localStorage.setItem(
-      "isUpdateLocation",
-      isUpdateLocation === "false" ? "true" : "false"
-    );
-  };
+
   useEffect(() => {
     if (isOpen) {
       const getPrevData = async () => {

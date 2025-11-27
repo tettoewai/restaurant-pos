@@ -221,12 +221,28 @@ model Order {
 }
 
 model Notification {
-  id        Int      @id @default(autoincrement())
+  id        Int            @id @default(autoincrement())
   message   String
-  tableId   Int
-  createdAt DateTime @default(now())
-  isRead    Boolean  @default(false)
-  table     Table    @relation(fields: [tableId], references: [id])
+  tableId   Int?
+  type      NotificationType @default(ORDER)
+  wmsCheckResultId Int?
+  createdAt DateTime       @default(now())
+  isRead    Boolean        @default(false)
+  table     Table?         @relation(fields: [tableId], references: [id])
+  wmsCheckResult WMSCheckResult? @relation(fields: [wmsCheckResultId], references: [id])
+}
+
+model WMSCheckResult {
+  id                        Int            @id @default(autoincrement())
+  createdAt                 DateTime       @default(now())
+  menusWithoutIngredients   Json           // Array of { id: number, name: string }
+  addonsWithoutIngredients  Json           // Array of { addons: { id: number, name: string }[], menuId: number, menuName: string }
+  notEnoughIngredients      Json           // Array of { itemId: number, itemName: string, required: number, stock: number, shortage: number }
+  hitThresholdStocks        Json           // Array of { itemId: number, itemName: string, threshold: number, stock: number }
+  issuesCount               Int
+  Notification              Notification[]
+
+  @@map("WMSCheckResult")
 }
 
 model Receipt {
@@ -583,4 +599,9 @@ enum UserType {
   CHEF
   WAREHOUSESTAFF
   DEVELOPER
+}
+
+enum NotificationType {
+  ORDER
+  WMS_CHECK
 }

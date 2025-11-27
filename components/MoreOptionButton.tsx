@@ -16,6 +16,7 @@ import {
 import { OrderData } from "@/general";
 import {
   addToast,
+  Button,
   cn,
   Dropdown,
   DropdownItem,
@@ -52,16 +53,15 @@ import DeleteMenuCategoryDialog from "./DeleteMenuCategoryDailog";
 import DeleteMenuDialog from "./DeleteMenuDailog";
 import DeletePromotionDailog from "./DeletePromotionDialog";
 import DeleteTableDialog from "./DeleteTableDailog";
+import ManageMenuAddonPriceDialog from "./ManageMenuAddonPriceDialog";
 import QrcodePrint from "./QrcodePrint";
 import UpdateAddonCategoryDialog from "./UpdateAddonCategoryDailog";
 import UpdateAddonDialog from "./UpdateAddonDailog";
 import UpdateAddonIngredientDialog from "./UpdateAddonIngredient";
-import ManageMenuAddonPriceDialog from "./ManageMenuAddonPriceDialog";
 import UpdateLocationDialog from "./UpdateLocationDailog";
 import UpdateMenuCategoryDialog from "./UpdateMenuCategoryDailog";
 import UpdateMenuDialog from "./UpdateMenuDailog";
 import UpdateTableDialog from "./UpdateTableDailog";
-
 interface Props {
   id: number;
   itemType:
@@ -154,10 +154,31 @@ export default function MoreOptionButton({
   const [available, setAvailable] = useState<boolean>(false);
   const [availableIsLoading, setAvailableIsLoading] = useState<boolean>(false);
   const [availableMenuCat, setAvailableMenuCat] = useState<boolean>(false);
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
+
+  // Use state to prevent hydration mismatch with localStorage
+  const [isUpdateLocation, setIsUpdateLocation] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize localStorage value after mount to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+    setIsUpdateLocation(localStorage.getItem("isUpdateLocation"));
+  }, []);
+
+  // Listen for storage changes
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "isUpdateLocation") {
+        setIsUpdateLocation(e.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [mounted]);
+
   useEffect(() => {
     if (promotion) {
       setAvailable(promotion.is_active);
@@ -235,9 +256,14 @@ export default function MoreOptionButton({
     <>
       <Dropdown className="bg-background min-w-12">
         <DropdownTrigger>
-          <button className="bg-background rounded-md bg-opacity-40 outline-none">
-            <MenuDots className="size-7" />
-          </button>
+          <Button
+            isIconOnly
+            variant="light"
+            className="bg-background rounded-md bg-opacity-40 outline-none"
+            size="sm"
+          >
+            <MenuDots className="size-5 rotate-90" strokeWidth={0.7} />
+          </Button>
         </DropdownTrigger>
         <DropdownMenu variant="faded">
           <DropdownItem
@@ -333,7 +359,11 @@ export default function MoreOptionButton({
               Manage Menu Prices
             </DropdownItem>
           ) : (
-            <DropdownItem className="hidden" key="managePriceNone" isReadOnly={true}>
+            <DropdownItem
+              className="hidden"
+              key="managePriceNone"
+              isReadOnly={true}
+            >
               none
             </DropdownItem>
           )}

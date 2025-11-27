@@ -1,0 +1,19 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/wms-check",
+      "schedule": "30 22 * * *",
+      "//note": "5:00 AM MMT = 22:30 UTC"
+    },
+    {
+      "path": "/api/cron/wms-check",
+      "schedule": "30 7 * * *",
+      "//note": "2:00 PM MMT = 07:30 UTC"
+    },
+    {
+      "path": "/api/cron/wms-check",
+      "schedule": "30 16 * * *",
+      "//note": "11:00 PM MMT = 16:30 UTC"
+    }
+  ]
+}

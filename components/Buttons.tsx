@@ -69,6 +69,22 @@ export const FullScreenButton = () => {
 
 export function ModeButton() {
   const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Render placeholder during SSR to match initial client render
+  if (!mounted) {
+    return (
+      <Button isIconOnly variant="light" aria-label="Theme toggle">
+        <Sun2 className="size-7 md:size-8 cursor-pointer text-primary p-1" />
+      </Button>
+    );
+  }
+
   return (
     <>
       {resolvedTheme === "dark" ? (

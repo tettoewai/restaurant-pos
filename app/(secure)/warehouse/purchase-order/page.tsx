@@ -9,9 +9,9 @@ import { CorrectionPOBtn, EditPOButton } from "@/components/Buttons";
 import { dateToString } from "@/function";
 import { Button } from "@heroui/react";
 import { POStatus } from "@prisma/client";
-import { TrashBinMinimalistic } from "@solar-icons/react/ssr";
 import POStatusToggle from "../components/POStatusToggle";
 import { POTable } from "../components/POTable";
+import DeletePOButton from "../components/DeletePOButton";
 
 export default async function PurchaseOrderPage() {
   const purchaseOrders = await fetchPurchaseOrder();
@@ -57,9 +57,7 @@ export default async function PurchaseOrderPage() {
         ) : po.status === POStatus.PENDING ? (
           <div className="space-x-2">
             <EditPOButton item={po} />
-            <Button isIconOnly variant="light" color="danger">
-              <TrashBinMinimalistic className="size-5" />
-            </Button>
+            <DeletePOButton item={po} />
           </div>
         ) : null,
     };

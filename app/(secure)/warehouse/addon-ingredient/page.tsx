@@ -13,6 +13,7 @@ import { ItemCardSkeleton } from "@/app/ui/skeletons";
 import MoreOptionButton from "@/components/MoreOptionButton";
 import NewAddonIngredientDialog from "@/components/NewAddonIngredient";
 import { captilize, convertUnit } from "@/function";
+import { Card } from "@heroui/react";
 import { WidgetAdd } from "@solar-icons/react/ssr";
 import { HandPlatter } from "lucide-react";
 import { Suspense } from "react";
@@ -83,7 +84,7 @@ export default async function AddonIngredientPage() {
         />
       </div>
 
-      <div className="mt-5 columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-6 space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2">
         {addonIngredientData.map((ingredient, index) => {
           const currentAddon = addons.find(
             (item) => item.id === ingredient.addonId
@@ -93,7 +94,7 @@ export default async function AddonIngredientPage() {
           );
           return (
             <Suspense key={index} fallback={<ItemCardSkeleton />}>
-              <div className="break-inside-avoid  p-1 py-3 h-fit bg-background rounded-md flex items-center flex-col relative">
+              <Card className="break-inside-avoid h-fit p-4 bg-background flex items-center flex-col relative">
                 <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
                   <MoreOptionButton
                     id={index}
@@ -119,9 +120,11 @@ export default async function AddonIngredientPage() {
                     className="text-primary"
                   />
                 </div>
-                <div className="flex space-x-4 text-sm mt-2">
-                  <p className="truncate">{currentAddon?.name}</p>
-                  <p className="truncate">{currentMenu?.name || "(All)"}</p>
+                <div className="flex space-x-4 text-sm mt-2 w-full">
+                  <p className="truncate w-full">{currentAddon?.name}</p>
+                  <p className="truncate w-full">
+                    {currentMenu?.name || "(All)"}
+                  </p>
                 </div>
                 <div className="mt-5 space-y-2">
                   {ingredient.ingredients.map((item, index1) => {
@@ -147,7 +150,7 @@ export default async function AddonIngredientPage() {
                     );
                   })}
                 </div>
-              </div>
+              </Card>
             </Suspense>
           );
         })}

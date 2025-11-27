@@ -15,19 +15,40 @@ import {
 } from "@heroui/react";
 import { Bell } from "@solar-icons/react/ssr";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 
 export default function NotificationFeed() {
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
 
-  const { data: notification } = useSWR(
-    [isUpdateLocation],
+  // Use state to prevent hydration mismatch with localStorage
+  const [isUpdateLocation, setIsUpdateLocation] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [lastUnreadCount, setLastUnreadCount] = useState(0);
+
+  // Initialize localStorage value after mount to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+    setIsUpdateLocation(localStorage.getItem("isUpdateLocation"));
+  }, []);
+
+  // Listen for storage changes (when location changes)
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "isUpdateLocation") {
+        setIsUpdateLocation(e.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [mounted]);
+
+  const { data: notification, isLoading } = useSWR(
+    mounted ? ["notification", isUpdateLocation] : null,
     () => fetchNotification().then((res) => res),
     {
       refreshInterval: 5000,
@@ -36,27 +57,42 @@ export default function NotificationFeed() {
     }
   );
 
+  // Filter out null tableIds and get unique table IDs
   const tableIds =
     notification && notification.length > 0
-      ? (notification?.map((item) => item.tableId) as number[])
+      ? (notification
+          ?.map((item) => item.tableId)
+          .filter((id): id is number => id !== null) as number[])
       : [];
-  const { data: tables } = useSWR([notification], () =>
-    fetchTableWithIds(tableIds).then((res) => res)
+
+  const { data: tables } = useSWR(
+    tableIds.length > 0 ? ["tables", tableIds] : null,
+    () =>
+      tableIds.length > 0 ? fetchTableWithIds(tableIds).then((res) => res) : []
   );
 
   const unreadCount =
     notification && notification.length > 0
-      ? notification?.filter((item) => !item.isRead).length || 0
+      ? notification.filter((item) => !item.isRead).length
       : 0;
 
+  // Play sound only when new unread notifications appear (not on every interval)
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (unreadCount > 0) {
-        audioRef.current?.play(); // Play alert sound
+    if (!mounted) return;
+
+    // Only play sound if unread count increased
+    if (unreadCount > lastUnreadCount && unreadCount > 0) {
+      try {
+        audioRef.current?.play().catch((error) => {
+          // Ignore autoplay errors (user might have blocked autoplay)
+          console.debug("Audio playback prevented:", error);
+        });
+      } catch (error) {
+        console.debug("Audio playback error:", error);
       }
-    }, 10000);
-    return () => clearInterval(intervalId);
-  }, [unreadCount]);
+    }
+    setLastUnreadCount(unreadCount);
+  }, [unreadCount, lastUnreadCount, mounted]);
   return (
     <>
       <audio ref={audioRef} src="/bell_alert.mp3" preload="auto" />
@@ -83,16 +119,33 @@ export default function NotificationFeed() {
           {notification && notification?.length > 0 ? (
             notification.map((item) => {
               const createdAt = new Date(item.createdAt);
-              const validTable = tables?.find(
-                (table) => item.tableId === table.id
-              );
+              const validTable = item.tableId
+                ? tables?.find((table) => item.tableId === table.id)
+                : null;
+              const isWMSNotification = item.type === "WMS_CHECK";
+
               return (
                 <DropdownItem
                   key={item.id}
                   onPress={async () => {
-                    await setNotiRead(item.id);
-                    mutate("notification");
-                    router.push(`/backoffice/order/${item.tableId}`);
+                    try {
+                      await setNotiRead(item.id);
+                      // Invalidate the correct SWR cache key
+                      mutate(["notification", isUpdateLocation]);
+
+                      if (isWMSNotification && item.wmsCheckResultId) {
+                        router.push(
+                          `/warehouse/wms-check/${item.wmsCheckResultId}`
+                        );
+                      } else if (item.tableId) {
+                        router.push(`/backoffice/order/${item.tableId}`);
+                      }
+                    } catch (error) {
+                      console.error(
+                        "Error marking notification as read:",
+                        error
+                      );
+                    }
                   }}
                   className={item.isRead ? "opacity-50" : ""}
                   textValue={item.message}
@@ -100,7 +153,14 @@ export default function NotificationFeed() {
                   <div className="max-w-60 w-52">
                     <div className="flex justify-between items-center">
                       <span className="text-wrap">{item.message}</span>
-                      <span className="text-xs">{validTable?.name}</span>
+                      {validTable && (
+                        <span className="text-xs">{validTable.name}</span>
+                      )}
+                      {isWMSNotification && (
+                        <span className="text-xs text-orange-600 font-semibold">
+                          WMS
+                        </span>
+                      )}
                     </div>
                     <div>
                       <span className="text-xs">{timeAgo(createdAt)}</span>

@@ -17,7 +17,7 @@ import {
   HandMoney,
 } from "@solar-icons/react/ssr";
 import { BanknoteX, HandPlatter } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import DashboardCard from "./DashboardCard";
 import ExportToExcelBtn from "./ExportToExcelBtn";
@@ -33,12 +33,33 @@ function OrderForDate() {
     end: parseDate(today),
   });
   let formatter = useDateFormatter({ dateStyle: "long" });
-  const isUpdateLocation =
-    typeof window !== "undefined"
-      ? localStorage.getItem("isUpdateLocation")
-      : null;
+
+  // Use state to prevent hydration mismatch with localStorage
+  const [isUpdateLocation, setIsUpdateLocation] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize localStorage value after mount to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+    setIsUpdateLocation(localStorage.getItem("isUpdateLocation"));
+  }, []);
+
+  // Listen for storage changes
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "isUpdateLocation") {
+        setIsUpdateLocation(e.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [mounted]);
+
   const { data: orderData, isLoading } = useSWR(
-    [date, isUpdateLocation],
+    mounted ? ["orderForDate", date, isUpdateLocation] : null,
     () =>
       getOrderWithDate(
         date.start.toDate(getLocalTimeZone()),
