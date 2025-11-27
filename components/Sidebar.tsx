@@ -127,19 +127,17 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
 
   const pathName = usePathname();
   const router = useRouter();
-
+  const section = pathName.split("/")[1];
   const sideBarItem: SideBarItem[] = [
-    ...(pathName.split("/")[1] === "warehouse"
-      ? warehouseSidebar
-      : backOfficeSidebar),
+    ...(section === "warehouse" ? warehouseSidebar : backOfficeSidebar),
     {
       name: "Audit Log",
-      route: "/warehouse/audit-log",
+      route: `/${section}/audit-log`,
       icon: <RecordSquare />,
     },
     {
       name: "Setting",
-      route: `/${pathName.split("/")[1]}/setting`,
+      route: `/${section}/setting`,
       icon: <SettingsMinimalistic />,
     },
   ];
