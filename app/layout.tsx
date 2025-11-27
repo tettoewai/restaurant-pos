@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={ubantu.className}>
+      <body className={`${ubantu.className} scrollbar-hide`}>
         <Providers>{children}</Providers>
         <SpeedInsights />
       </body>

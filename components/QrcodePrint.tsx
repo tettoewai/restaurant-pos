@@ -31,7 +31,7 @@ const QrcodePrint = ({
         >
           <div className="flex flex-col items-start mt-6">
             <h1 className={`${bebasNeue.className} text-lg`}>Welcome from</h1>
-            <h1 className={`${bebasNeue.className} text-2xl`}>TTW FOODIE</h1>
+            <h1 className={`${bebasNeue.className} text-2xl`}>T FOODIE</h1>
           </div>
 
           <div className="flex flex-col items-center relative">

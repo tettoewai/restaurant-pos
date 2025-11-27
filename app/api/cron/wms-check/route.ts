@@ -2,6 +2,9 @@ import { checkWMS } from "@/function";
 import { prisma } from "@/db";
 import { NextRequest, NextResponse } from "next/server";
 
+// Add this line to force dynamic rendering
+export const dynamic = "force-dynamic";
+
 /**
  * API route for Vercel Cron to automatically check WMS
  * Scheduled to run at:
