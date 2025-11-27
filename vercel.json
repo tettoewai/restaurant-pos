@@ -2,15 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/wms-check",
-      "schedule": "30 22 * * *"
-    },
-    {
-      "path": "/api/cron/wms-check",
       "schedule": "30 7 * * *"
     },
     {
       "path": "/api/cron/wms-check",
-      "schedule": "30 16 * * *"
+      "schedule": "30 22 * * *"
     }
   ]
 }
