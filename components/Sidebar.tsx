@@ -149,7 +149,7 @@ export default function Sidebar({ sideBarOpen, setSideBarOpen }: Props) {
         className={`bg-background shadow-sm rounded-md overflow-y-auto scrollbar-hide
     transition-all
     absolute top-[70px] bottom-0 left-1 z-30 m-1
-    lg:static lg:top-auto lg:bottom-auto lg:left-auto pb-20
+    lg:static lg:top-auto lg:bottom-auto lg:left-auto pb-10
     ${sideBarOpen ? "w-52 lg:w-64" : "w-0 lg:w-16 2xl:w-56"}
   `}
       >

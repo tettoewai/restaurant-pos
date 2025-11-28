@@ -42,9 +42,25 @@ export async function createWarehouse(formData: FormData) {
     if (!selectedLocation) {
       return { isSuccess: false, message: "Something went wrong!" };
     }
-    await prisma.warehouse.create({
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
+    const warehouse = await prisma.warehouse.create({
       data: { name, locationId: selectedLocation?.locationId },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_WAREHOUSE",
+        targetType: "Warehouse",
+        targetId: warehouse.id,
+        changes: JSON.stringify({ name, locationId: selectedLocation.locationId }),
+      },
+    });
+    
     revalidatePath("/warehouse/manage");
     return {
       message: "Created warehouse successfully.",
@@ -65,10 +81,32 @@ export async function updateWarehouse(formData: FormData) {
   if (!name && !id)
     return { isSuccess: false, message: "Name is not provided!" };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
+    const originalWarehouse = await prisma.warehouse.findUnique({
+      where: { id },
+    });
+    
     await prisma.warehouse.update({
       where: { id },
       data: { name },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_WAREHOUSE",
+        targetType: "Warehouse",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalWarehouse?.name, new: name },
+        }),
+      },
+    });
+    
     revalidatePath("/warehouse/manage");
     return {
       message: "Updated warehouse successfully.",
@@ -123,6 +161,10 @@ export async function deleteWarehouse(id: number) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
     const warehouse = await fetchWarehouse();
     if (warehouse && warehouse.length < 2) {
       return {
@@ -130,6 +172,9 @@ export async function deleteWarehouse(id: number) {
         isSuccess: false,
       };
     }
+    const originalWarehouse = await prisma.warehouse.findUnique({
+      where: { id },
+    });
     const selectedWarehouse = await fetchSelectedWarehouse();
     const isSelected = selectedWarehouse?.warehouseId === id;
 
@@ -137,6 +182,21 @@ export async function deleteWarehouse(id: number) {
       where: { id },
       data: { isArchived: true },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_WAREHOUSE",
+        targetType: "Warehouse",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalWarehouse?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+    
     if (isSelected && warehouse) {
       const updatedWarehouse = await fetchWarehouse();
       if (updatedWarehouse) {
@@ -178,15 +238,27 @@ export async function createWarehouseItem(formData: FormData) {
     };
 
   try {
-    const { company } = await fetchCompany();
-    if (!company)
+    const { company, user } = await fetchCompany();
+    if (!company || !user)
       return {
         message: "Something went wrong!",
         isSuccess: false,
       };
-    await prisma.warehouseItem.create({
+    const warehouseItem = await prisma.warehouseItem.create({
       data: { name, unitCategory, unit, threshold, companyId: company.id },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_WAREHOUSE_ITEM",
+        targetType: "Warehouse Item",
+        targetId: warehouseItem.id,
+        changes: JSON.stringify({ name, unitCategory, unit, threshold }),
+      },
+    });
+    
     revalidatePath("/warehouse/warehouse-item");
     return {
       message: "Created warehouse item successfully.",
@@ -227,10 +299,35 @@ export async function updateWarehouseItem(formData: FormData) {
     };
 
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
+    const originalItem = await prisma.warehouseItem.findUnique({
+      where: { id },
+    });
+    
     await prisma.warehouseItem.update({
       where: { id },
       data: { name, unitCategory, unit, threshold },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_WAREHOUSE_ITEM",
+        targetType: "Warehouse Item",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalItem?.name, new: name },
+          unitCategory: { old: originalItem?.unitCategory, new: unitCategory },
+          unit: { old: originalItem?.unit, new: unit },
+          threshold: { old: originalItem?.threshold, new: threshold },
+        }),
+      },
+    });
+    
     revalidatePath("/warehouse/warehouse-item");
     return {
       message: "Updated warehouse item successfully.",
@@ -252,10 +349,33 @@ export async function deleteWarehouseItem(id: number) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
+    const originalItem = await prisma.warehouseItem.findUnique({
+      where: { id },
+    });
+    
     await prisma.warehouseItem.update({
       where: { id },
       data: { isArchived: true },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_WAREHOUSE_ITEM",
+        targetType: "Warehouse Item",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalItem?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+    
     revalidatePath("/warehouse/warehouse-item");
     return {
       message: "Deleted warehouse item successfully.",
@@ -345,15 +465,27 @@ export async function createSupplier(formData: FormData) {
       isSuccess: false,
     };
   try {
-    const { company } = await fetchCompany();
-    if (!company)
+    const { company, user } = await fetchCompany();
+    if (!company || !user)
       return {
         message: "Something went wrong!",
         isSuccess: false,
       };
-    await prisma.supplier.create({
+    const supplier = await prisma.supplier.create({
       data: { name, phone, email, address, companyId: company?.id },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_SUPPLIER",
+        targetType: "Supplier",
+        targetId: supplier.id,
+        changes: JSON.stringify({ name, phone, email, address }),
+      },
+    });
+    
     revalidatePath("/warehouse/supplier");
     return {
       message: "Created supplier successfully.",
@@ -380,10 +512,35 @@ export async function updateSupplier(formData: FormData) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
+    const originalSupplier = await prisma.supplier.findUnique({
+      where: { id },
+    });
+    
     await prisma.supplier.update({
       where: { id },
       data: { name, phone, email, address },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_SUPPLIER",
+        targetType: "Supplier",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalSupplier?.name, new: name },
+          phone: { old: originalSupplier?.phone, new: phone },
+          email: { old: originalSupplier?.email, new: email },
+          address: { old: originalSupplier?.address, new: address },
+        }),
+      },
+    });
+    
     revalidatePath("/warehouse/supplier");
     return {
       message: "Updated supplier successfully.",
@@ -405,10 +562,33 @@ export async function deleteSupplier(id: number) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return { isSuccess: false, message: "Error occurred while fetching user!" };
+    }
+    const originalSupplier = await prisma.supplier.findUnique({
+      where: { id },
+    });
+    
     await prisma.supplier.update({
       where: { id },
       data: { isArchived: true },
     });
+    
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_SUPPLIER",
+        targetType: "Supplier",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalSupplier?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+    
     revalidatePath("/warehouse/supplier");
     return {
       message: "Deleted supplier successfully.",

@@ -61,11 +61,39 @@ export async function updateCompany(formData: FormData) {
       isSuccess: false,
     };
   try {
-    const { company } = await fetchCompany();
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
+    }
+    const originalCompany = await prisma.company.findUnique({
+      where: { id: company.id },
+    });
+
     await prisma.company.update({
       where: { id: company?.id },
       data: { name, street, township, city, taxRate: normalizedTaxRate },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_COMPANY",
+        targetType: "Company",
+        targetId: company.id,
+        changes: JSON.stringify({
+          name: { old: originalCompany?.name, new: name },
+          street: { old: originalCompany?.street, new: street },
+          township: { old: originalCompany?.township, new: township },
+          city: { old: originalCompany?.city, new: city },
+          taxRate: { old: originalCompany?.taxRate, new: normalizedTaxRate },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice");
     return { message: "Updated company successfully.", isSuccess: true };
   } catch (error) {
@@ -94,6 +122,14 @@ export async function createMenu({ formData }: Props) {
       imageUrl = (await uploadImage(formData)) as string;
     }
 
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+
     const menu = await prisma.menu.create({
       data: { name, price, assetUrl: imageUrl, description },
     });
@@ -105,6 +141,22 @@ export async function createMenu({ formData }: Props) {
         })
       )
     );
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_MENU",
+        targetType: "Menu",
+        targetId: menu.id,
+        changes: JSON.stringify({
+          name,
+          price,
+          description,
+          categories: category,
+        }),
+      },
+    });
 
     revalidatePath("/backoffice/menu");
     return { message: "Created menu successfully.", isSuccess: true };
@@ -119,8 +171,8 @@ export async function createMenu({ formData }: Props) {
 
 export async function createMenuCategory(formData: FormData) {
   const name = formData.get("name") as string;
-  const { company } = await fetchCompany();
-  const isValid = company && name;
+  const { company, user } = await fetchCompany();
+  const isValid = company && name && user;
   if (!isValid)
     return {
       message: "Missing required fields",
@@ -128,9 +180,21 @@ export async function createMenuCategory(formData: FormData) {
     };
 
   try {
-    await prisma.menuCategory.create({
+    const menuCategory = await prisma.menuCategory.create({
       data: { name, companyId: company.id },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_MENU_CATEGORY",
+        targetType: "Menu Category",
+        targetId: menuCategory.id,
+        changes: JSON.stringify({ name }),
+      },
+    });
+
     revalidatePath("/backoffice/menu-category");
     return { message: "Created menu category successfully.", isSuccess: true };
   } catch (error) {
@@ -152,7 +216,32 @@ export async function updateMenuCategory(formData: FormData) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
+    }
+    const originalCategory = await prisma.menuCategory.findUnique({
+      where: { id },
+    });
+
     await prisma.menuCategory.update({ where: { id }, data: { name } });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_MENU_CATEGORY",
+        targetType: "Menu Category",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalCategory?.name, new: name },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/menu-category");
     return { message: "Updated menu category successfully.", isSuccess: true };
   } catch (error) {
@@ -176,6 +265,18 @@ export async function updateMenu({ formData }: Props) {
   const isValid = id && name && price > 0 && category.length > 0;
   if (!isValid) return { message: "Missing required fields", isSuccess: false };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalMenu = await prisma.menu.findUnique({
+      where: { id },
+      include: { MenuCategoryMenu: true },
+    });
+
     if (image) {
       const imageUrl = (await uploadImage(formData)) as string;
       await prisma.menu.update({
@@ -218,6 +319,25 @@ export async function updateMenu({ formData }: Props) {
       );
     }
 
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_MENU",
+        targetType: "Menu",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalMenu?.name, new: name },
+          price: { old: originalMenu?.price, new: price },
+          description: { old: originalMenu?.description, new: description },
+          categories: {
+            old: originalMenu?.MenuCategoryMenu.map((m) => m.menuCategoryId),
+            new: categoryIds,
+          },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/menu");
     return { message: "Updated menu successfully.", isSuccess: true };
   } catch (error) {
@@ -231,10 +351,36 @@ export async function updateMenu({ formData }: Props) {
 
 export async function deleteMenu(id: number) {
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalMenu = await prisma.menu.findUnique({
+      where: { id },
+    });
+
     await prisma.menu.update({
       where: { id: id },
       data: { isArchived: true },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_MENU",
+        targetType: "Menu",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalMenu?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/menu");
     return { message: "Deleted menu successfully.", isSuccess: true };
   } catch (error) {
@@ -265,10 +411,36 @@ export async function deleteAddonCategory(id: number) {
 
 export async function deleteMenuCategory(id: number) {
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalCategory = await prisma.menuCategory.findUnique({
+      where: { id },
+    });
+
     await prisma.menuCategory.update({
       where: { id: id },
       data: { isArchived: true },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_MENU_CATEGORY",
+        targetType: "Menu Category",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalCategory?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/menu-category");
     return { message: "Deleted menu category successfully.", isSuccess: true };
   } catch (error) {
@@ -563,19 +735,43 @@ export async function createLocation(formData: FormData) {
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
-    const { company } = await fetchCompany();
-    company &&
-      (await prisma.location.create({
-        data: {
-          companyId: company.id,
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const location = await prisma.location.create({
+      data: {
+        companyId: company.id,
+        name,
+        street,
+        township,
+        city,
+        latitude,
+        longitude,
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_LOCATION",
+        targetType: "Location",
+        targetId: location.id,
+        changes: JSON.stringify({
           name,
           street,
           township,
           city,
           latitude,
           longitude,
-        },
-      }));
+        }),
+      },
+    });
+
     revalidatePath("/backoffice");
     return { message: "Created location successfully.", isSuccess: true };
   } catch (error) {
@@ -599,10 +795,40 @@ export async function updateLocation(formData: FormData) {
   if (!isValid)
     return { message: "Missing required fields.", isSuccess: false };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalLocation = await prisma.location.findUnique({
+      where: { id },
+    });
+
     await prisma.location.update({
       where: { id },
       data: { name, street, township, city, latitude, longitude },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_LOCATION",
+        targetType: "Location",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalLocation?.name, new: name },
+          street: { old: originalLocation?.street, new: street },
+          township: { old: originalLocation?.township, new: township },
+          city: { old: originalLocation?.city, new: city },
+          latitude: { old: originalLocation?.latitude, new: latitude },
+          longitude: { old: originalLocation?.longitude, new: longitude },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice");
     return { message: "Updated location successfully.", isSuccess: true };
   } catch (error) {
@@ -616,6 +842,13 @@ export async function updateLocation(formData: FormData) {
 
 export async function deleteLocation(id: number) {
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
     const location = await fetchLocation();
     const selectedLocation = await fetchSelectedLocation();
     if (location.length < 2) {
@@ -624,11 +857,29 @@ export async function deleteLocation(id: number) {
         isSuccess: false,
       };
     }
+    const originalLocation = await prisma.location.findUnique({
+      where: { id },
+    });
     const isSelectedId = selectedLocation?.locationId === id;
     await prisma.location.update({
       where: { id },
       data: { isArchived: true },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_LOCATION",
+        targetType: "Location",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalLocation?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+
     if (isSelectedId) {
       const updatedLocation = await fetchLocation();
       const firstLocation = updatedLocation[0];
@@ -675,8 +926,30 @@ export async function createTable(formData: FormData) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
     const locationId = (await fetchSelectedLocation())?.locationId;
-    locationId && (await prisma.table.create({ data: { name, locationId } }));
+    if (!locationId) {
+      return { message: "Location not selected!", isSuccess: false };
+    }
+    const table = await prisma.table.create({ data: { name, locationId } });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_TABLE",
+        targetType: "Table",
+        targetId: table.id,
+        changes: JSON.stringify({ name, locationId }),
+      },
+    });
+
     revalidatePath("/backoffice/table");
     return { message: "Created table successfully.", isSuccess: true };
   } catch (error) {
@@ -778,7 +1051,32 @@ export async function updateTable(formData: FormData) {
       isSuccess: false,
     };
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalTable = await prisma.table.findUnique({
+      where: { id },
+    });
+
     await prisma.table.update({ where: { id }, data: { name } });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_TABLE",
+        targetType: "Table",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalTable?.name, new: name },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/table");
     return { message: "Updated table successfully.", isSuccess: true };
   } catch (error) {
@@ -792,7 +1090,33 @@ export async function updateTable(formData: FormData) {
 
 export async function deleteTable(id: number) {
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalTable = await prisma.table.findUnique({
+      where: { id },
+    });
+
     await prisma.table.update({ where: { id }, data: { isArchived: true } });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_TABLE",
+        targetType: "Table",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalTable?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/table");
     return { message: "Deleted table successfully.", isSuccess: true };
   } catch (error) {
@@ -1197,10 +1521,7 @@ export async function uploadImage(formData: FormData) {
   });
 }
 
-export async function createReceipt(
-  paidData: PaidData[],
-  discountAmount = 0
-) {
+export async function createReceipt(paidData: PaidData[], discountAmount = 0) {
   if (!paidData.length) return;
   try {
     return Promise.all(
@@ -1374,6 +1695,14 @@ export async function createPromotion(formData: FormData) {
         message: "Location id is not provided.",
         isSuccess: false,
       };
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+
     const promotion = await prisma.promotion.create({
       data: {
         name,
@@ -1419,6 +1748,25 @@ export async function createPromotion(formData: FormData) {
         )
       );
     }
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "CREATE_PROMOTION",
+        targetType: "Promotion",
+        targetId: promotion.id,
+        changes: JSON.stringify({
+          name,
+          description,
+          discount_type,
+          discount_value,
+          start_date,
+          end_date,
+          priority,
+        }),
+      },
+    });
 
     revalidatePath(`/backoffice/promotion`);
     return {
@@ -1483,6 +1831,17 @@ export async function updatePromotion(formData: FormData) {
   const prevMenuId = prevPromoMenu && prevPromoMenu.map((item) => item.menuId);
 
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalPromotion = await prisma.promotion.findUnique({
+      where: { id },
+    });
+
     if (image) {
       const imageUrl = (await uploadImage(formData)) as string;
       await prisma.promotion.update({
@@ -1602,6 +1961,35 @@ export async function updatePromotion(formData: FormData) {
         })
       );
     }
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "UPDATE_PROMOTION",
+        targetType: "Promotion",
+        targetId: id,
+        changes: JSON.stringify({
+          name: { old: originalPromotion?.name, new: name },
+          description: {
+            old: originalPromotion?.description,
+            new: description,
+          },
+          discount_type: {
+            old: originalPromotion?.discount_type,
+            new: discount_type,
+          },
+          discount_value: {
+            old: originalPromotion?.discount_value,
+            new: discount_value,
+          },
+          start_date: { old: originalPromotion?.start_date, new: start_date },
+          end_date: { old: originalPromotion?.end_date, new: end_date },
+          priority: { old: originalPromotion?.priority, new: priority },
+        }),
+      },
+    });
+
     revalidatePath(`/backoffice/promotion`);
     return { message: "Updated promotion successfully.", isSuccess: true };
   } catch (error) {
@@ -1615,10 +2003,36 @@ export async function updatePromotion(formData: FormData) {
 
 export async function deletePromotion(id: number) {
   try {
+    const { company, user } = await fetchCompany();
+    if (!company || !user) {
+      return {
+        message: "Error occurred while fetching user!",
+        isSuccess: false,
+      };
+    }
+    const originalPromotion = await prisma.promotion.findUnique({
+      where: { id },
+    });
+
     await prisma.promotion.update({
       where: { id: id },
       data: { isArchived: true },
     });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        action: "DELETE_PROMOTION",
+        targetType: "Promotion",
+        targetId: id,
+        changes: JSON.stringify({
+          name: originalPromotion?.name,
+          isArchived: { old: false, new: true },
+        }),
+      },
+    });
+
     revalidatePath("/backoffice/promotion");
     return { message: "Deleted promotion successfully.", isSuccess: true };
   } catch (error) {

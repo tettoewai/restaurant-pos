@@ -71,6 +71,7 @@ const cardVariants = {
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   useEffect(() => {
     // Force dark mode on this page
@@ -80,13 +81,32 @@ export default function Home() {
     document.documentElement.style.overflowY = "auto";
     document.body.style.overflowY = "auto";
 
+    // Check if it's a bot/crawler (for SEO/preview purposes)
+    const isBot =
+      /bot|crawler|spider|crawling|facebookexternalhit|twitterbot|linkedinbot|whatsapp|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver/i.test(
+        navigator.userAgent
+      );
+
+    // Only enable overlay for real users, not bots/crawlers
+    if (isBot) {
+      return;
+    }
+
     // Track mouse position for spotlight effect
     const handleMouseMove = (e: MouseEvent) => {
+      if (!hasUserInteracted) {
+        setHasUserInteracted(true);
+      }
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
     // Track mouse enter/leave for cursor visibility
-    const handleMouseEnter = () => setIsHovering(true);
+    const handleMouseEnter = () => {
+      if (!hasUserInteracted) {
+        setHasUserInteracted(true);
+      }
+      setIsHovering(true);
+    };
     const handleMouseLeave = () => setIsHovering(false);
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -101,7 +121,7 @@ export default function Home() {
       document.removeEventListener("mouseenter", handleMouseEnter);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, []);
+  }, [hasUserInteracted]);
 
   const functionItem = [
     {
@@ -189,15 +209,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-gray-900 scrollbar-hide relative overflow-hidden dark">
-      {/* Dark overlay with soft spotlight cutout */}
-      <div
-        className="fixed inset-0 pointer-events-none z-20"
-        style={{
-          background: `radial-gradient(circle 500px at ${mousePosition.x}px ${mousePosition.y}px, transparent 0%, transparent 25%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0.45) 85%, rgba(0,0,0,0.55) 100%)`,
-          opacity: isHovering ? 1 : 0.8,
-          transition: "opacity 0.4s ease",
-        }}
-      />
+      {/* Dark overlay with soft spotlight cutout - Only shown after user interaction */}
+      {hasUserInteracted && (
+        <div
+          className="fixed inset-0 pointer-events-none z-20 print:hidden"
+          style={{
+            background: `radial-gradient(circle 500px at ${mousePosition.x}px ${mousePosition.y}px, transparent 0%, transparent 25%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0.45) 85%, rgba(0,0,0,0.55) 100%)`,
+            opacity: isHovering ? 1 : 0.8,
+            transition: "opacity 0.4s ease",
+          }}
+        />
+      )}
 
       {/* Subtle background pattern */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] opacity-20 pointer-events-none z-0" />
