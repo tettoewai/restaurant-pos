@@ -20,6 +20,7 @@ export default function SignOutDialog() {
         variant="ghost"
         color="primary"
         endContent={<Logout className="size-4" />}
+        className="w-[120px]"
       >
         Sign out
       </Button>

@@ -39,12 +39,12 @@ export default function SidebarOrder({
     },
     {
       name: "About us",
-      route: "",
+      route: `/order/about-us?tableId=${tableId}`,
       icon: UsersGroupTwoRounded,
     },
     {
       name: "Contact us",
-      route: "",
+      route: `/order/contact-us?tableId=${tableId}`,
       icon: CallChatRounded,
     },
   ];

@@ -92,6 +92,7 @@ export default function CheckWMSDialog() {
         variant="ghost"
         color="primary"
         endContent={<CheckCircle size={16} />}
+        className="w-[120px]"
       >
         Check
       </Button>

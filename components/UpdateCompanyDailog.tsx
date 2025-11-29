@@ -51,7 +51,7 @@ export default function UpdateCompanyDialog() {
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const { isSuccess, message } = await updateCompany(formData);
-    
+
     if (mounted) {
       const newValue = isUpdateCompany === "false" ? "true" : "false";
       localStorage.setItem("isUpdateCompany", newValue);
@@ -74,6 +74,7 @@ export default function UpdateCompanyDialog() {
         color="primary"
         onPress={onOpen}
         endContent={<PenNewSquare size={16} />}
+        className="w-[120px]"
       >
         Update
       </Button>
