@@ -1,5 +1,6 @@
 "use server";
 import { prisma } from "@/db";
+import { logError } from "@/lib/logger";
 import { OrderStatus } from "@prisma/client";
 import { unstable_noStore as noStore } from "next/cache";
 import {
@@ -24,7 +25,7 @@ async function fetchDisabledLocationMenuCatIds(locationId: number) {
       });
     return disabledLocationMenuCat.map((item) => item.menuCategoryId);
   } catch (error) {
-    console.error("Error in disabledLocationMenuCat:", error);
+    logError(error, { function: "fetchDisabledLocationMenuCatIds" });
     throw new Error("Failed to fetch disabledLocationMenuCat data.");
   }
 }
@@ -38,7 +39,7 @@ async function fetchDisabledLocationMenuIds(locationId: number) {
     });
     return disabledLocationMenu.map((item) => item.menuId);
   } catch (error) {
-    console.error("Error in disabledLocationMenu:", error);
+    logError(error, { function: "fetchDisabledLocationMenuIds" });
     throw new Error("Failed to fetch disabledLocationMenu data.");
   }
 }
@@ -62,7 +63,7 @@ export async function fetchMenuCategoryOrder(tableId: number) {
       (item) => !disabledMenuCatIds.includes(item.id)
     );
   } catch (error) {
-    console.error("Error in fetchMenuCategoryOrder:", error);
+    logError(error, { function: "fetchMenuCategoryOrder" });
     throw new Error("Failed to fetch menu category data.");
   }
 }
@@ -78,7 +79,7 @@ export async function fetchMenuCategoryMenuOrder(tableId: number) {
       where: { menuCategoryId: { in: menuCategoryIds } },
     });
   } catch (error) {
-    console.error("Error in fetchMenuCategoryMenuOrder:", error);
+    logError(error, { function: "fetchMenuCategoryMenuOrder" });
     throw new Error("Failed to fetch menuCategoryMenu data.");
   }
 }
@@ -253,7 +254,7 @@ async function calculateReservedIngredients(
       }
     }
   } catch (error) {
-    console.error("Error calculating reserved ingredients:", error);
+    logError(error, { function: "calculateReservedIngredients" });
     // Return empty map on error - better to show menus than hide them all
   }
 
@@ -332,7 +333,7 @@ export async function fetchMenuOrder(tableId: number) {
       (menu): menu is NonNullable<typeof menu> => menu !== null
     ) as MenuWithAvailability[];
   } catch (error) {
-    console.error("Error in fetchMenuOrder:", error);
+    logError(error, { function: "fetchMenuOrder" });
     throw new Error("Failed to fetch Menu data.");
   }
 }
@@ -388,7 +389,7 @@ export async function fetchAddonAvailability(
       })
     );
   } catch (error) {
-    console.error("Error in fetchAddonAvailability:", error);
+    logError(error, { function: "fetchAddonAvailability" });
   }
 
   return availabilityMap;
@@ -407,7 +408,7 @@ export async function fetchOrder(tableId: number) {
     });
     return order;
   } catch (error) {
-    console.error("Error in fetchOrder:", error);
+    logError(error, { function: "fetchOrder" });
     throw new Error("Failed to fetch Order data.");
   }
 }
@@ -429,7 +430,7 @@ export async function fetchLastPaidOrder(tableId: number) {
     });
     return lastOrderWithSameSeq;
   } catch (error) {
-    console.error("Error in fetchLastOrder:", error);
+    logError(error, { function: "fetchLastOrder" });
     throw new Error("Failed to fetch last Order data.");
   }
 }
@@ -457,7 +458,7 @@ export async function fetchReceiptWithItemId({
       },
     });
   } catch (error) {
-    console.error("Error in fetchReceiptWithItemId:", error);
+    logError(error, { function: "fetchReceiptWithItemId" });
     throw new Error("Failed to fetch receipt data.");
   }
 }
@@ -476,7 +477,7 @@ export async function fetchPromotionUsage({
       where: { tableId, orderSeq },
     });
   } catch (error) {
-    console.error("Error in fetchPromotionUsage:", error);
+    logError(error, { function: "fetchPromotionUsage" });
     throw new Error("Failed to fetch promotion usage data.");
   }
 }
@@ -487,7 +488,7 @@ export async function fetchOrderWithItemId(itemId: string) {
     const order = await prisma.order.findMany({ where: { itemId } });
     return order;
   } catch (error) {
-    console.error("Error in fetchOrder:", error);
+    logError(error, { function: "fetchOrder" });
     throw new Error("Failed to fetch Order data.");
   }
 }
@@ -499,7 +500,7 @@ export async function fetchReceiptWithCode(receitpCode: string) {
       where: { code: receitpCode },
     });
   } catch (error) {
-    console.error("Error in fetchReceipt:", error);
+    logError(error, { function: "fetchReceipt" });
     throw new Error("Failed to fetch Receipt data.");
   }
 }
@@ -514,7 +515,7 @@ export async function fetchCompanyFromOrder(tableId: number) {
       (await prisma.company.findFirst({ where: { id: location.companyId } }))
     );
   } catch (error) {
-    console.error("Error in fetchCompanyFromOrder:", error);
+    logError(error, { function: "fetchCompanyFromOrder" });
     throw new Error("Failed to fetch company data.");
   }
 }
@@ -526,7 +527,7 @@ export async function fetchCanceledOrders(itemId: string[]) {
       where: { itemId: { in: itemId } },
     });
   } catch (error) {
-    console.error("Error in fetchCanceledOrder:", error);
+    logError(error, { function: "fetchCanceledOrder" });
     throw new Error("Failed to fetch canceled data.");
   }
 }
@@ -538,7 +539,7 @@ export async function fetchCanceledOrder(itemId: string) {
       where: { itemId },
     });
   } catch (error) {
-    console.error("Error in fetchCanceledOrder:", error);
+    logError(error, { function: "fetchCanceledOrder" });
     throw new Error("Failed to fetch canceled data.");
   }
 }
@@ -557,7 +558,7 @@ export async function fetchPromotionWithTableId(tableId: number) {
       },
     });
   } catch (error) {
-    console.error("Error in fetchPromotion:", error);
+    logError(error, { function: "fetchPromotion" });
     throw new Error("Failed to fetch promotion data.");
   }
 }
@@ -567,7 +568,7 @@ export async function fetchMenuCategoryWithIds(ids: number[]) {
   try {
     return await prisma.menuCategory.findMany({ where: { id: { in: ids } } });
   } catch (error) {
-    console.error("Error in menuCategory:", error);
+    logError(error, { function: "fetchMenuCategoryWithIds" });
     throw new Error("Failed to fetch menuCategory data.");
   }
 }
@@ -580,7 +581,7 @@ export async function fetchPromotionMenuWithPromotionIds(ids: number[]) {
       orderBy: { quantity_required: "desc" },
     });
   } catch (error) {
-    console.error("Error in fetchPromotionMenu:", error);
+    logError(error, { function: "fetchPromotionMenu" });
     throw new Error("Failed to fetch promotionMenu data.");
   }
 }
@@ -600,7 +601,7 @@ export async function fetchFocMenuWithPromotiionId(promotionId: number) {
 
     return { focCategory, focMenu };
   } catch (error) {
-    console.error("Error in fetchFocMenu:", error);
+    logError(error, { function: "fetchFocMenu" });
     throw new Error("Failed to fetch focMenu data.");
   }
 }
@@ -617,7 +618,7 @@ export async function fetchAddonCategoryWithMenuIds(menuIds: number[]) {
     const addonCategories = await fetchAddonCategoryWithIds(addonCategoryIds);
     return { addonCategories, menuAddonCategory };
   } catch (error) {
-    console.error("Error in fetchAddonCategoryWithMenuId:", error);
+    logError(error, { function: "fetchAddonCategoryWithMenuId" });
     throw new Error("Failed to fetch AddonCategory data.");
   }
 }
@@ -629,7 +630,7 @@ export async function fetchAddonCategoryMenuWithMenuIds(menuIds: number[]) {
       where: { menuId: { in: menuIds } },
     });
   } catch (error) {
-    console.error("Error in fetchAddonCategoryMenuWithMenuIds:", error);
+    logError(error, { function: "fetchAddonCategoryMenuWithMenuIds" });
     throw new Error("Failed to fetch menuAddonCategory data.");
   }
 }
@@ -644,7 +645,7 @@ export async function fetchActiveOrderWithTableIds(tableIds: number[]) {
       },
     });
   } catch (error) {
-    console.error("Error in fetchOrderWithTableIds:", error);
+    logError(error, { function: "fetchOrderWithTableIds" });
     throw new Error("Failed to fetch order with tableIds data.");
   }
 }

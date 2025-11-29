@@ -1,6 +1,7 @@
 "use server";
 import { CartItem } from "@/context/OrderContext";
 import { prisma } from "@/db";
+import { logError } from "@/lib/logger";
 import { OrderStatus, Table } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
@@ -120,15 +121,32 @@ async function validateCartStock(cartItem: CartItem[]) {
 export const createOrder = async ({
   tableId,
   cartItem,
+  userLocation,
 }: {
   tableId: number;
   cartItem: CartItem[];
+  userLocation?: { latitude: number; longitude: number };
 }) => {
-  const isValid = tableId && cartItem.length > 0;
-  if (!isValid)
-    return { message: "Missing required fields.", isSuccess: false };
+  // Input validation
+  const { createOrderSchema } = await import("@/lib/validation-schemas");
 
-  const stockValidation = await validateCartStock(cartItem);
+  const validationResult = createOrderSchema.safeParse({
+    tableId,
+    cartItem,
+  });
+
+  if (!validationResult.success) {
+    return {
+      message: `Invalid input: ${validationResult.error.issues
+        .map((e) => e.message)
+        .join(", ")}`,
+      isSuccess: false,
+    };
+  }
+
+  const validatedData = validationResult.data;
+
+  const stockValidation = await validateCartStock(validatedData.cartItem);
   if (!stockValidation.isValid) {
     return {
       message: stockValidation.message,
@@ -140,7 +158,7 @@ export const createOrder = async ({
     // Check for an existing order
     const existingOrder = await prisma.order.findFirst({
       where: {
-        tableId,
+        tableId: validatedData.tableId,
         status: {
           notIn: [OrderStatus.PAID],
         },
@@ -149,67 +167,73 @@ export const createOrder = async ({
     });
 
     const orderSeq = existingOrder ? existingOrder.orderSeq : nanoid(7);
-    const originalTotalPrice = await getTotalPrice(cartItem);
+    const originalTotalPrice = await getTotalPrice(validatedData.cartItem);
 
     let totalPrice = originalTotalPrice;
     if (existingOrder) {
       totalPrice += existingOrder.totalPrice;
     }
 
-    // Map all the cart items and create orders
-    const orderPromises = cartItem.map(async (item) => {
-      if (item.addons.length > 0) {
-        // Handle the case where there are addons
-        return Promise.all(
-          item.addons.map(async (addon) => {
-            await prisma.order.create({
-              data: {
-                menuId: item.menuId,
-                addonId: addon,
-                itemId: item.id,
-                quantity: item.quantity,
-                orderSeq,
-                status: OrderStatus.PENDING,
-                totalPrice,
-                tableId,
-                instruction: item.instruction,
-                isFoc: item.isFoc,
-                subTotal: item.subTotal,
-              },
-            });
-          })
-        );
-      } else {
-        // Handle case with no addons
-        await prisma.order.create({
-          data: {
-            menuId: item.menuId,
-            itemId: item.id,
-            quantity: item.quantity,
-            orderSeq,
-            status: OrderStatus.PENDING,
-            totalPrice,
-            tableId,
-            instruction: item.instruction,
-            isFoc: item.isFoc,
-            subTotal: item.subTotal,
-          },
-        });
-      }
-    });
+    // Execute all operations in a single transaction
+    await prisma.$transaction(async (tx) => {
+      // Create all orders
+      const orderPromises = validatedData.cartItem.map(async (item) => {
+        if (item.addons.length > 0) {
+          // Handle the case where there are addons
+          return Promise.all(
+            item.addons.map(async (addon) => {
+              await tx.order.create({
+                data: {
+                  menuId: item.menuId,
+                  addonId: addon,
+                  itemId: item.id,
+                  quantity: item.quantity,
+                  orderSeq,
+                  status: OrderStatus.PENDING,
+                  totalPrice,
+                  tableId: validatedData.tableId,
+                  instruction: item.instruction,
+                  isFoc: item.isFoc,
+                  subTotal: item.subTotal,
+                },
+              });
+            })
+          );
+        } else {
+          // Handle case with no addons
+          await tx.order.create({
+            data: {
+              menuId: item.menuId,
+              itemId: item.id,
+              quantity: item.quantity,
+              orderSeq,
+              status: OrderStatus.PENDING,
+              totalPrice,
+              tableId: validatedData.tableId,
+              instruction: item.instruction,
+              isFoc: item.isFoc,
+              subTotal: item.subTotal,
+            },
+          });
+        }
+      });
 
-    // Await the creation of all orders
-    await Promise.all(orderPromises);
+      // Await the creation of all orders
+      await Promise.all(orderPromises);
 
-    // Update the total price for all the orders with the same orderSeq
-    await prisma.order.updateMany({
-      where: { orderSeq },
-      data: { totalPrice },
-    });
+      // Update the total price for all the orders with the same orderSeq
+      await tx.order.updateMany({
+        where: { orderSeq },
+        data: { totalPrice },
+      });
 
-    // Create a notification for new orders
-    await prisma.notification.create({
-      data: { message: "There are new orders", tableId },
+      // Create a notification for new orders
+      await tx.notification.create({
+        data: {
+          message: "There are new orders",
+          tableId: validatedData.tableId,
+        },
+      });
     });
 
     revalidatePath("/order");
@@ -219,7 +243,11 @@ export const createOrder = async ({
       orderSeq,
     };
   } catch (error) {
-    console.error(error);
+    logError(error, {
+      function: "createOrder",
+      tableId,
+      cartItemCount: cartItem.length,
+    });
     return {
       message: "Something went wrong while creating order",
       isSuccess: false,
@@ -346,7 +374,7 @@ export async function updateOrder(formData: FormData) {
     revalidatePath("/order");
     return { message: "Updated order successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateOrder", itemId });
     return {
       message: "Something went wrong while updating order!",
       isSuccess: false,

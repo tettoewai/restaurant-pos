@@ -2,6 +2,7 @@
 
 import { AddonIngredientForm } from "@/components/NewAddonIngredient";
 import { prisma } from "@/db";
+import { logError } from "@/lib/logger";
 import {
   convertBaseUnit,
   convertUnit,
@@ -44,12 +45,15 @@ export async function createWarehouse(formData: FormData) {
     }
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const warehouse = await prisma.warehouse.create({
       data: { name, locationId: selectedLocation?.locationId },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -57,17 +61,20 @@ export async function createWarehouse(formData: FormData) {
         action: "CREATE_WAREHOUSE",
         targetType: "Warehouse",
         targetId: warehouse.id,
-        changes: JSON.stringify({ name, locationId: selectedLocation.locationId }),
+        changes: JSON.stringify({
+          name,
+          locationId: selectedLocation.locationId,
+        }),
       },
     });
-    
+
     revalidatePath("/warehouse/manage");
     return {
       message: "Created warehouse successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while creating warehouse!",
       isSuccess: false,
@@ -83,17 +90,20 @@ export async function updateWarehouse(formData: FormData) {
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const originalWarehouse = await prisma.warehouse.findUnique({
       where: { id },
     });
-    
+
     await prisma.warehouse.update({
       where: { id },
       data: { name },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -106,14 +116,14 @@ export async function updateWarehouse(formData: FormData) {
         }),
       },
     });
-    
+
     revalidatePath("/warehouse/manage");
     return {
       message: "Updated warehouse successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while updating warehouse!",
       isSuccess: false,
@@ -146,7 +156,7 @@ export async function updateSelectWarehouse(id: number) {
         isSuccess: false,
       };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while updating warehouse!",
       isSuccess: false,
@@ -163,7 +173,10 @@ export async function deleteWarehouse(id: number) {
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const warehouse = await fetchWarehouse();
     if (warehouse && warehouse.length < 2) {
@@ -182,7 +195,7 @@ export async function deleteWarehouse(id: number) {
       where: { id },
       data: { isArchived: true },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -196,7 +209,7 @@ export async function deleteWarehouse(id: number) {
         }),
       },
     });
-    
+
     if (isSelected && warehouse) {
       const updatedWarehouse = await fetchWarehouse();
       if (updatedWarehouse) {
@@ -210,7 +223,7 @@ export async function deleteWarehouse(id: number) {
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while deleting warehouse!",
       isSuccess: false,
@@ -247,7 +260,7 @@ export async function createWarehouseItem(formData: FormData) {
     const warehouseItem = await prisma.warehouseItem.create({
       data: { name, unitCategory, unit, threshold, companyId: company.id },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -258,14 +271,14 @@ export async function createWarehouseItem(formData: FormData) {
         changes: JSON.stringify({ name, unitCategory, unit, threshold }),
       },
     });
-    
+
     revalidatePath("/warehouse/warehouse-item");
     return {
       message: "Created warehouse item successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while creating warehouse item!",
       isSuccess: false,
@@ -301,17 +314,20 @@ export async function updateWarehouseItem(formData: FormData) {
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const originalItem = await prisma.warehouseItem.findUnique({
       where: { id },
     });
-    
+
     await prisma.warehouseItem.update({
       where: { id },
       data: { name, unitCategory, unit, threshold },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -327,14 +343,14 @@ export async function updateWarehouseItem(formData: FormData) {
         }),
       },
     });
-    
+
     revalidatePath("/warehouse/warehouse-item");
     return {
       message: "Updated warehouse item successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while updating warehouse item!",
       isSuccess: false,
@@ -351,17 +367,20 @@ export async function deleteWarehouseItem(id: number) {
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const originalItem = await prisma.warehouseItem.findUnique({
       where: { id },
     });
-    
+
     await prisma.warehouseItem.update({
       where: { id },
       data: { isArchived: true },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -375,14 +394,14 @@ export async function deleteWarehouseItem(id: number) {
         }),
       },
     });
-    
+
     revalidatePath("/warehouse/warehouse-item");
     return {
       message: "Deleted warehouse item successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while deleting warehouse!",
       isSuccess: false,
@@ -446,7 +465,7 @@ export async function editMenuItemIngredient(
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while editing ingredients!",
       isSuccess: false,
@@ -474,7 +493,7 @@ export async function createSupplier(formData: FormData) {
     const supplier = await prisma.supplier.create({
       data: { name, phone, email, address, companyId: company?.id },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -485,14 +504,14 @@ export async function createSupplier(formData: FormData) {
         changes: JSON.stringify({ name, phone, email, address }),
       },
     });
-    
+
     revalidatePath("/warehouse/supplier");
     return {
       message: "Created supplier successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while creating supplier!",
       isSuccess: false,
@@ -514,17 +533,20 @@ export async function updateSupplier(formData: FormData) {
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const originalSupplier = await prisma.supplier.findUnique({
       where: { id },
     });
-    
+
     await prisma.supplier.update({
       where: { id },
       data: { name, phone, email, address },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -540,14 +562,14 @@ export async function updateSupplier(formData: FormData) {
         }),
       },
     });
-    
+
     revalidatePath("/warehouse/supplier");
     return {
       message: "Updated supplier successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while updating supplier!",
       isSuccess: false,
@@ -564,17 +586,20 @@ export async function deleteSupplier(id: number) {
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
-      return { isSuccess: false, message: "Error occurred while fetching user!" };
+      return {
+        isSuccess: false,
+        message: "Error occurred while fetching user!",
+      };
     }
     const originalSupplier = await prisma.supplier.findUnique({
       where: { id },
     });
-    
+
     await prisma.supplier.update({
       where: { id },
       data: { isArchived: true },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
@@ -588,14 +613,14 @@ export async function deleteSupplier(id: number) {
         }),
       },
     });
-    
+
     revalidatePath("/warehouse/supplier");
     return {
       message: "Deleted supplier successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while deleting supplier!",
       isSuccess: false,
@@ -679,7 +704,7 @@ export async function createAddonIngredient(formData: FormData) {
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while creating addon ingredient!",
       isSuccess: false,
@@ -748,7 +773,7 @@ export async function updateAddonIngredient(formData: FormData) {
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while updating addon ingredient!",
       isSuccess: false,
@@ -778,7 +803,7 @@ export async function deleteAddonIngredient({
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while deleting addon ingredient!",
       isSuccess: false,
@@ -787,42 +812,35 @@ export async function deleteAddonIngredient({
 }
 
 export async function createPurchaseOrder(formData: FormData) {
+  // Input validation
+  const { purchaseOrderSchema } = await import("@/lib/validation-schemas");
+
   const data = Object.fromEntries(formData);
   const supplierId = Number(data.supplier);
   const warehouseId = Number(data.warehouse);
-  const idIsValid =
-    supplierId &&
-    typeof supplierId === "number" &&
-    warehouseId &&
-    typeof warehouseId === "number";
-  if (!idIsValid)
+  const poItems: POItemForm[] = JSON.parse(data.poItems as string);
+
+  // Convert PO items to validation format
+  const validationItems = poItems.map((item) => ({
+    itemId: item.itemId,
+    quantity: item.quantity || 0,
+    unitPrice: item.price || 0,
+    unit: item.unit || "",
+  }));
+
+  const validationResult = purchaseOrderSchema.safeParse({
+    supplierId,
+    warehouseId,
+    items: validationItems,
+  });
+
+  if (!validationResult.success) {
     return {
-      message: "Missing supplier id or warehouse id!",
+      message: `Invalid input: ${validationResult.error.issues
+        .map((e) => e.message)
+        .join(", ")}`,
       isSuccess: false,
     };
-  const poItems: POItemForm[] = JSON.parse(data.poItems as string);
-  const errors: string[] = [];
-  const seenItems = new Set<number>();
-  for (const poItem of poItems) {
-    if (!poItem.itemId || poItem.itemId === 0) {
-      errors.push("Each PO item must have an item selected.");
-    }
-    if (!poItem.unit || poItem.unit === "") {
-      errors.push("Each PO item must have a unit.");
-    }
-    if (poItem.quantity && poItem.quantity <= 0) {
-      errors.push("PO item quantity must be greater than 0.");
-    }
-    if (poItem.price && poItem.price <= 0) {
-      errors.push("PO item price must be greater than 0.");
-    }
-    if (seenItems.has(poItem.itemId)) {
-      errors.push("Duplicate items are not allowed.");
-    }
-    seenItems.add(poItem.itemId);
-  }
-  if (errors.length > 0) {
-    return { message: errors.join("\n"), isSuccess: false };
   }
   const { company, user } = await fetchCompany();
   if (!user || !company)
@@ -830,23 +848,26 @@ export async function createPurchaseOrder(formData: FormData) {
   try {
     const purchaseOrder = await prisma.purchaseOrder.create({
       data: {
-        supplierId,
-        warehouseId,
+        supplierId: validationResult.data.supplierId,
+        warehouseId: validationResult.data.warehouseId,
         code: nanoid(6),
         status: POStatus.PENDING,
       },
     });
     await prisma.$transaction(
-      poItems.map((item) => {
-        const unit = item.unit?.toUpperCase() as Unit;
+      validationResult.data.items.map((item) => {
+        // Find original item to get unit
+        const originalItem = poItems.find((po) => po.itemId === item.itemId);
+        const unit = originalItem?.unit?.toUpperCase() as Unit;
         const baseQuantity = convertBaseUnit({
-          amount: item.quantity as number,
+          amount: item.quantity,
           fromUnit: unit,
         });
         const basePrice = convertUnit({
-          amount: item.price || 0,
+          amount: item.unitPrice,
           toUnit: unit,
         });
+
         return prisma.purchaseOrderItem.create({
           data: {
             purchaseOrderId: purchaseOrder.id,
@@ -873,7 +894,7 @@ export async function createPurchaseOrder(formData: FormData) {
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while creating purchase order!",
       isSuccess: false,
@@ -1023,7 +1044,7 @@ export async function updatePurchaseOrder(formData: FormData) {
       isSuccess: true,
     };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while updating purchase order!",
       isSuccess: false,
@@ -1288,7 +1309,7 @@ export async function createStockMovement(
       isSuccess: true,
     };
   } catch (error) {
-    console.error("Error creating stock movement:", error);
+    logError(error, { function: "createStockMovement" });
     return {
       message: "Something went wrong while making stock movement!",
       isSuccess: false,
@@ -1335,7 +1356,7 @@ export async function receivePurchaseOrder(poId: number) {
     revalidatePath("/warehouse/purchase-order");
     return { message: "Received PO Successfully.", isSuccess: true };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while receiving PO!",
       isSuccess: false,
@@ -1409,7 +1430,7 @@ export async function cancelPurchaseOrder(poId: number) {
     revalidatePath("/warehouse/purchase-order");
     return { message: "Canceled PO Successfully.", isSuccess: true };
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while canceling PO!",
       isSuccess: false,
@@ -1554,7 +1575,7 @@ export async function correctPurchaseOrder(formData: FormData) {
       return { message: "Didn't find any changes", isSuccess: false };
     }
   } catch (error) {
-    console.log(error);
+    logError(error, { function: "createWarehouse" });
     return {
       message: "Something went wrong while correcting the PO!",
       isSuccess: false,
@@ -1650,7 +1671,7 @@ export async function deletePurchaseOrder(poId: number) {
       isSuccess: true,
     };
   } catch (error) {
-    console.error("Error deleting purchase order:", error);
+    logError(error, { function: "deletePurchaseOrder" });
     return {
       message: "Something went wrong while deleting the purchase order!",
       isSuccess: false,
@@ -1663,7 +1684,7 @@ export async function checkWMSAction() {
     const result = await checkWMS();
     return { isSuccess: true, data: result };
   } catch (error) {
-    console.error("Error checking WMS:", error);
+    logError(error, { function: "checkWMS" });
     return {
       isSuccess: false,
       message: "Failed to check warehouse management system.",

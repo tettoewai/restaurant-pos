@@ -16,6 +16,10 @@ const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
@@ -46,6 +50,10 @@ const authOptions: NextAuthOptions = {
         console.error("Failed to ensure default tenant:", error);
         throw error;
       }
+    },
+    async signOut() {
+      // Session and JWT token are automatically cleared by NextAuth
+      // This event is here for any additional cleanup if needed
     },
   },
 };

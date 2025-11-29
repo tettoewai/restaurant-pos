@@ -35,7 +35,7 @@ export default async function MenuCard({
     validMenuCategoryIds.includes(item.id)
   );
   const currentMenuCategoryMenu = menuCategoryMenu.filter(
-    (item) => item.menuId === item.id
+    (item) => item.menuId === menu.id
   );
   const isExist = disableLocationMenu.find((item) => item.menuId === menu.id);
   return (

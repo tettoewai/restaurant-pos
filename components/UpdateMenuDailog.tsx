@@ -54,30 +54,36 @@ export default function UpdateMenuDialog({
   };
 
   useEffect(() => {
-    if (menu) {
-      setPrevImage(menu.assetUrl || "");
+    // Reset and set values when modal opens
+    if (isOpen) {
+      if (menu) {
+        setPrevImage(menu.assetUrl || "");
+      } else {
+        setPrevImage("");
+      }
+
+      if (menuCategoryMenu && menuCategoryMenu.length > 0) {
+        console.log(menuCategoryMenu);
+        console.log(id);
+        const prevCategoryIds = menuCategoryMenu
+          .filter((item) => item.menuId === id)
+          .map((item) => String(item.menuCategoryId));
+        setSelectedCategory(new Set(prevCategoryIds));
+      }
     }
-    if (menuCategoryMenu) {
-      const prevCategoryIds = menuCategoryMenu.map((item) =>
-        String(item.menuCategoryId)
-      );
-      setSelectedCategory(new Set(prevCategoryIds));
-    }
-  }, [isOpen, menu, menuCategoryMenu]);
+  }, [isOpen, menu, menuCategoryMenu, id]);
 
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // setIsSubmitting(true);
+    setIsSubmitting(true);
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     formData.set("id", String(id));
     const selectedCategoryArray = Array.from(selectedCategory);
-    formData.append(
-      "category",
-      JSON.parse(JSON.stringify(selectedCategoryArray))
-    );
+    // Send as comma-separated string as expected by updateMenu action
+    formData.set("category", selectedCategoryArray.join(","));
     menuImage && formData.append("image", menuImage);
     if (!prevImage) deleteMenuImage(id);
     const { message, isSuccess } = await updateMenu({ formData });

@@ -230,6 +230,10 @@ model Notification {
   isRead    Boolean        @default(false)
   table     Table?         @relation(fields: [tableId], references: [id])
   wmsCheckResult WMSCheckResult? @relation(fields: [wmsCheckResultId], references: [id])
+
+  @@index([tableId, isRead])
+  @@index([createdAt])
+  @@index([type, isRead])
 }
 
 model WMSCheckResult {
@@ -266,6 +270,11 @@ model Receipt {
   addon      Addon?   @relation(fields: [addonId], references: [id])
   menu       Menu     @relation(fields: [menuId], references: [id])
   table      Table    @relation(fields: [tableId], references: [id])
+
+  @@index([code])
+  @@index([tableId, date])
+  @@index([date])
+  @@index([orderSeq])
 }
 
 model Rating {
@@ -301,6 +310,9 @@ model Promotion {
   PromotionUsage       PromotionUsage[]
 
   @@index([locationId])
+  @@index([locationId, is_active, isArchived])
+  @@index([start_date, end_date])
+  @@index([is_active, isArchived])
 }
 
 model PromotionMenu {
@@ -415,6 +427,10 @@ model PurchaseOrder {
   PurchaseOrderItem        PurchaseOrderItem[]
   PurchaseOrderHistory     PurchaseOrderHistory[]
   PurchaseOrderItemHistory PurchaseOrderItemHistory[]
+
+  @@index([supplierId])
+  @@index([warehouseId, status])
+  @@index([status, createdAt])
 }
 
 model PurchaseOrderItem {
@@ -486,6 +502,11 @@ model StockMovement {
   parent        StockMovement?  @relation("Correction", fields: [parentId], references: [id])
   corrections   StockMovement[] @relation("Correction")
   warehouse     Warehouse       @relation(fields: [warehouseId], references: [id])
+
+  @@index([itemId, warehouseId])
+  @@index([warehouseId, createdAt])
+  @@index([source, createdAt])
+  @@index([reference])
 }
 
 model MenuItemIngredient {

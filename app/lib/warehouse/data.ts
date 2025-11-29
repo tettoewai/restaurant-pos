@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/db";
+import { logError } from "@/lib/logger";
 import { unstable_noStore as noStore } from "next/cache";
 import {
   fetchAddon,
@@ -22,7 +23,7 @@ export async function fetchWarehouse() {
       return [];
     }
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -33,7 +34,7 @@ export async function fetchWarehouseWithId(id: number) {
   try {
     return await prisma.warehouse.findFirst({ where: { id } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch warehouse data.");
   }
 }
@@ -46,7 +47,7 @@ export async function fetchSelectedWarehouse() {
       where: { userId: user?.id },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return null;
   }
 }
@@ -60,7 +61,7 @@ export async function fetchWarehouseItem() {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -72,7 +73,7 @@ export async function fetchMenuItemIngredientWithMenuIds(menuIds: number[]) {
       where: { menuId: { in: menuIds } },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -82,7 +83,7 @@ export async function fetchWarehouseItemWithIds(ids: number[]) {
   try {
     return await prisma.warehouseItem.findMany({ where: { id: { in: ids } } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -97,7 +98,7 @@ export async function fetchSupplier() {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -108,7 +109,7 @@ export async function fetchSupplierWithId(id: number) {
   try {
     return await prisma.supplier.findFirst({ where: { id } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
   }
 }
 
@@ -117,7 +118,7 @@ export async function fetchSupplierWithIds(ids: number[]) {
   try {
     return await prisma.supplier.findMany({ where: { id: { in: ids } } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -132,7 +133,7 @@ export async function fetchAddonIngredients() {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -145,7 +146,7 @@ export async function fetchAddonIngredientWithAddonIds(addonIds: number[]) {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -160,7 +161,7 @@ export async function fetchPurchaseOrder() {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -172,7 +173,7 @@ export async function fetchPOItemWithPOIds(poIds: number[]) {
       where: { purchaseOrderId: { in: poIds } },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -182,7 +183,7 @@ export async function fetchWarehousesWithIds(ids: number[]) {
   try {
     return await prisma.warehouse.findMany({ where: { id: { in: ids } } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -192,7 +193,7 @@ export async function fetchPurchaseOrderWithId(id: number) {
   try {
     return await prisma.purchaseOrder.findFirst({ where: { id } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch po data.");
   }
 }
@@ -204,7 +205,7 @@ export async function fetchPOItemWithPOId(poId: number) {
       where: { purchaseOrderId: poId },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -217,7 +218,7 @@ export async function fetchWarehouseStock() {
       where: { warehouseId: selectedWarehouse?.warehouseId },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch warehouse stock data.");
   }
 }
@@ -228,7 +229,7 @@ export async function fetchWarehouseStockWithItemIds(itemIds: number[]) {
   try {
     return await prisma.warehouseStock.findMany({ where: { itemId: { in: itemIds } } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return [];
   }
 }
@@ -244,7 +245,7 @@ export async function fetchStockMovement() {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch stock movement data.");
   }
 }
@@ -258,7 +259,7 @@ export async function fetchAuditLog() {
       orderBy: { id: "asc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch audit log data.");
   }
 }
@@ -277,7 +278,7 @@ export async function fetchMenuAddonCategoryWithCategoryAndMenu({
       where: { addonCategoryId: categoryId, menuId },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch Add-on Cateogry data.");
   }
 }
@@ -347,7 +348,7 @@ export async function fetchDashboardData() {
       })),
     };
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     return {
       totalStockItems: 0,
       lowStockItems: 0,
@@ -368,7 +369,7 @@ export async function fetchWMSCheckResult(id: number) {
       where: { id },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchWarehouse" });
     throw new Error("Failed to fetch WMS check result data.");
   }
 }

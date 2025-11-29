@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Providers } from "@/components/Providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Ubuntu } from "next/font/google";
@@ -19,8 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${ubantu.className} scrollbar-hide`}>
-        <Providers>{children}</Providers>
-        <SpeedInsights />
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+          <SpeedInsights />
+        </ErrorBoundary>
       </body>
     </html>
   );

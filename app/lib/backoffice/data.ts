@@ -1,5 +1,6 @@
 "use server";
 import { prisma } from "@/db";
+import { logError } from "@/lib/logger";
 import {
   MovementSource,
   MovementType,
@@ -19,7 +20,7 @@ export async function fetchUser() {
     const user = await prisma.user.findUnique({ where: { email } });
     return user;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     return null;
   }
 }
@@ -30,7 +31,7 @@ export async function fetchUserWithIds(ids: number[]) {
   try {
     return prisma.user.findMany({ where: { id: { in: ids } } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch user data.");
   }
 }
@@ -44,7 +45,7 @@ export async function fetchCompany() {
     });
     return { company, user };
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch company data.");
   }
 }
@@ -58,7 +59,7 @@ export async function fetchMenuCategory() {
     });
     return menuCategory;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch menuCategory data.");
   }
 }
@@ -74,7 +75,7 @@ export async function fetchMenuAddonCategory() {
     });
     return menuAddonCategory;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch menuAddonCategory data.");
   }
 }
@@ -92,7 +93,7 @@ export async function fetchAddonCategory() {
     });
     return addonCategory;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addonCategory data.");
   }
 }
@@ -108,7 +109,7 @@ export async function fetchAddon() {
     });
     return addon;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addon data.");
   }
 }
@@ -121,7 +122,7 @@ export async function fetchAddonWithId(id: number) {
     });
     return addon;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addon data.");
   }
 }
@@ -134,7 +135,7 @@ export async function fetchAddonWithIds(ids: number[]) {
     });
     return addon;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addon data.");
   }
 }
@@ -170,7 +171,7 @@ export async function getAddonPriceForMenu(
 
     return addon?.price || 0;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     // Fall back to default addon price on error
     try {
       const addon = await prisma.addon.findUnique({
@@ -240,7 +241,7 @@ export async function getAddonPricesForMenus(
 
     return priceMap;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     // Fall back to default prices
     try {
       const addonIdsSet = new Set<number>();
@@ -274,7 +275,7 @@ export async function fetchAddonWithAddonCat(id: number) {
     });
     return addons;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addon data.");
   }
 }
@@ -290,7 +291,7 @@ export async function fetchMenuCategoryMenu() {
     });
     return menuCategoryMenus;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch menuCategoryMenu data.");
   }
 }
@@ -306,7 +307,7 @@ export async function fetchMenu() {
     });
     return menus;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch Menu data.");
   }
 }
@@ -320,7 +321,7 @@ export async function fetchMenuWithId(id: number) {
     });
     return menu;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch Menu data.");
   }
 }
@@ -334,7 +335,7 @@ export async function fetchMenuWithIds(ids: number[]) {
     });
     return menu;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch Menu data.");
   }
 }
@@ -372,7 +373,7 @@ export async function fetchMenusForAddon(addonId: number) {
 
     return menuAddonCategories.map((mac) => mac.menu);
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     return [];
   }
 }
@@ -386,7 +387,7 @@ export async function fetchMenuCategoryWithId(id: number) {
     });
     return menuCategory;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch MenuCategory data.");
   }
 }
@@ -400,7 +401,7 @@ export async function fetchAddonCategoryWithId(id: number) {
     });
     return addonCategory;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addonCategory data.");
   }
 }
@@ -415,7 +416,7 @@ export async function fetchAddonCategoryWithIds(ids: number[]) {
     });
     return addonCategory;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch addonCategory data.");
   }
 }
@@ -429,7 +430,7 @@ export async function fetchMenuCategoryWithMenu(id: number) {
     });
     return menuCategoryMenus;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch MenuCategoryMenu data.");
   }
 }
@@ -444,7 +445,7 @@ export async function fetchLocation() {
     });
     return location;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch location data.");
   }
 }
@@ -455,7 +456,7 @@ export async function fetchLocationWithId(id: number) {
     const location = await prisma.location.findFirst({ where: { id } });
     return location;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch location data.");
   }
 }
@@ -473,7 +474,7 @@ export async function fetchTable() {
     });
     return table;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch table data.");
   }
 }
@@ -484,7 +485,7 @@ export async function fetchTableWithId(id: number) {
     const table = await prisma.table.findFirst({ where: { id } });
     return table;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch table data.");
   }
 }
@@ -498,7 +499,7 @@ export async function checkTableLocation(id: number) {
     });
     return table;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch table data.");
   }
 }
@@ -509,7 +510,7 @@ export async function fetchTableWithIds(ids: number[]) {
     const table = await prisma.table.findMany({ where: { id: { in: ids } } });
     return table;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch table data.");
   }
 }
@@ -522,7 +523,7 @@ export async function fetchSelectedLocation() {
       where: { userId: user?.id },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch selected location data.");
   }
 }
@@ -537,7 +538,7 @@ export async function fetchSelectedLocationData() {
     if (!user || !location) return;
     return await prisma.location.findUnique({ where: { id: location.id } });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch selected location data.");
   }
 }
@@ -551,7 +552,7 @@ export async function fetchDisableLocationMenu() {
     });
     return disabledLocationMenu;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch disable location menu data.");
   }
 }
@@ -566,7 +567,7 @@ export async function fetchDisableLocationMenuCat() {
       });
     return disabledLocationMenuCat;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch disable location menu data.");
   }
 }
@@ -586,7 +587,7 @@ export async function fetchOrder() {
     });
     return order;
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch order data.");
   }
 }
@@ -605,10 +606,7 @@ export async function fetchOrderWithTableId(tableId: number) {
       orderBy: { createdAt: "asc" },
     });
   } catch (error) {
-    console.error(
-      `Database Error for Table ID ${tableId} and Status ${status}:`,
-      error
-    );
+    logError(error, { function: "fetchOrderWithTableId", tableId, status });
     throw new Error("Failed to fetch order data.");
   }
 }
@@ -634,7 +632,7 @@ export async function fetchNotification() {
     });
     return notification;
   } catch (error) {
-    console.error("Database error for notification", error);
+    logError(error, { function: "fetchNotification" });
     throw new Error("Failed to fetch order data.");
   }
 }
@@ -670,7 +668,7 @@ export async function getOrderWithDate(startDate: Date, endDate: Date) {
       return order;
     }
   } catch (error) {
-    console.error("Database error for notification", error);
+    logError(error, { function: "fetchNotification" });
     throw new Error("Failed to fetch order data.");
   }
 }
@@ -860,7 +858,7 @@ export async function fetchRecentReceipt() {
       orderBy: { id: "desc" },
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    logError(error, { function: "fetchUser" });
     throw new Error("Failed to fetch recent receipt data.");
   }
 }

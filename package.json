@@ -18,6 +18,8 @@
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@solar-icons/react": "^1.0.1",
+    "@upstash/ratelimit": "^2.0.7",
+    "@upstash/redis": "^1.35.7",
     "@vercel/speed-insights": "^1.2.0",
     "chart.js": "^4.4.4",
     "cloudinary": "^2.3.1",
@@ -30,6 +32,8 @@
     "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
     "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "^18",
@@ -40,7 +44,8 @@
     "screenfull": "^6.0.2",
     "sharp": "^0.34.2",
     "swr": "^2.2.5",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",

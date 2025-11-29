@@ -3,6 +3,7 @@
 import { config } from "@/config";
 import { prisma } from "@/db";
 import { PaidData } from "@/general";
+import { logError } from "@/lib/logger";
 import {
   DiscountType,
   MovementSource,
@@ -97,7 +98,7 @@ export async function updateCompany(formData: FormData) {
     revalidatePath("/backoffice");
     return { message: "Updated company successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while updating company",
       isSuccess: false,
@@ -106,14 +107,35 @@ export async function updateCompany(formData: FormData) {
 }
 
 export async function createMenu({ formData }: Props) {
-  const data = Object.fromEntries(formData);
-  const name = data.name as string;
-  const description = data.description as string;
-  const price = Number(data.price);
-  const category = (data.category as string).split(",");
-  const image = data.image;
-  const isValid = name && price > 0 && category.length > 0;
-  if (!isValid) return { message: "Missing required fields", isSuccess: false };
+  // Input validation
+  const { menuSchema } = await import("@/lib/validation-schemas");
+  const { sanitizeFormData } = await import("@/lib/validation");
+
+  const rawData = sanitizeFormData(formData);
+  const price = Number(rawData.price);
+  const category = (rawData.category as string)?.split(",") || [];
+
+  const validationResult = menuSchema.safeParse({
+    name: rawData.name,
+    price: price,
+    description: rawData.description,
+  });
+
+  if (!validationResult.success) {
+    return {
+      message: `Invalid input: ${validationResult.error.issues
+        .map((e) => e.message)
+        .join(", ")}`,
+      isSuccess: false,
+    };
+  }
+
+  if (category.length === 0) {
+    return { message: "At least one category is required", isSuccess: false };
+  }
+
+  const { name, description } = validationResult.data;
+  const image = rawData.image;
 
   try {
     let imageUrl: string | null = null;
@@ -131,7 +153,12 @@ export async function createMenu({ formData }: Props) {
     }
 
     const menu = await prisma.menu.create({
-      data: { name, price, assetUrl: imageUrl, description },
+      data: {
+        name: validationResult.data.name,
+        price,
+        assetUrl: imageUrl,
+        description: validationResult.data.description,
+      },
     });
 
     await prisma.$transaction(
@@ -150,9 +177,9 @@ export async function createMenu({ formData }: Props) {
         targetType: "Menu",
         targetId: menu.id,
         changes: JSON.stringify({
-          name,
+          name: validationResult.data.name,
           price,
-          description,
+          description: validationResult.data.description,
           categories: category,
         }),
       },
@@ -161,7 +188,7 @@ export async function createMenu({ formData }: Props) {
     revalidatePath("/backoffice/menu");
     return { message: "Created menu successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "createMenu" });
     return {
       message: "Something went wrong while creating menu",
       isSuccess: false,
@@ -198,7 +225,7 @@ export async function createMenuCategory(formData: FormData) {
     revalidatePath("/backoffice/menu-category");
     return { message: "Created menu category successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "createMenuCategory" });
     return {
       message: "Something went wrong while creating menu category",
       isSuccess: false,
@@ -245,7 +272,7 @@ export async function updateMenuCategory(formData: FormData) {
     revalidatePath("/backoffice/menu-category");
     return { message: "Updated menu category successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while updating menu category",
       isSuccess: false,
@@ -341,7 +368,7 @@ export async function updateMenu({ formData }: Props) {
     revalidatePath("/backoffice/menu");
     return { message: "Updated menu successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while updating menu",
       isSuccess: false,
@@ -701,7 +728,7 @@ export async function updateAddonCategory(FormData: FormData) {
       isSuccess: true,
     };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while updating menu",
       isSuccess: false,
@@ -725,15 +752,32 @@ export async function updateSelectLocation(id: number) {
 }
 
 export async function createLocation(formData: FormData) {
-  const name = formData.get("name") as string;
-  const street = formData.get("street") as string;
-  const township = formData.get("township") as string;
-  const city = formData.get("city") as string;
-  const latitude = formData.get("latitude") as string;
-  const longitude = formData.get("longitude") as string;
-  const isValid = name && street && township && city;
-  if (!isValid)
-    return { message: "Missing required fields.", isSuccess: false };
+  // Input validation
+  const { locationSchema } = await import("@/lib/validation-schemas");
+  const { sanitizeFormData } = await import("@/lib/validation");
+
+  const rawData = sanitizeFormData(formData);
+
+  const validationResult = locationSchema.safeParse({
+    name: rawData.name,
+    street: rawData.street,
+    township: rawData.township,
+    city: rawData.city,
+    latitude: rawData.latitude || undefined,
+    longitude: rawData.longitude || undefined,
+  });
+
+  if (!validationResult.success) {
+    return {
+      message: `Invalid input: ${validationResult.error.issues
+        .map((e) => e.message)
+        .join(", ")}`,
+      isSuccess: false,
+    };
+  }
+
+  const { name, street, township, city, latitude, longitude } =
+    validationResult.data;
   try {
     const { company, user } = await fetchCompany();
     if (!company || !user) {
@@ -745,12 +789,12 @@ export async function createLocation(formData: FormData) {
     const location = await prisma.location.create({
       data: {
         companyId: company.id,
-        name,
-        street,
-        township,
-        city,
-        latitude,
-        longitude,
+        name: validationResult.data.name,
+        street: validationResult.data.street,
+        township: validationResult.data.township,
+        city: validationResult.data.city,
+        latitude: validationResult.data.latitude || null,
+        longitude: validationResult.data.longitude || null,
       },
     });
 
@@ -762,12 +806,12 @@ export async function createLocation(formData: FormData) {
         targetType: "Location",
         targetId: location.id,
         changes: JSON.stringify({
-          name,
-          street,
-          township,
-          city,
-          latitude,
-          longitude,
+          name: validationResult.data.name,
+          street: validationResult.data.street,
+          township: validationResult.data.township,
+          city: validationResult.data.city,
+          latitude: validationResult.data.latitude,
+          longitude: validationResult.data.longitude,
         }),
       },
     });
@@ -1135,7 +1179,7 @@ export async function deleteMenuImage(id: number) {
       data: { assetUrl: "" },
     });
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while deleting image",
       isSuccess: false,
@@ -1150,7 +1194,7 @@ export async function deletePromotionImage(id: number) {
       data: { imageUrl: "" },
     });
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while deleting image",
       isSuccess: false,
@@ -1347,7 +1391,7 @@ export async function updateOrderStatus({
     revalidatePath(`/backoffice/order`);
     return { message: "Updated order status successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while update status",
       isSuccess: false,
@@ -1385,7 +1429,7 @@ export async function createFocMenuAddonCategory({
       isSuccess: true,
     };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while create FocMenuAddonCategory",
       isSuccess: false,
@@ -1447,7 +1491,7 @@ export async function updateFocMenuAddonCategory({
       isSuccess: true,
     };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while updating FocMenuAddonCategory",
       isSuccess: false,
@@ -1462,7 +1506,7 @@ export async function deleteFocMenuAddonCategoryWithPromoId(
   try {
     await prisma.focMenuAddonCategory.deleteMany({ where: { promotionId } });
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while deleting focMenuAddonCategory",
       isSuccess: false,
@@ -1558,7 +1602,7 @@ export async function createReceipt(paidData: PaidData[], discountAmount = 0) {
       })
     );
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
   }
 }
 
@@ -1574,8 +1618,15 @@ export async function setPaidWithQuantity(
   }
 
   try {
+    // Validate all orders first
     let latestOrderSeq: string | null = null;
     let tableIdForUsage: number | null = null;
+    const orderUpdates: Array<{
+      itemId: string;
+      paidQuantity: number;
+      status: OrderStatus;
+    }> = [];
+
     for (const data of item) {
       const currentOrder = await fetchOrderWithItemId(data.itemId);
 
@@ -1590,7 +1641,7 @@ export async function setPaidWithQuantity(
         currentOrder[0].paidQuantity + data.quantity > currentOrder[0].quantity;
       if (overPaid)
         return {
-          message: "Something went worng with over paid.",
+          message: "Something went wrong with over paid.",
           isSuccess: false,
         };
 
@@ -1602,38 +1653,51 @@ export async function setPaidWithQuantity(
       latestOrderSeq = latestOrderSeq || currentOrder[0].orderSeq;
       tableIdForUsage = tableIdForUsage || currentOrder[0].tableId;
 
-      await prisma.order.updateMany({
-        where: { itemId: data.itemId },
-        data: { paidQuantity, status },
-      });
+      orderUpdates.push({ itemId: data.itemId, paidQuantity, status });
     }
 
-    await createReceipt(item, options?.discountAmount ?? 0);
+    // Execute all operations in a single transaction
+    await prisma.$transaction(async (tx) => {
+      // Update all orders
+      for (const update of orderUpdates) {
+        await tx.order.updateMany({
+          where: { itemId: update.itemId },
+          data: { paidQuantity: update.paidQuantity, status: update.status },
+        });
+      }
 
-    if (
-      options?.promotionIds?.length &&
-      latestOrderSeq &&
-      tableIdForUsage !== null
-    ) {
-      await prisma.$transaction(
-        options.promotionIds.map((promotionId) =>
-          prisma.promotionUsage.create({
-            data: {
-              promotionId,
-              tableId: tableIdForUsage as number,
-              orderSeq: latestOrderSeq as string,
-            },
-          })
-        )
-      );
-    }
+      // Create receipts
+      await createReceipt(item, options?.discountAmount ?? 0);
+
+      // Create promotion usages if applicable
+      if (
+        options?.promotionIds?.length &&
+        latestOrderSeq &&
+        tableIdForUsage !== null
+      ) {
+        await Promise.all(
+          options.promotionIds.map((promotionId) =>
+            tx.promotionUsage.create({
+              data: {
+                promotionId,
+                tableId: tableIdForUsage as number,
+                orderSeq: latestOrderSeq as string,
+              },
+            })
+          )
+        );
+      }
+    });
 
     return {
       message: "Paid order successfully.",
       isSuccess: true,
     };
   } catch (error) {
-    console.error(error);
+    logError(error, {
+      function: "setPaidWithQuantity",
+      itemCount: item.length,
+    });
     return {
       message: "Something went wrong while processing the payment.",
       isSuccess: false,
@@ -1642,37 +1706,61 @@ export async function setPaidWithQuantity(
 }
 
 export async function createPromotion(formData: FormData) {
-  const data = Object.fromEntries(formData);
-  const name = data.name as string;
-  const description = data.description as string;
-  const discount_value = Number(data.discount_amount);
-  const discountType = data.discount_type as string;
-  const startDate = data.start_date as string;
-  const endDate = data.end_date as string;
-  const totalPrice = Number(data.totalPrice);
-  const menuQty = JSON.parse(data.menuQty as string);
-  const focMenu = JSON.parse(data.focMenu as string);
-  const image = data.image;
-  const priority = Number(data.priority);
-  const group = data.group as string;
-  const conditions = data.conditions as string;
+  // Input validation
+  const { promotionSchema } = await import("@/lib/validation-schemas");
+  const { sanitizeFormData } = await import("@/lib/validation");
 
-  const isValid = Boolean(
-    name && description && startDate && endDate && priority
-  );
+  const rawData = sanitizeFormData(formData);
+  const discount_value = Number(rawData.discount_amount) || undefined;
+  const totalPrice = Number(rawData.totalPrice) || undefined;
+  const discountType = rawData.discount_type as string;
+  const menuQty = rawData.menuQty ? JSON.parse(rawData.menuQty as string) : [];
+  const focMenu = rawData.focMenu ? JSON.parse(rawData.focMenu as string) : [];
+  const image = rawData.image;
+  const priority = Number(rawData.priority);
+  const group = rawData.group;
+  const conditions = rawData.conditions
+    ? JSON.parse(rawData.conditions as string)
+    : null;
+
+  const location = await fetchSelectedLocation();
+  if (!location) {
+    return {
+      message: "Location id is not provided.",
+      isSuccess: false,
+    };
+  }
+
+  // Validate FOC-specific requirements
   if (discountType === "foc") {
-    const focValid = focMenu && focMenu.length > 0 && !discount_value;
-    if (!focValid)
+    if (!focMenu || focMenu.length === 0 || discount_value) {
       return {
         message: "Missing required foc fields!",
         isSuccess: false,
       };
+    }
   }
-  if (!isValid)
+
+  const validationResult = promotionSchema.safeParse({
+    name: rawData.name,
+    description: rawData.description,
+    discount_value,
+    totalPrice,
+    start_date: new Date(rawData.start_date).toISOString(),
+    end_date: new Date(rawData.end_date).toISOString(),
+    locationId: location.id,
+    priority,
+  });
+
+  if (!validationResult.success) {
     return {
-      message: "Missing required fields!",
+      message: `Invalid input: ${validationResult.error.issues
+        .map((e) => e.message)
+        .join(", ")}`,
       isSuccess: false,
     };
+  }
+
   const discount_type =
     discountType === "percentage"
       ? DiscountType.PERCENTAGE
@@ -1680,8 +1768,8 @@ export async function createPromotion(formData: FormData) {
       ? DiscountType.FIXED_AMOUNT
       : DiscountType.FOCMENU;
 
-  const start_date = new Date(startDate);
-  const end_date = new Date(endDate);
+  const start_date = new Date(validationResult.data.start_date);
+  const end_date = new Date(validationResult.data.end_date);
 
   try {
     let imageUrl: string | null = null;
@@ -1689,12 +1777,6 @@ export async function createPromotion(formData: FormData) {
     if (image) {
       imageUrl = (await uploadImage(formData)) as string;
     }
-    const location = await fetchSelectedLocation();
-    if (!location)
-      return {
-        message: "Location id is not provided.",
-        isSuccess: false,
-      };
     const { company, user } = await fetchCompany();
     if (!company || !user) {
       return {
@@ -1705,18 +1787,18 @@ export async function createPromotion(formData: FormData) {
 
     const promotion = await prisma.promotion.create({
       data: {
-        name,
-        description,
-        discount_value,
+        name: validationResult.data.name,
+        description: validationResult.data.description,
+        discount_value: validationResult.data.discount_value || null,
         discount_type,
         start_date,
         end_date,
         conditions,
-        totalPrice,
-        locationId: location.id,
+        totalPrice: validationResult.data.totalPrice || null,
+        locationId: validationResult.data.locationId,
         imageUrl,
-        priority,
-        group,
+        priority: validationResult.data.priority,
+        group: group || null,
       },
     });
 
@@ -1757,13 +1839,13 @@ export async function createPromotion(formData: FormData) {
         targetType: "Promotion",
         targetId: promotion.id,
         changes: JSON.stringify({
-          name,
-          description,
+          name: validationResult.data.name,
+          description: validationResult.data.description,
           discount_type,
-          discount_value,
+          discount_value: validationResult.data.discount_value,
           start_date,
           end_date,
-          priority,
+          priority: validationResult.data.priority,
         }),
       },
     });
@@ -1775,7 +1857,7 @@ export async function createPromotion(formData: FormData) {
       promotionId: promotion.id,
     };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "createPromotion" });
     return {
       message: "Something went wrong while creating promotion",
       isSuccess: false,
@@ -1993,7 +2075,7 @@ export async function updatePromotion(formData: FormData) {
     revalidatePath(`/backoffice/promotion`);
     return { message: "Updated promotion successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while updating promotion",
       isSuccess: false,
@@ -2090,7 +2172,7 @@ export async function cancelOrder(formData: FormData) {
     revalidatePath(`/backoffice/order`);
     return { message: "Canceled order successfully.", isSuccess: true };
   } catch (error) {
-    console.error(error);
+    logError(error, { function: "updateCompany" });
     return {
       message: "Something went wrong while canceling order.",
       isSuccess: false,
