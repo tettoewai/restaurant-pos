@@ -136,25 +136,27 @@ function CtaButton({
       (buttonRef.current?.getBoundingClientRect().height ?? 0) + radius;
 
   // Map color names to Tailwind classes
-  const borderColorClass = hoverBorderColor === "blue" 
-    ? "border-blue-500/60" 
-    : hoverBorderColor === "green"
-    ? "border-emerald-500/60"
-    : hoverBorderColor === "purple"
-    ? "border-purple-500/60"
-    : hoverBorderColor === "orange"
-    ? "border-orange-500/60"
-    : "border-primary/60";
-  
-  const glowColorClass = hoverBorderColor === "blue"
-    ? "bg-blue-500/40"
-    : hoverBorderColor === "green"
-    ? "bg-emerald-500/40"
-    : hoverBorderColor === "purple"
-    ? "bg-purple-500/40"
-    : hoverBorderColor === "orange"
-    ? "bg-orange-500/40"
-    : "bg-primary/40";
+  const borderColorClass =
+    hoverBorderColor === "blue"
+      ? "border-blue-500/60"
+      : hoverBorderColor === "green"
+      ? "border-emerald-500/60"
+      : hoverBorderColor === "purple"
+      ? "border-purple-500/60"
+      : hoverBorderColor === "orange"
+      ? "border-orange-500/60"
+      : "border-primary/60";
+
+  const glowColorClass =
+    hoverBorderColor === "blue"
+      ? "bg-blue-500/40"
+      : hoverBorderColor === "green"
+      ? "bg-emerald-500/40"
+      : hoverBorderColor === "purple"
+      ? "bg-purple-500/40"
+      : hoverBorderColor === "orange"
+      ? "bg-orange-500/40"
+      : "bg-primary/40";
 
   return (
     <Link
