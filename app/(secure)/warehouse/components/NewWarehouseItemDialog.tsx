@@ -5,7 +5,6 @@ import ShortcutButton from "@/components/ShortCut";
 import {
   addToast,
   Button,
-  Form,
   Input,
   Modal,
   ModalBody,
@@ -16,7 +15,7 @@ import {
   Select,
   SelectItem,
   Spinner,
-  useDisclosure,
+  useDisclosure
 } from "@heroui/react";
 import { Unit, UnitCategory } from "@prisma/client";
 import { useMemo, useState } from "react";
@@ -33,10 +32,10 @@ export default function NewWarehouseItemDialog() {
     return selectedUnitCategory === "Mass"
       ? ["G", "KG", "LB", "OZ", "VISS"]
       : selectedUnitCategory === "Volume"
-      ? ["ML", "L", "GAL"]
-      : selectedUnitCategory === "Count"
-      ? ["DOZ", "UNIT"]
-      : null;
+        ? ["ML", "L", "GAL"]
+        : selectedUnitCategory === "Count"
+          ? ["DOZ", "UNIT"]
+          : null;
   }, [selectedUnitCat]);
 
   const handleClose = () => {
@@ -105,7 +104,7 @@ export default function NewWarehouseItemDialog() {
             Create Warehouse Item
           </ModalHeader>
 
-          <Form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <ModalBody className="w-full">
               <Input
                 name="name"
@@ -175,7 +174,7 @@ export default function NewWarehouseItemDialog() {
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>

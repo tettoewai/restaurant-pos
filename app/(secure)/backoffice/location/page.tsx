@@ -1,8 +1,6 @@
 import { fetchLocation } from "@/app/lib/backoffice/data";
-import { ItemCardSkeleton } from "@/app/ui/skeletons";
-import ItemCard from "@/components/ItemCard";
+import LocationList from "@/components/LocationList";
 import NewLocationDialog from "@/components/NewLocationDailog";
-import { Suspense } from "react";
 import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
 
@@ -23,18 +21,10 @@ export default async function Location() {
         </div>
         <NewLocationDialog />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-2">
-        {location.map((item) => (
-          <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
-            <ItemCard
-              id={item.id}
-              name={item.name}
-              itemType="location"
-              isNotDeletable={isSingleLocation}
-            />
-          </Suspense>
-        ))}
-      </div>
+      <LocationList
+        locations={location}
+        isSingleLocation={isSingleLocation}
+      />
     </div>
   );
 }

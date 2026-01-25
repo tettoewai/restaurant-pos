@@ -4,7 +4,6 @@ import {
   addToast,
   Button,
   Checkbox,
-  Form,
   Input,
   Modal,
   ModalBody,
@@ -12,7 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { Addon, AddonCategory } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
@@ -67,9 +66,9 @@ export default function UpdateAddonDialog({
     );
     const isValid = name && typeof name === "string" && selectedAddonCat.size > 0
     const nothingChanged = name === addon?.name && selectedAddonCatArray[0] === String(addon?.addonCategoryId) && Boolean(formData.has("needIngredient")) === addon?.needIngredient
-    if(nothingChanged){
+    if (nothingChanged) {
       setIsSubmitting(false);
-      addToast({title:"Nothing changed",color:"warning"})
+      addToast({ title: "Nothing changed", color: "warning" })
       return;
     }
     const { isSuccess, message } = await updateAddon(formData);
@@ -86,7 +85,8 @@ export default function UpdateAddonDialog({
   useEffect(() => {
     if (addon?.addonCategoryId && isOpen) {
       setSelectedAddonCat(new Set([String(addon.addonCategoryId)]));
-    }}, [addon,isOpen]);
+    }
+  }, [addon, isOpen]);
 
   return (
     <div className="relative">
@@ -104,32 +104,32 @@ export default function UpdateAddonDialog({
             Update Addon
           </ModalHeader>
 
-          <Form ref={formRef} onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody className="w-full">
-             <Input
-                    name="name"
-                    label="Name"
-                    variant="bordered"
-                    defaultValue={addon?.name}
-                    required
-                    isRequired
-                  />
-                  <NumberInput
-                    name="price"
-                    label="Price"
-                    variant="bordered"
-                    defaultValue={addon?.price}
-                  />
-                  <MultipleSelector
-                    selectedList={selectedAddonCat}
-                    setSelectedList={setSelectedAddonCat}
-                    isRequired
-                    addonCategoryList={addonCategory}
-                    itemType="addon"
-                  />
-                  <div className="w-full flex justify-end">
-                    <Checkbox name="needIngredient" defaultSelected={addon?.needIngredient}>Need ingredient</Checkbox>
-                  </div>
+              <Input
+                name="name"
+                label="Name"
+                variant="bordered"
+                defaultValue={addon?.name}
+                required
+                isRequired
+              />
+              <NumberInput
+                name="price"
+                label="Price"
+                variant="bordered"
+                defaultValue={addon?.price}
+              />
+              <MultipleSelector
+                selectedList={selectedAddonCat}
+                setSelectedList={setSelectedAddonCat}
+                isRequired
+                addonCategoryList={addonCategory}
+                itemType="addon"
+              />
+              <div className="w-full flex justify-end">
+                <Checkbox name="needIngredient" defaultSelected={addon?.needIngredient}>Need ingredient</Checkbox>
+              </div>
             </ModalBody>
 
             <ModalFooter className="w-full">
@@ -151,7 +151,7 @@ export default function UpdateAddonDialog({
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>

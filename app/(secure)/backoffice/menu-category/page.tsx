@@ -1,10 +1,11 @@
-import { fetchMenuCategory } from "@/app/lib/backoffice/data";
+import {
+  fetchMenuCategory,
+  fetchDisableLocationMenuCat,
+} from "@/app/lib/backoffice/data";
 import { baseMetadata } from "@/app/lib/baseMetadata";
-import { ItemCardSkeleton } from "@/app/ui/skeletons";
-import ItemCard from "@/components/ItemCard";
+import MenuCategoryList from "@/components/MenuCategoryList";
 import NewMenuCategoryDialog from "@/components/NewMenuCategoryDailog";
 import { Metadata } from "next";
-import { Suspense } from "react";
 
 export const metadata: Metadata = {
   ...baseMetadata,
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
 };
 
 const MenuCateogory = async () => {
-  const menuCategory = await fetchMenuCategory();
+  const [menuCategory, disableLocationMenuCategory] = await Promise.all([
+    fetchMenuCategory(),
+    fetchDisableLocationMenuCat(),
+  ]);
   if (!menuCategory || !menuCategory.length)
     return (
       <div>
@@ -30,13 +34,10 @@ const MenuCateogory = async () => {
         </div>
         <NewMenuCategoryDialog />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 mt-2">
-        {menuCategory.map((item) => (
-          <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
-            <ItemCard itemType="menuCategory" id={item.id} name={item.name} />
-          </Suspense>
-        ))}
-      </div>
+      <MenuCategoryList
+        menuCategories={menuCategory}
+        disableLocationMenuCategory={disableLocationMenuCategory}
+      />
     </div>
   );
 };

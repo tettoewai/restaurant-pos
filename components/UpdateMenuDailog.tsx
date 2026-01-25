@@ -4,7 +4,6 @@ import { deleteMenuImage, updateMenu } from "@/app/lib/backoffice/action";
 import {
   addToast,
   Button,
-  Form,
   Input,
   Modal,
   ModalBody,
@@ -12,7 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { Menu, MenuCategory, MenuCategoryMenu } from "@prisma/client";
 import { CloseCircle } from "@solar-icons/react/ssr";
@@ -55,21 +54,22 @@ export default function UpdateMenuDialog({
 
   useEffect(() => {
     // Reset and set values when modal opens
-    if (isOpen) {
-      if (menu) {
-        setPrevImage(menu.assetUrl || "");
-      } else {
-        setPrevImage("");
-      }
+    if (isOpen && menu) {
+      setPrevImage(menu.assetUrl || "");
 
       if (menuCategoryMenu && menuCategoryMenu.length > 0) {
-        console.log(menuCategoryMenu);
-        console.log(id);
         const prevCategoryIds = menuCategoryMenu
           .filter((item) => item.menuId === id)
           .map((item) => String(item.menuCategoryId));
         setSelectedCategory(new Set(prevCategoryIds));
+      } else {
+        setSelectedCategory(new Set([]));
       }
+    } else if (!isOpen) {
+      // Reset state when modal closes
+      setPrevImage("");
+      setMenuImage(null);
+      setSelectedCategory(new Set([]));
     }
   }, [isOpen, menu, menuCategoryMenu, id]);
 
@@ -111,7 +111,7 @@ export default function UpdateMenuDialog({
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Update Menu</ModalHeader>
-          <Form ref={formRef} onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody className="w-full">
               <Input
                 name="name"
@@ -168,7 +168,7 @@ export default function UpdateMenuDialog({
                 />
               )}
             </ModalBody>
-            <ModalFooter className="w-full">
+            <ModalFooter>
               <Button
                 className="mr-2 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-900 rounded-md hover:bg-gray-300 focus:outline-none"
                 onPress={onClose}
@@ -187,7 +187,7 @@ export default function UpdateMenuDialog({
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>

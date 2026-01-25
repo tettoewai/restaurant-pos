@@ -1,3 +1,9 @@
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
@@ -16,6 +22,19 @@ const nextConfig = {
     ],
   },
   webpack: (config, { isServer }) => {
+    // Optimize webpack cache to reduce serialization warnings
+    if (config.cache) {
+      config.cache.compression = 'gzip';
+      config.cache.maxMemoryGenerations = 1;
+      // Configure cache to handle large strings more efficiently
+      if (config.cache.type === 'filesystem') {
+        config.cache.maxAge = 1000 * 60 * 60 * 24 * 7; // 7 days
+        config.cache.buildDependencies = {
+          config: [__filename],
+        };
+      }
+    }
+
     // Exclude qr-scanner and its worker files from server-side bundling
     if (isServer) {
       config.externals = config.externals || [];

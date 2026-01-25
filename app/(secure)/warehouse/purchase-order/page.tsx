@@ -7,11 +7,10 @@ import {
 } from "@/app/lib/warehouse/data";
 import { CorrectionPOBtn, EditPOButton } from "@/components/Buttons";
 import { dateToString } from "@/function";
-import { Button } from "@heroui/react";
 import { POStatus } from "@prisma/client";
+import DeletePOButton from "../components/DeletePOButton";
 import POStatusToggle from "../components/POStatusToggle";
 import { POTable } from "../components/POTable";
-import DeletePOButton from "../components/DeletePOButton";
 
 export default async function PurchaseOrderPage() {
   const purchaseOrders = await fetchPurchaseOrder();

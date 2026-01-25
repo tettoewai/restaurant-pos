@@ -17,11 +17,10 @@ import {
 import {
   addToast,
   Button,
-  Form,
   NumberInput,
   Select,
   SelectItem,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -92,9 +91,9 @@ export default function CorrectionPOPage() {
           : 0;
         const price = unit
           ? convertBaseUnit({
-              amount: item.unitPrice,
-              fromUnit: unit,
-            })
+            amount: item.unitPrice,
+            fromUnit: unit,
+          })
           : 0;
         return {
           id: item.id,
@@ -168,7 +167,7 @@ export default function CorrectionPOPage() {
       <div className="flex justify-end mt-2 pr-4 text-danger">
         <p>Status: {prevPOData ? captilize(prevPOData?.status) : ""}</p>
       </div>
-      <Form className="mt-4" onSubmit={handleSubmit}>
+      <form className="mt-4" onSubmit={handleSubmit}>
         <div className="flex space-x-2 w-full">
           {prevPOIsLoading ? (
             <div className="w-full flex justify-center items-center">
@@ -376,7 +375,7 @@ export default function CorrectionPOPage() {
             </>
           )}
         </div>
-      </Form>
+      </form>
     </div>
   );
 }

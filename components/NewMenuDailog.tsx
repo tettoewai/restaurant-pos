@@ -4,7 +4,6 @@ import { createMenu } from "@/app/lib/backoffice/action";
 import {
   addToast,
   Button,
-  Form,
   Input,
   Modal,
   ModalBody,
@@ -13,7 +12,7 @@ import {
   ModalHeader,
   NumberInput,
   Spinner,
-  useDisclosure,
+  useDisclosure
 } from "@heroui/react";
 import { MenuCategory } from "@prisma/client";
 import { CloseCircle } from "@solar-icons/react/ssr";
@@ -90,7 +89,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Create Menu</ModalHeader>
 
-          <Form ref={formRef} onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
             <ModalBody className="w-full">
               <Input
                 name="name"
@@ -149,7 +148,7 @@ export default function NewMenuDialog({ menuCategory }: Props) {
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>

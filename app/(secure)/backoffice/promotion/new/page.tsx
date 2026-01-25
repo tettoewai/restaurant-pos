@@ -14,7 +14,6 @@ import {
   Button,
   Checkbox,
   DateRangePicker,
-  Form,
   Input,
   NumberInput,
   Select,
@@ -248,7 +247,7 @@ export default function NewPromotion() {
       <div className="mb-4">
         <h1 className="text-xl font-semibold">New Promotion</h1>
       </div>
-      <Form onSubmit={handleSubmit} className="w-full space-y-4">
+      <form onSubmit={handleSubmit} className="w-full space-y-4">
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="w-full">
             <Select
@@ -763,7 +762,7 @@ export default function NewPromotion() {
             )}
           </Button>
         </div>
-      </Form>
+      </form>
       <ChooseRequiredAddonDialog
         creatingMenuAddonCategory={creatingMenuAddonCategory}
         handleSetAddonCategory={handleSetAddonCategory}

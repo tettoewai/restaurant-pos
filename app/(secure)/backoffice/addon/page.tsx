@@ -1,8 +1,6 @@
 import { fetchAddon, fetchAddonCategory } from "@/app/lib/backoffice/data";
-import { ItemCardSkeleton } from "@/app/ui/skeletons";
-import ItemCard from "@/components/ItemCard";
+import AddonList from "@/components/AddonList";
 import NewAddonDialog from "@/components/NewAddonDailog";
-import { Suspense } from "react";
 import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
 
@@ -25,20 +23,7 @@ const Addon = async () => {
         </div>
         <NewAddonDialog addonCategory={addonCategory} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 mt-2">
-        {addon.map((addon) => (
-          <Suspense key={addon.id} fallback={<ItemCardSkeleton />}>
-            <ItemCard
-              itemType="addon"
-              id={addon.id}
-              addon={addon}
-              name={addon.name}
-              addonCategoryId={addon.addonCategoryId}
-              price={addon.price}
-            />
-          </Suspense>
-        ))}
-      </div>
+      <AddonList addons={addon} addonCategory={addonCategory} />
     </div>
   );
 };

@@ -4,16 +4,15 @@ import { captilize, validUnits } from "@/function";
 import {
   addToast,
   Button,
-  Form,
   NumberInput,
   Select,
   SelectItem,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { Supplier, Warehouse, WarehouseItem } from "@prisma/client";
 import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
 import { useRouter } from "next/navigation";
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface POItemForm {
   id: number;
@@ -110,7 +109,7 @@ export default function NewPurchaseOrderForm({
     }
   };
   return (
-    <Form className="mt-4" onSubmit={handleSubmit}>
+    <form className="mt-4" onSubmit={handleSubmit}>
       <div className="flex space-x-2 w-full">
         <Select label="Select a suppliers" size="sm" isRequired name="supplier">
           {suppliers && suppliers.length ? (
@@ -334,6 +333,6 @@ export default function NewPurchaseOrderForm({
           </div>
         </div>
       </div>
-    </Form>
+    </form>
   );
 }

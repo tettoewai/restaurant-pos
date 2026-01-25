@@ -1,13 +1,5 @@
-import { generateQRCode } from "@/app/lib/backoffice/action";
-import {
-  fetchAddonCategory,
-  fetchAddonWithAddonCat,
-  fetchDisableLocationMenuCat,
-  fetchMenu,
-  fetchMenuAddonCategory,
-  fetchTableWithId,
-} from "@/app/lib/backoffice/data";
-import { config } from "@/config";
+"use client";
+
 import {
   Card,
   Chip,
@@ -17,6 +9,10 @@ import {
 } from "@heroui/react";
 import {
   Addon,
+  AddonCategory,
+  DisabledLocationMenuCategory,
+  Menu,
+  MenuAddonCategory,
   Supplier,
   Table,
   Warehouse,
@@ -64,8 +60,17 @@ interface Props {
   onEditAddonCategory?: (id: number) => void;
   onEditTable?: (id: number) => void;
   onEditLocation?: (id: number) => void;
+  // Data props (fetched at page level)
+  disableLocationMenuCategory?: DisabledLocationMenuCategory[];
+  addonCategory?: AddonCategory[];
+  menus?: Menu[];
+  menuAddonCategory?: MenuAddonCategory[];
+  table?: Table;
+  qrCodeData?: string;
+  addons?: Addon[];
 }
-export default async function ItemCard({
+
+export default function ItemCardClient({
   id,
   itemType,
   name,
@@ -84,21 +89,15 @@ export default async function ItemCard({
   onEditAddonCategory,
   onEditTable,
   onEditLocation,
+  disableLocationMenuCategory,
+  addonCategory,
+  menus,
+  menuAddonCategory,
+  qrCodeData,
+  table,
+  addons,
 }: Props) {
   const iconClasses = "size-9 mb-1 text-primary";
-  const menuAddonCategory =
-    itemType === "addonCategory" ? await fetchMenuAddonCategory() : undefined;
-  const menus = itemType === "addonCategory" ? await fetchMenu() : undefined;
-  const addonCategory =
-    itemType === "addonCategory" || itemType === "addon"
-      ? await fetchAddonCategory()
-      : undefined;
-  const table =
-    itemType === "table" ? ((await fetchTableWithId(id)) as Table) : undefined;
-  const disableLocationMenuCategory =
-    itemType === "menuCategory"
-      ? await fetchDisableLocationMenuCat()
-      : undefined;
   const validMenus =
     menuAddonCategory &&
     menus?.filter((menu) =>
@@ -107,17 +106,11 @@ export default async function ItemCard({
         .map((menuAddonCat) => menuAddonCat.menuId)
         .includes(menu.id)
     );
-  const disableLocationMenuCat = await fetchDisableLocationMenuCat();
-  const isExist = disableLocationMenuCat.find(
-    (item) => item.menuCategoryId === id
-  );
-  const addons = await fetchAddonWithAddonCat(id);
+  const isExist =
+    disableLocationMenuCategory?.find(
+      (item) => item.menuCategoryId === id
+    ) !== undefined;
   const hasAddon = addons && addons?.length > 0;
-
-  const qrCodeData =
-    id && itemType === "table"
-      ? await generateQRCode(`${config.orderAppUrl}?tableId=${id}`)
-      : "";
 
   return (
     <Card

@@ -65,21 +65,21 @@ import UpdateTableDialog from "./UpdateTableDailog";
 interface Props {
   id: number;
   itemType:
-    | "menu"
-    | "menuCategory"
-    | "addonCategory"
-    | "addon"
-    | "table"
-    | "location"
-    | "activeOrder"
-    | "order"
-    | "promotion"
-    | "warehouse"
-    | "warehouseItem"
-    | "ingredient"
-    | "supplier"
-    | "addonIngredient"
-    | "warehouseStock";
+  | "menu"
+  | "menuCategory"
+  | "addonCategory"
+  | "addon"
+  | "table"
+  | "location"
+  | "activeOrder"
+  | "order"
+  | "promotion"
+  | "warehouse"
+  | "warehouseItem"
+  | "ingredient"
+  | "supplier"
+  | "addonIngredient"
+  | "warehouseStock";
   categories?: MenuCategory[];
   menus?: Menu[];
   menu?: Menu;
@@ -102,6 +102,12 @@ interface Props {
   addonIngredientData?: AddonIngredientDataType;
   addonIngredients?: AddonIngredient[];
   menuCategoryMenu?: MenuCategoryMenu[];
+  onEditMenu?: (id: number, menu: Menu, menuCategoryMenu: MenuCategoryMenu[]) => void;
+  onEditMenuCategory?: (id: number) => void;
+  onEditAddon?: (id: number, addon: Addon) => void;
+  onEditAddonCategory?: (id: number) => void;
+  onEditTable?: (id: number) => void;
+  onEditLocation?: (id: number) => void;
 }
 
 export default function MoreOptionButton({
@@ -129,6 +135,12 @@ export default function MoreOptionButton({
   addonIngredientData,
   addonIngredients,
   menuCategoryMenu,
+  onEditMenu,
+  onEditMenuCategory,
+  onEditAddon,
+  onEditAddonCategory,
+  onEditTable,
+  onEditLocation,
 }: Props) {
   const {
     isOpen: isUpdateOpen,
@@ -136,6 +148,13 @@ export default function MoreOptionButton({
     onOpenChange: onUpdateOpenChange,
     onClose: onUpdateClose,
   } = useDisclosure();
+
+  // Store the selected menu item for update dialog (only if onEditMenu is not provided)
+  const [selectedMenuForUpdate, setSelectedMenuForUpdate] = useState<{
+    id: number;
+    menu?: Menu;
+    menuCategoryMenu?: MenuCategoryMenu[];
+  } | null>(null);
 
   const {
     isOpen: isDeleteOpen,
@@ -269,13 +288,36 @@ export default function MoreOptionButton({
           <DropdownItem
             key="edit"
             endContent={<PenNewSquare className={iconClasses} />}
-            onPress={onUpdateOpen}
+            onPress={() => {
+              if (itemType === "menu" && onEditMenu && menu && menuCategoryMenu) {
+                onEditMenu(id, menu, menuCategoryMenu);
+              } else if (itemType === "menuCategory" && onEditMenuCategory) {
+                onEditMenuCategory(id);
+              } else if (itemType === "addon" && onEditAddon && addon) {
+                onEditAddon(id, addon);
+              } else if (itemType === "addonCategory" && onEditAddonCategory) {
+                onEditAddonCategory(id);
+              } else if (itemType === "table" && onEditTable) {
+                onEditTable(id);
+              } else if (itemType === "location" && onEditLocation) {
+                onEditLocation(id);
+              } else if (itemType === "menu") {
+                setSelectedMenuForUpdate({
+                  id,
+                  menu,
+                  menuCategoryMenu,
+                });
+                onUpdateOpen();
+              } else {
+                onUpdateOpen();
+              }
+            }}
             href={
               itemType === "activeOrder"
                 ? `/order/${orderData?.menu?.id}?tableId=${tableId}&orderId=${orderData?.itemId}`
                 : itemType === "promotion"
-                ? `/backoffice/promotion/${id}`
-                : ""
+                  ? `/backoffice/promotion/${id}`
+                  : ""
             }
           >
             Edit
@@ -386,15 +428,22 @@ export default function MoreOptionButton({
       </Dropdown>
       {itemType === "menu" ? (
         <>
-          <UpdateMenuDialog
-            id={id}
-            menuCategory={categories}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-            menu={menu}
-            menuCategoryMenu={menuCategoryMenu}
-          />
+          {/* Only render dialog if onEditMenu is not provided (backward compatibility) */}
+          {!onEditMenu && isUpdateOpen && selectedMenuForUpdate && (
+            <UpdateMenuDialog
+              key={selectedMenuForUpdate.id}
+              id={selectedMenuForUpdate.id}
+              menuCategory={categories}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={() => {
+                setSelectedMenuForUpdate(null);
+                onUpdateClose();
+              }}
+              menu={selectedMenuForUpdate.menu}
+              menuCategoryMenu={selectedMenuForUpdate.menuCategoryMenu}
+            />
+          )}
           <DeleteMenuDialog
             id={id}
             onClose={onDeleteClose}
@@ -404,12 +453,15 @@ export default function MoreOptionButton({
         </>
       ) : itemType === "menuCategory" ? (
         <>
-          <UpdateMenuCategoryDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
+          {/* Only render dialog if onEditMenuCategory is not provided (backward compatibility) */}
+          {!onEditMenuCategory && (
+            <UpdateMenuCategoryDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          )}
           <DeleteMenuCategoryDialog
             id={id}
             onClose={onDeleteClose}
@@ -419,13 +471,16 @@ export default function MoreOptionButton({
         </>
       ) : itemType === "addonCategory" ? (
         <>
-          <UpdateAddonCategoryDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-            menu={menus}
-          />
+          {/* Only render dialog if onEditAddonCategory is not provided (backward compatibility) */}
+          {!onEditAddonCategory && (
+            <UpdateAddonCategoryDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+              menu={menus}
+            />
+          )}
           <DeleteAddonCategoryDialog
             id={id}
             onClose={onDeleteClose}
@@ -435,14 +490,17 @@ export default function MoreOptionButton({
         </>
       ) : itemType === "addon" ? (
         <>
-          <UpdateAddonDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-            addon={addon}
-            addonCategory={addonCategory}
-          />
+          {/* Only render dialog if onEditAddon is not provided (backward compatibility) */}
+          {!onEditAddon && (
+            <UpdateAddonDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+              addon={addon}
+              addonCategory={addonCategory}
+            />
+          )}
           <DeleteAddonDialog
             id={id}
             onClose={onDeleteClose}
@@ -460,12 +518,15 @@ export default function MoreOptionButton({
         </>
       ) : itemType === "location" ? (
         <>
-          <UpdateLocationDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
+          {/* Only render dialog if onEditLocation is not provided (backward compatibility) */}
+          {!onEditLocation && (
+            <UpdateLocationDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          )}
           <DeleteLocationDialog
             id={id}
             onClose={onDeleteClose}
@@ -475,12 +536,15 @@ export default function MoreOptionButton({
         </>
       ) : itemType === "table" ? (
         <>
-          <UpdateTableDialog
-            id={id}
-            isOpen={isUpdateOpen}
-            onOpenChange={onUpdateOpenChange}
-            onClose={onUpdateClose}
-          />
+          {/* Only render dialog if onEditTable is not provided (backward compatibility) */}
+          {!onEditTable && (
+            <UpdateTableDialog
+              id={id}
+              isOpen={isUpdateOpen}
+              onOpenChange={onUpdateOpenChange}
+              onClose={onUpdateClose}
+            />
+          )}
           <DeleteTableDialog
             id={id}
             onClose={onDeleteClose}

@@ -93,7 +93,21 @@ export function POTable({
 
   const topContent = useMemo(() => {
     return (
-      <div className="flex w-full justify-between">
+      <div className="flex w-full justify-between items-center">
+        <Input
+          isClearable
+          classNames={{
+            base: "w-1/3",
+            inputWrapper: "border-1",
+          }}
+          placeholder="Search by code..."
+          size="sm"
+          startContent={<MinimalisticMagnifer className="text-default-300" />}
+          value={filterValue}
+          variant="bordered"
+          onClear={() => setFilterValue("")}
+          onValueChange={onSearchChange}
+        />
         <Button
           onPress={() => {
             router.push("/warehouse/purchase-order/new");
@@ -109,20 +123,6 @@ export function POTable({
           />
           New Purchase Order
         </Button>
-        <Input
-          isClearable
-          classNames={{
-            base: "w-1/3",
-            inputWrapper: "border-1",
-          }}
-          placeholder="Search by code..."
-          size="sm"
-          startContent={<MinimalisticMagnifer className="text-default-300" />}
-          value={filterValue}
-          variant="bordered"
-          onClear={() => setFilterValue("")}
-          onValueChange={onSearchChange}
-        />
       </div>
     );
   }, [filterValue, onSearchChange, router]);
@@ -207,16 +207,16 @@ export function POTable({
                                 const unit = currentItem?.unit;
                                 const quantity = unit
                                   ? convertUnit({
-                                      amount: poi.quantity,
-                                      toUnit: unit,
-                                    })
+                                    amount: poi.quantity,
+                                    toUnit: unit,
+                                  })
                                   : 0;
 
                                 const price = unit
                                   ? convertBaseUnit({
-                                      amount: poi.unitPrice,
-                                      fromUnit: unit,
-                                    })
+                                    amount: poi.unitPrice,
+                                    fromUnit: unit,
+                                  })
                                   : 0;
                                 return (
                                   <TableRow key={poi.id}>

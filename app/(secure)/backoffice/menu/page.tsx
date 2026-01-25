@@ -4,10 +4,8 @@ import {
   fetchMenuCategory,
   fetchMenuCategoryMenu,
 } from "@/app/lib/backoffice/data";
-import { MenuLoading } from "@/app/ui/skeletons";
-import MenuCard from "@/components/MenuCard";
+import MenuList from "@/components/MenuList";
 import NewMenuDialog from "@/components/NewMenuDailog";
-import { Suspense } from "react";
 import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
 
@@ -31,18 +29,12 @@ const Menu = async () => {
         </div>
         <NewMenuDialog menuCategory={menuCategory} />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2">
-        {menus.map((item, index) => (
-          <Suspense key={index} fallback={<MenuLoading />}>
-            <MenuCard
-              menu={item}
-              categories={menuCategory}
-              menuCategoryMenu={menuCategoryMenu}
-              disableLocationMenu={disableLocationMenu}
-            />
-          </Suspense>
-        ))}
-      </div>
+      <MenuList
+        menus={menus}
+        categories={menuCategory}
+        menuCategoryMenu={menuCategoryMenu}
+        disableLocationMenu={disableLocationMenu}
+      />
     </div>
   );
 };

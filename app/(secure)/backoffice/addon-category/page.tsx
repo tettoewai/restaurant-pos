@@ -1,10 +1,12 @@
-import { fetchAddonCategory, fetchMenu } from "@/app/lib/backoffice/data";
+import {
+  fetchAddonCategory,
+  fetchMenu,
+  fetchMenuAddonCategory,
+} from "@/app/lib/backoffice/data";
 import { baseMetadata } from "@/app/lib/baseMetadata";
-import { ItemCardSkeleton } from "@/app/ui/skeletons";
-import ItemCard from "@/components/ItemCard";
+import AddonCategoryList from "@/components/AddonCategoryList";
 import NewAddonCategoryDialog from "@/components/NewAddonCategoryDailog";
 import { Metadata } from "next";
-import { Suspense } from "react";
 
 export const metadata: Metadata = {
   ...baseMetadata,
@@ -12,9 +14,10 @@ export const metadata: Metadata = {
 };
 
 const AddonCateogory = async () => {
-  const [addonCategory, menus] = await Promise.all([
+  const [addonCategory, menus, menuAddonCategory] = await Promise.all([
     fetchAddonCategory(),
     fetchMenu(),
+    fetchMenuAddonCategory(),
   ]);
   return (
     <div>
@@ -27,18 +30,11 @@ const AddonCateogory = async () => {
         </div>
         <NewAddonCategoryDialog menus={menus} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 mt-2">
-        {addonCategory.map((item) => (
-          <Suspense key={item.id} fallback={<ItemCardSkeleton />}>
-            <ItemCard
-              id={item.id}
-              name={item.name}
-              itemType="addonCategory"
-              required={item.isRequired}
-            />
-          </Suspense>
-        ))}
-      </div>
+      <AddonCategoryList
+        addonCategories={addonCategory}
+        menus={menus}
+        menuAddonCategory={menuAddonCategory}
+      />
     </div>
   );
 };

@@ -17,11 +17,10 @@ import {
 import {
   addToast,
   Button,
-  Form,
   NumberInput,
   Select,
   SelectItem,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
 import { useParams, useRouter } from "next/navigation";
@@ -79,9 +78,9 @@ export default function EditPOPage() {
           : 0;
         const price = unit
           ? convertBaseUnit({
-              amount: item.unitPrice,
-              fromUnit: unit,
-            })
+            amount: item.unitPrice,
+            fromUnit: unit,
+          })
           : 0;
         return {
           id: item.id,
@@ -173,7 +172,7 @@ export default function EditPOPage() {
       <div className="flex justify-end mt-2 pr-4">
         <p>Status: {prevPOData ? captilize(prevPOData?.status) : ""}</p>
       </div>
-      <Form className="mt-4" onSubmit={handleSubmit}>
+      <form className="mt-4" onSubmit={handleSubmit}>
         <div className="flex space-x-2 w-full">
           {prevPOIsLoading ? (
             <div className="w-full flex justify-center items-center">
@@ -437,7 +436,7 @@ export default function EditPOPage() {
             </>
           )}
         </div>
-      </Form>
+      </form>
     </div>
   );
 }

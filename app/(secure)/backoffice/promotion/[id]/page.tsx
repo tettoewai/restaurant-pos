@@ -26,7 +26,6 @@ import {
   Button,
   Checkbox,
   DateRangePicker,
-  Form,
   Input,
   NumberInput,
   Select,
@@ -34,9 +33,9 @@ import {
   Spinner,
   Textarea,
   TimeInput,
-  useDisclosure,
+  useDisclosure
 } from "@heroui/react";
-import { parseDate, parseTime, Time } from "@internationalized/date";
+import { parseDate, parseTime } from "@internationalized/date";
 import { DiscountType } from "@prisma/client";
 import { TimeValue } from "@react-types/datepicker";
 import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
@@ -167,11 +166,8 @@ export default function App({ params }: { params: { id: string } }) {
         if (item.startTime && item.endTime) {
           setTimeEnable(true);
           setTimePeriod({
-            startTime: toZonedDateTime(
-              parseTime(item.startTime),
-              "Asia/Yangon"
-            ),
-            endTime: toZonedDateTime(parseTime(item.endTime), "Asia/Yangon"),
+            startTime: parseTime(item.startTime),
+            endTime: parseTime(item.endTime),
           });
         }
         if (item.days) {
@@ -375,7 +371,7 @@ export default function App({ params }: { params: { id: string } }) {
       {isLoading || promotionMenuLoading ? (
         <Spinner variant="wave" size="sm" />
       ) : (
-        <Form onSubmit={handleSubmit} className="w-full">
+        <form onSubmit={handleSubmit} className="w-full">
           <span className="mb-4 font-semibold">Update Pomotion</span>
           <div className="my-2">
             <div className="w-full grid grid-cols-1 sm:grid-cols-2">
@@ -906,11 +902,8 @@ export default function App({ params }: { params: { id: string } }) {
               )}
             </Button>
           </div>
-        </Form>
+        </form>
       )}
     </div>
   );
-}
-function toZonedDateTime(arg0: Time, arg1: string): TimeValue | undefined {
-  throw new Error("Function not implemented.");
 }

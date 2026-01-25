@@ -1,6 +1,6 @@
 import { fetchTable } from "@/app/lib/backoffice/data";
 import { fetchActiveOrderWithTableIds } from "@/app/lib/order/data";
-import ItemCard from "@/components/ItemCard";
+import TableList from "@/components/TableList";
 import NewTableDialog from "@/components/NewTableDailog";
 import { baseMetadata } from "@/app/lib/baseMetadata";
 import { Metadata } from "next";
@@ -24,26 +24,7 @@ export default async function Table() {
         </div>
         <NewTableDialog />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 mt-2">
-        {tables.length > 0 ? (
-          tables.map((item) => {
-            const isActive = Boolean(
-              orders.find((order) => order.tableId === item.id)
-            );
-            return (
-              <ItemCard
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                itemType="table"
-                isActive={isActive}
-              />
-            );
-          })
-        ) : (
-          <span>There is no table</span>
-        )}
-      </div>
+      <TableList tables={tables} orders={orders} />
     </div>
   );
 }

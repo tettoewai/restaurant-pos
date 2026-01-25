@@ -1,3 +1,5 @@
+"use client";
+
 import { formatCurrency } from "@/function";
 import {
   Card,
@@ -21,12 +23,14 @@ interface Props {
   categories: MenuCategory[];
   menuCategoryMenu: MenuCategoryMenu[];
   disableLocationMenu: DisabledLocationMenu[];
+  onEditMenu?: (id: number, menu: Menu, menuCategoryMenu: MenuCategoryMenu[]) => void;
 }
-export default async function MenuCard({
+export default function MenuCard({
   menu,
   categories,
   menuCategoryMenu,
   disableLocationMenu,
+  onEditMenu,
 }: Props) {
   const validMenuCategoryIds = menuCategoryMenu
     .filter((item) => item.menuId === menu.id)
@@ -40,9 +44,8 @@ export default async function MenuCard({
   const isExist = disableLocationMenu.find((item) => item.menuId === menu.id);
   return (
     <Card
-      className={`p-4 bg-background mr-2 mb-2 flex flex-col items-center relative overflow-hidden ${
-        isExist ? "opacity-50" : ""
-      }`}
+      className={`p-4 bg-background mr-2 mb-2 flex flex-col items-center relative overflow-hidden ${isExist ? "opacity-50" : ""
+        }`}
     >
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <MoreOptionButton
@@ -52,6 +55,7 @@ export default async function MenuCard({
           disableLocationMenu={disableLocationMenu}
           menu={menu}
           menuCategoryMenu={currentMenuCategoryMenu}
+          onEditMenu={onEditMenu}
         />
       </div>
       <div className="flex justify-center items-center h-40 w-full overflow-hidden">

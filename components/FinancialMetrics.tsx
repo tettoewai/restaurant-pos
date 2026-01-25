@@ -7,7 +7,7 @@ import {
   getReceiptsWithDate,
 } from "@/app/lib/backoffice/data";
 import { DashboardCardSkeleton } from "@/app/ui/skeletons";
-import { formatCurrency } from "@/function";
+import { formatCurrency, roundToTwoDecimal } from "@/function";
 import { Card, DateRangePicker } from "@heroui/react";
 import { getLocalTimeZone, parseDate } from "@internationalized/date";
 import { OrderStatus, Receipt } from "@prisma/client";
@@ -329,9 +329,9 @@ function FinancialMetrics({ date: propDate }: FinancialMetricsProps = {}) {
       case "currency":
         return formatCurrency(Math.round(value));
       case "percentage":
-        return `${value.toFixed(2)}%`;
+        return `${roundToTwoDecimal(value)}%`;
       case "decimal":
-        return value.toFixed(2);
+        return roundToTwoDecimal(value).toString();
       default:
         return value.toString();
     }

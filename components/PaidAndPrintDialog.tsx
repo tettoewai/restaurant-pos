@@ -26,7 +26,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { AddonCategory, DiscountType, Promotion } from "@prisma/client";
-import { calculateApplicablePromotions, formatCurrency } from "@/function";
+import { calculateApplicablePromotions, formatCurrency, roundToTwoDecimal } from "@/function";
 import { CloseCircle, VerifiedCheck } from "@solar-icons/react/ssr";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
@@ -215,8 +215,8 @@ export default function PaidAndPrintDialog({ addonCategory, tableId }: Props) {
   );
 
   const netSubTotal = Math.max(subTotal - appliedDiscount, 0);
-  const taxAmount = Number(((netSubTotal * taxRate) / 100).toFixed(2));
-  const total = Number((netSubTotal + taxAmount).toFixed(2));
+  const taxAmount = roundToTwoDecimal((netSubTotal * taxRate) / 100);
+  const total = roundToTwoDecimal(netSubTotal + taxAmount);
 
   const receiptUrl = useMemo(
     () =>

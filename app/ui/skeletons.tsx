@@ -1,12 +1,9 @@
-const shimmer =
-  "before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-linear-to-r before:from-transparent before:via-white/60 before:to-transparent";
-
 import { Card, Skeleton } from "@heroui/react";
 
 export function MenuLoading() {
   return (
     <Card
-      className="bg-background w-[170px] h-56 mr-2 mb-2 md:w-48 md:h-60 flex flex-col items-center relative"
+      className="bg-background h-56 mr-2 mb-2 flex flex-col items-center relative p-2"
       radius="lg"
     >
       <Skeleton className="h-3/5 w-full">
@@ -26,7 +23,7 @@ export function MenuLoading() {
 
 export function UserProfileSkeleton() {
   return (
-    <div className="h-full hidden lg:flex items-center justify-center">
+    <div className="h-full hidden lg:flex items-center justify-center p-2">
       <div className="m-1 h-full flex items-center justify-center">
         <Skeleton className="w-10 h-10 rounded-full"></Skeleton>
       </div>
@@ -40,7 +37,7 @@ export function UserProfileSkeleton() {
 
 export function ItemCardSkeleton() {
   return (
-    <Card className="bg-background  w-44 h-48 p-1 mr-2 mb-2 md:w-52 flex flex-col items-center relative overflow-hidden justify-center">
+    <Card className="bg-background p-2 mr-2 mb-2 flex flex-col items-center relative overflow-hidden justify-center">
       <div className="w-full h-7 flex justify-end pr-1 absolute top-2 right-1">
         <Skeleton className="bg-background rounded-md w-6 h-full"></Skeleton>
       </div>
@@ -53,7 +50,7 @@ export function ItemCardSkeleton() {
 
 export function DashboardCardSkeleton() {
   return (
-    <Card className="bg-background w-full sm:w-44 h-36 flex flex-row sm:flex-col items-center mr-1 mb-1">
+    <Card className="bg-background flex flex-row sm:flex-col items-center mr-1 mb-1 p-2">
       <div className=" flex justify-between items-center h-full sm:w-fit w-1/2 sm:h-2/5 pr-2  sm:bg-transparent sm:dark:bg-transparent bg-gray-200 dark:bg-gray-900 ">
         <Skeleton className="m-3 w-11 h-4 rounded-sm"></Skeleton>
         <Skeleton className="p-3 m-1 w-11 h-11 rounded-md"></Skeleton>
@@ -67,7 +64,7 @@ export function DashboardCardSkeleton() {
 
 export function TableSkeleton() {
   return (
-    <Card className="h-36 w-full md:w-[98%] bg-background rounded-md p-2">
+    <Card className="bg-background rounded-md p-2">
       <Skeleton className="w-full h-10 rounded-md "></Skeleton>
       <div className="space-y-1 mt-2">
         <Skeleton className="w-full h-6 rounded-md "></Skeleton>

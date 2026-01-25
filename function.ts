@@ -59,7 +59,8 @@ export const dateToString = ({
 export const formatCurrency = (value: number) => {
   return (
     new Intl.NumberFormat("en-MM", {
-      minimumFractionDigits: 0, // Ensures no decimals
+      minimumFractionDigits: 2, // Ensures 2 decimals
+      maximumFractionDigits: 2, // Limits to 2 decimals
     }).format(value) + " Ks"
   );
 };

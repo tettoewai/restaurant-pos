@@ -5,7 +5,6 @@ import { captilize, convertUnit } from "@/function";
 import {
   addToast,
   Button,
-  Form,
   Input,
   Modal,
   ModalBody,
@@ -15,7 +14,7 @@ import {
   NumberInput,
   Select,
   SelectItem,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { WarehouseItem } from "@prisma/client";
 import { useEffect, useMemo, useState } from "react";
@@ -61,10 +60,10 @@ export default function UpdateWarehouseItemDialog({
     return selectedUnitCategory === "Mass"
       ? ["G", "KG", "LB", "OZ", "VISS"]
       : selectedUnitCategory === "Volume"
-      ? ["ML", "L", "GAL"]
-      : selectedUnitCategory === "Count"
-      ? ["DOZ", "UNIT"]
-      : null;
+        ? ["ML", "L", "GAL"]
+        : selectedUnitCategory === "Count"
+          ? ["DOZ", "UNIT"]
+          : null;
   }, [selectedUnitCat]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -114,7 +113,7 @@ export default function UpdateWarehouseItemDialog({
           <ModalHeader className="flex flex-col gap-1">
             Update Warehouse
           </ModalHeader>
-          <Form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <ModalBody className="w-full">
               <Input
                 name="name"
@@ -170,9 +169,9 @@ export default function UpdateWarehouseItemDialog({
                 defaultValue={
                   warehouseItem
                     ? convertUnit({
-                        amount: warehouseItem?.threshold,
-                        toUnit: warehouseItem?.unit,
-                      })
+                      amount: warehouseItem?.threshold,
+                      toUnit: warehouseItem?.unit,
+                    })
                     : 0
                 }
               />
@@ -196,7 +195,7 @@ export default function UpdateWarehouseItemDialog({
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>

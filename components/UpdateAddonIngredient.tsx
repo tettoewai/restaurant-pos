@@ -7,7 +7,6 @@ import {
   addToast,
   Button,
   Checkbox,
-  Form,
   Modal,
   ModalBody,
   ModalContent,
@@ -16,7 +15,7 @@ import {
   NumberInput,
   Select,
   SelectItem,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { Addon, AddonIngredient, Menu, WarehouseItem } from "@prisma/client";
 import { AddCircle, CloseCircle } from "@solar-icons/react/ssr";
@@ -168,7 +167,7 @@ export default function UpdateAddonIngredientDialog({
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Update Menu</ModalHeader>
-          <Form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <ModalBody className="w-full">
               <div className="flex space-x-1">
                 <Select
@@ -222,134 +221,134 @@ export default function UpdateAddonIngredientDialog({
               <div className="space-y-2">
                 {itemIngredients && itemIngredients.length
                   ? itemIngredients.map((item) => {
-                      const currentWarehouseItem = warehouseItems?.find(
-                        (wi) => wi.id === item.itemId
-                      );
-                      const units = currentWarehouseItem
-                        ? validUnits(currentWarehouseItem.unitCategory)
-                        : [""];
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex space-x-2 justify-between items-center"
+                    const currentWarehouseItem = warehouseItems?.find(
+                      (wi) => wi.id === item.itemId
+                    );
+                    const units = currentWarehouseItem
+                      ? validUnits(currentWarehouseItem.unitCategory)
+                      : [""];
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex space-x-2 justify-between items-center"
+                      >
+                        <Select
+                          isRequired
+                          label="Select an item"
+                          selectedKeys={new Set([String(item.itemId)])}
+                          onSelectionChange={(e) => {
+                            const selectedValue = Number(Array.from(e)[0]);
+                            setItemIngredients((prev) =>
+                              prev.map((ingredient) =>
+                                ingredient.id === item.id
+                                  ? { ...ingredient, itemId: selectedValue }
+                                  : ingredient
+                              )
+                            );
+                          }}
                         >
-                          <Select
-                            isRequired
-                            label="Select an item"
-                            selectedKeys={new Set([String(item.itemId)])}
-                            onSelectionChange={(e) => {
-                              const selectedValue = Number(Array.from(e)[0]);
-                              setItemIngredients((prev) =>
-                                prev.map((ingredient) =>
-                                  ingredient.id === item.id
-                                    ? { ...ingredient, itemId: selectedValue }
-                                    : ingredient
+                          {warehouseItems && warehouseItems.length ? (
+                            warehouseItems.map((wi) => {
+                              const alreadySelected = Boolean(
+                                itemIngredients.find(
+                                  (iid) => iid.itemId === wi.id
                                 )
                               );
-                            }}
-                          >
-                            {warehouseItems && warehouseItems.length ? (
-                              warehouseItems.map((wi) => {
-                                const alreadySelected = Boolean(
-                                  itemIngredients.find(
-                                    (iid) => iid.itemId === wi.id
-                                  )
-                                );
-                                return (
-                                  <SelectItem
-                                    className={alreadySelected ? "hidden" : ""}
-                                    key={wi.id}
-                                  >
-                                    {wi.name}
-                                  </SelectItem>
-                                );
-                              })
-                            ) : (
-                              <SelectItem key="none" isReadOnly>
-                                There is no warehouse item.
-                              </SelectItem>
-                            )}
-                          </Select>
-                          <NumberInput
-                            label="extra Qty."
-                            isRequired
-                            value={item.extraQty}
-                            onChange={(e) => {
-                              setItemIngredients((prev) =>
-                                prev.map((ingredient) =>
-                                  item.id === ingredient.id
-                                    ? {
-                                        ...ingredient,
-                                        extraQty: Number(e),
-                                      }
-                                    : ingredient
-                                )
+                              return (
+                                <SelectItem
+                                  className={alreadySelected ? "hidden" : ""}
+                                  key={wi.id}
+                                >
+                                  {wi.name}
+                                </SelectItem>
                               );
-                            }}
-                            endContent={
-                              <select
-                                required
-                                className="bg-transparent text-foreground border-none outline-none cursor-pointer px-2 py-1 rounded-sm w-fit appearance-none focus:outline-none focus:ring-0 hover:bg-default-100 dark:hover:bg-default-50 transition-colors text-sm font-normal"
-                                style={{
-                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                                  backgroundRepeat: "no-repeat",
-                                  backgroundPosition: "right 0.25rem center",
-                                  backgroundSize: "1em 1em",
-                                  paddingRight: "1.5rem",
-                                  color: "inherit",
-                                }}
-                                value={
-                                  item.unit ? captilize(String(item.unit)) : ""
-                                }
-                                onChange={(e) => {
-                                  setItemIngredients((prev) => {
-                                    return prev.map((ingredient) =>
-                                      item.id === ingredient.id
-                                        ? {
-                                            ...ingredient,
-                                            unit: String(e.target.value),
-                                          }
-                                        : ingredient
-                                    );
-                                  });
-                                }}
-                              >
-                                <option className="hidden" key=""></option>
-                                {units.map((item) => (
-                                  <option
-                                    key={item}
-                                    value={item}
-                                    className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
-                                  >
-                                    {item}
-                                  </option>
-                                ))}
-                              </select>
-                            }
-                          />
-                          {itemIngredients.length > 1 ? (
-                            <Button
-                              isIconOnly
-                              color="primary"
-                              variant="light"
-                              onPress={() =>
-                                setItemIngredients((prev) =>
-                                  prev.filter(
-                                    (ingredient) => item.id !== ingredient.id
-                                  )
-                                )
+                            })
+                          ) : (
+                            <SelectItem key="none" isReadOnly>
+                              There is no warehouse item.
+                            </SelectItem>
+                          )}
+                        </Select>
+                        <NumberInput
+                          label="extra Qty."
+                          isRequired
+                          value={item.extraQty}
+                          onChange={(e) => {
+                            setItemIngredients((prev) =>
+                              prev.map((ingredient) =>
+                                item.id === ingredient.id
+                                  ? {
+                                    ...ingredient,
+                                    extraQty: Number(e),
+                                  }
+                                  : ingredient
+                              )
+                            );
+                          }}
+                          endContent={
+                            <select
+                              required
+                              className="bg-transparent text-foreground border-none outline-none cursor-pointer px-2 py-1 rounded-sm w-fit appearance-none focus:outline-none focus:ring-0 hover:bg-default-100 dark:hover:bg-default-50 transition-colors text-sm font-normal"
+                              style={{
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                                backgroundRepeat: "no-repeat",
+                                backgroundPosition: "right 0.25rem center",
+                                backgroundSize: "1em 1em",
+                                paddingRight: "1.5rem",
+                                color: "inherit",
+                              }}
+                              value={
+                                item.unit ? captilize(String(item.unit)) : ""
                               }
+                              onChange={(e) => {
+                                setItemIngredients((prev) => {
+                                  return prev.map((ingredient) =>
+                                    item.id === ingredient.id
+                                      ? {
+                                        ...ingredient,
+                                        unit: String(e.target.value),
+                                      }
+                                      : ingredient
+                                  );
+                                });
+                              }}
                             >
-                              <CloseCircle />
-                            </Button>
-                          ) : null}
-                        </div>
-                      );
-                    })
+                              <option className="hidden" key=""></option>
+                              {units.map((item) => (
+                                <option
+                                  key={item}
+                                  value={item}
+                                  className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
+                                >
+                                  {item}
+                                </option>
+                              ))}
+                            </select>
+                          }
+                        />
+                        {itemIngredients.length > 1 ? (
+                          <Button
+                            isIconOnly
+                            color="primary"
+                            variant="light"
+                            onPress={() =>
+                              setItemIngredients((prev) =>
+                                prev.filter(
+                                  (ingredient) => item.id !== ingredient.id
+                                )
+                              )
+                            }
+                          >
+                            <CloseCircle />
+                          </Button>
+                        ) : null}
+                      </div>
+                    );
+                  })
                   : null}
               </div>
               {warehouseItems &&
-              warehouseItems.length !== itemIngredients.length ? (
+                warehouseItems.length !== itemIngredients.length ? (
                 <div className="w-full flex justify-center items-center">
                   <Button
                     isIconOnly
@@ -399,7 +398,7 @@ export default function UpdateAddonIngredientDialog({
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>

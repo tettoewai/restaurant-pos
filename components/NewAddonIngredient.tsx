@@ -7,7 +7,6 @@ import {
   addToast,
   Button,
   Checkbox,
-  Form,
   Modal,
   ModalBody,
   ModalContent,
@@ -18,7 +17,7 @@ import {
   SelectItem,
   SelectSection,
   Spinner,
-  useDisclosure,
+  useDisclosure
 } from "@heroui/react";
 import {
   Addon,
@@ -134,9 +133,9 @@ export default function NewAddonIngredientDialog({
     const selectedAddon = addons.find((item) => item.id === addonId);
     const relatedMenuAddonCategory = selectedAddon
       ? await fetchMenuAddonCategoryWithCategoryAndMenu({
-          categoryId: selectedAddon.addonCategoryId,
-          menuId,
-        })
+        categoryId: selectedAddon.addonCategoryId,
+        menuId,
+      })
       : null;
 
     if (!relatedMenuAddonCategory) {
@@ -178,10 +177,10 @@ export default function NewAddonIngredientDialog({
             Create Addon Ingredient
           </ModalHeader>
 
-          <Form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <ModalBody className="w-full">
-              <div className="flex space-x-1">
-                <Select label="Select an addon" isRequired name="addon">
+              <div className="flex space-x-1 w-full grid grid-cols-7">
+                <Select className="col-span-3" label="Select an addon" isRequired name="addon">
                   {addonWithCategory.map((item, index) =>
                     item ? (
                       <SelectSection key={index} title={item.categoryName}>
@@ -193,6 +192,7 @@ export default function NewAddonIngredientDialog({
                   )}
                 </Select>
                 <Select
+                  className="col-span-3"
                   label="Select a menu"
                   isRequired
                   name="menu"
@@ -202,7 +202,7 @@ export default function NewAddonIngredientDialog({
                     <SelectItem key={item.id}>{item.name}</SelectItem>
                   ))}
                 </Select>
-                <Checkbox size="sm" isSelected={isAll} onValueChange={setIsAll}>
+                <Checkbox className="col-span-1" size="sm" isSelected={isAll} onValueChange={setIsAll}>
                   All
                 </Checkbox>
               </div>
@@ -210,128 +210,130 @@ export default function NewAddonIngredientDialog({
               <div className="space-y-2">
                 {itemIngredients && itemIngredients.length
                   ? itemIngredients.map((item) => {
-                      const currentWarehouseItem = warehouseItems.find(
-                        (wi) => wi.id === item.itemId
-                      );
-                      const units = currentWarehouseItem
-                        ? validUnits(currentWarehouseItem.unitCategory)
-                        : [""];
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex space-x-2 justify-between items-center"
+                    const currentWarehouseItem = warehouseItems.find(
+                      (wi) => wi.id === item.itemId
+                    );
+                    const units = currentWarehouseItem
+                      ? validUnits(currentWarehouseItem.unitCategory)
+                      : [""];
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex space-x-2 justify-between items-center"
+                      >
+                        <Select
+                          isRequired
+                          label="Select an item"
+                          selectedKeys={new Set([String(item.itemId || "")])}
+                          onSelectionChange={(e) => {
+                            const selectedValue = Number(Array.from(e)[0]);
+                            setItemIngredients((prev) =>
+                              prev.map((ingredient) =>
+                                ingredient.id === item.id
+                                  ? { ...ingredient, itemId: selectedValue }
+                                  : ingredient
+                              )
+                            );
+                          }}
                         >
-                          <Select
-                            isRequired
-                            label="Select an item"
-                            selectedKeys={new Set([String(item.itemId || "")])}
-                            onSelectionChange={(e) => {
-                              const selectedValue = Number(Array.from(e)[0]);
-                              setItemIngredients((prev) =>
-                                prev.map((ingredient) =>
-                                  ingredient.id === item.id
-                                    ? { ...ingredient, itemId: selectedValue }
-                                    : ingredient
-                                )
-                              );
-                            }}
-                          >
-                            {warehouseItems.map((wi) => {
-                              const alreadySelected = Boolean(
-                                itemIngredients.find(
-                                  (iid) => iid.itemId === wi.id
-                                )
-                              );
-                              return (
-                                <SelectItem
-                                  className={alreadySelected ? "hidden" : ""}
-                                  key={wi.id}
-                                >
-                                  {wi.name}
-                                </SelectItem>
-                              );
-                            })}
-                          </Select>
-                          <NumberInput
-                            label="extra Qty."
-                            isRequired
-                            value={item.extraQty}
-                            onChange={(e) => {
-                              setItemIngredients((prev) =>
-                                prev.map((ingredient) =>
-                                  item.id === ingredient.id
-                                    ? {
-                                        ...ingredient,
-                                        extraQty: Number(e),
-                                      }
-                                    : ingredient
-                                )
-                              );
-                            }}
-                            endContent={
-                              <select
-                                required
-                                className="bg-transparent text-foreground border-none outline-none cursor-pointer px-2 py-1 rounded-sm w-fit appearance-none focus:outline-none focus:ring-0 hover:bg-default-100 dark:hover:bg-default-50 transition-colors text-sm font-normal"
-                                style={{
-                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                                  backgroundRepeat: "no-repeat",
-                                  backgroundPosition: "right 0.25rem center",
-                                  backgroundSize: "1em 1em",
-                                  paddingRight: "1.5rem",
-                                  color: "inherit",
-                                }}
-                                value={
-                                  item.unit ? captilize(String(item.unit)) : ""
-                                }
-                                onChange={(e) => {
-                                  setItemIngredients((prev) => {
-                                    return prev.map((ingredient) =>
-                                      item.id === ingredient.id
-                                        ? {
-                                            ...ingredient,
-                                            unit: String(e.target.value),
-                                          }
-                                        : ingredient
-                                    );
-                                  });
-                                }}
+                          {warehouseItems.map((wi) => {
+                            const alreadySelected = Boolean(
+                              itemIngredients.find(
+                                (iid) => iid.itemId === wi.id
+                              )
+                            );
+                            return (
+                              <SelectItem
+                                className={alreadySelected ? "hidden" : ""}
+                                key={wi.id}
                               >
-                                <option className="hidden" key=""></option>
-                                {units.map((item) => (
-                                  <option
-                                    key={item}
-                                    value={item}
-                                    className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
-                                  >
-                                    {item}
-                                  </option>
-                                ))}
-                              </select>
-                            }
-                          />
-                          {itemIngredients.length > 1 ? (
-                            <Button
-                              isIconOnly
-                              color="primary"
-                              variant="light"
-                              onPress={() =>
-                                setItemIngredients((prev) =>
-                                  prev.filter(
-                                    (ingredient) => item.id !== ingredient.id
-                                  )
-                                )
+                                {wi.name}
+                              </SelectItem>
+                            );
+                          })}
+                        </Select>
+                        <NumberInput
+                          label="extra Qty."
+                          isRequired
+                          value={item.extraQty}
+                          onChange={(e) => {
+                            setItemIngredients((prev) =>
+                              prev.map((ingredient) =>
+                                item.id === ingredient.id
+                                  ? {
+                                    ...ingredient,
+                                    extraQty: Number(e),
+                                  }
+                                  : ingredient
+                              )
+                            );
+                          }}
+                          endContent={
+                            <select
+                              required
+                              className="bg-transparent text-foreground border-none outline-none cursor-pointer px-2 py-1 rounded-sm w-fit appearance-none focus:outline-none focus:ring-0 hover:bg-default-100 dark:hover:bg-default-50 transition-colors text-sm font-normal"
+                              style={{
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                                backgroundRepeat: "no-repeat",
+                                backgroundPosition: "right 0.25rem center",
+                                backgroundSize: "1em 1em",
+                                paddingRight: "1.5rem",
+                                color: item.unit ? "inherit" : "rgb(156, 163, 175)",
+                              }}
+                              value={
+                                item.unit ? captilize(String(item.unit)) : ""
                               }
+                              onChange={(e) => {
+                                setItemIngredients((prev) => {
+                                  return prev.map((ingredient) =>
+                                    item.id === ingredient.id
+                                      ? {
+                                        ...ingredient,
+                                        unit: String(e.target.value),
+                                      }
+                                      : ingredient
+                                  );
+                                });
+                              }}
                             >
-                              <CloseCircle />
-                            </Button>
-                          ) : null}
-                        </div>
-                      );
-                    })
+                              <option value="" disabled className="bg-background text-foreground dark:bg-gray-800 dark:text-white text-gray-400">
+                                Select unit
+                              </option>
+                              {units.map((item) => (
+                                <option
+                                  key={item}
+                                  value={item}
+                                  className="bg-background text-foreground dark:bg-gray-800 dark:text-white"
+                                >
+                                  {item}
+                                </option>
+                              ))}
+                            </select>
+                          }
+                        />
+                        {itemIngredients.length > 1 ? (
+                          <Button
+                            isIconOnly
+                            color="primary"
+                            variant="light"
+                            onPress={() =>
+                              setItemIngredients((prev) =>
+                                prev.filter(
+                                  (ingredient) => item.id !== ingredient.id
+                                )
+                              )
+                            }
+                          >
+                            <CloseCircle />
+                          </Button>
+                        ) : null}
+                      </div>
+                    );
+                  })
                   : null}
               </div>
               {warehouseItems &&
-              warehouseItems.length !== itemIngredients.length ? (
+                warehouseItems.length !== itemIngredients.length ? (
                 <div className="w-full flex justify-center items-center">
                   <Button
                     isIconOnly
@@ -378,7 +380,7 @@ export default function NewAddonIngredientDialog({
                 )}
               </Button>
             </ModalFooter>
-          </Form>
+          </form>
         </ModalContent>
       </Modal>
     </div>
