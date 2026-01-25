@@ -22,9 +22,10 @@ import { DiscountType, Order, OrderStatus } from "@prisma/client";
 import { CartCross } from "@solar-icons/react/ssr";
 import Head from "next/head";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useEffect, useState } from "next/navigation";
 import { Suspense } from "react";
 import useSWR from "swr";
+import { useSocket } from "@/context/SocketContext";
 import FocPromotion from "../components/FocPromotion";
 import NoticeCancelDialog from "../components/NoticeCancelDialog";
 
@@ -32,15 +33,44 @@ function ActiveOrderContent() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
   const router = useRouter();
-  const {
-    data: orders,
-    error: orderError,
-    isLoading: orderLoading,
-  } = useSWR<Order[]>([tableId], () => fetchOrder(tableId).then((res) => res), {
-    refreshInterval: 5000,
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-  });
+  const { channel } = useSocket();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      if (tableId) {
+        try {
+          const data = await fetchOrder(tableId);
+          setOrders(data);
+        } catch (error) {
+          console.error('Error loading orders:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadOrders();
+  }, [tableId]);
+
+  useEffect(() => {
+    if (!channel || !tableId) return;
+
+    const handleStatusChange = async (payload: any) => {
+      // Check if the change is for this table
+      if (payload.new?.tableId === tableId || payload.old?.tableId === tableId) {
+        // Refresh orders
+        const data = await fetchOrder(tableId);
+        setOrders(data);
+      }
+    };
+
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'order' }, handleStatusChange);
+
+    return () => {
+      channel.off('postgres_changes', handleStatusChange);
+    };
+  }, [channel, tableId]);
 
   const { data: promotionUsage } = useSWR(
     orders && tableId && orders.length ? "promotionUsage" : null,
@@ -325,7 +355,7 @@ function ActiveOrderContent() {
                 if (!item.menu) return null;
                 return (
                   <div key={item.itemId}>
-                    {orderLoading &&
+                    {isLoading &&
                     menuLoading &&
                     addonLoading &&
                     addonCatLoading &&

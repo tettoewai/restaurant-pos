@@ -6,34 +6,62 @@ import { timeAgo } from "@/function";
 import { Card, Chip, Spinner } from "@heroui/react";
 import { OrderStatus } from "@prisma/client";
 import Link from "next/link";
-import useSWR from "swr";
+import { useEffect, useState } from "react";
+import { useSocket } from "@/context/SocketContext";
 
 const OrderClient = () => {
-  const { data: order, isLoading: orderIsLoading } = useSWR(
-    "order",
-    () => fetchOrder(),
-    {
-      refreshInterval: 5000,
-    }
-  );
+  const { channel } = useSocket();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [tables, setTables] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const tableId =
-    order && order.sort((a, b) => a.id - b.id).map((item) => item.tableId);
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const orderData = await fetchOrder();
+        setOrders(orderData);
+        if (orderData.length > 0) {
+          const tableIds = [...new Set(orderData.map((item: any) => item.tableId))];
+          const tableData = await fetchTableWithIds(tableIds);
+          setTables(tableData);
+        }
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const { data: tables, isLoading: tableIsLoading } = useSWR(
-    tableId ? `table - ${[tableId]}` : null,
-    () => tableId && fetchTableWithIds(tableId)
-  );
+    loadInitialData();
+  }, []);
 
-  const uniqueTable = Array.from(new Set(tableId));
+  useEffect(() => {
+    if (!channel) return;
 
-  if (orderIsLoading || tableIsLoading)
+    const handleOrderChange = async (payload: any) => {
+      // Refresh orders on any order table change
+      const updatedOrders = await fetchOrder();
+      setOrders(updatedOrders);
+      // Update tables if needed
+      const tableIds = [...new Set(updatedOrders.map((item: any) => item.tableId))];
+      const tableData = await fetchTableWithIds(tableIds);
+      setTables(tableData);
+    };
+
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'order' }, handleOrderChange);
+
+    return () => {
+      channel.off('postgres_changes', handleOrderChange);
+    };
+  }, [channel]);
+
+  const tableIds = orders.sort((a, b) => a.id - b.id).map((item) => item.tableId);
+  const uniqueTable = Array.from(new Set(tableIds));
+
+  if (isLoading)
     return (
       <div className="w-full h-80 flex justify-center items-center">
-        <Spinner
-          variant="wave"
-          label={`${orderIsLoading ? "Order" : "Table"} is loading ...`}
-        />
+        <Spinner variant="wave" label="Loading orders..." />
       </div>
     );
 
@@ -44,10 +72,10 @@ const OrderClient = () => {
         <span className="text-sm text-gray-600">Manage your order</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-7 gap-1 mt-4">
-        {order && order.length > 0 ? (
+        {orders && orders.length > 0 ? (
           uniqueTable.map((tableId) => {
             const validTable = tables?.find((item) => item.id === tableId);
-            const firstOrder = order
+            const firstOrder = orders
               .filter((item) => item.status === OrderStatus.PENDING)
               .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
             return (

@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
+import { SocketProvider } from "@/context/SocketContext";
 
 interface Props {
   children: ReactNode;
@@ -22,7 +23,9 @@ export const Providers = ({ children }: Props) => {
               weight: "Broken",
             }}
           >
-            {children}
+            <SocketProvider>
+              {children}
+            </SocketProvider>
           </SolarProvider>
         </ThemeProvider>
       </HeroUIProvider>

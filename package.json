@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "npx prisma migrate deploy && npx prisma generate && next build",
-    "start": "next start",
+    "dev": "node server.js",
+    "build": "npx prisma generate && next build",
+    "start": "NODE_ENV=production node server.js",
     "lint": "next lint"
   },
   "prisma": {
@@ -18,6 +18,7 @@
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@solar-icons/react": "^1.0.1",
+    "@supabase/supabase-js": "^2.91.1",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.7",
     "@vercel/speed-insights": "^1.2.0",
@@ -43,6 +44,8 @@
     "react-to-print": "^2.15.1",
     "screenfull": "^6.0.2",
     "sharp": "^0.34.2",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
     "swr": "^2.2.5",
     "xlsx": "^0.18.5",
     "zod": "^4.1.13"

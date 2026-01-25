@@ -82,6 +82,7 @@ type FeatureCardProps = {
   item: FeatureItem;
   index: number;
   mousePosition: { x: number; y: number };
+  isDesktop: boolean;
 };
 
 type CtaButtonProps = {
@@ -163,7 +164,7 @@ function CtaButton({
       ref={buttonRef}
       href={href}
       aria-label={ariaLabel}
-      className="group relative flex overflow-hidden rounded-lg bg-gray-900/60 p-[2px] shadow-sm transition-all duration-200 hover:shadow-md"
+      className="group relative flex overflow-hidden rounded-lg bg-gray-900/60 p-[2px] shadow-sm transition-all duration-200 md:hover:shadow-md"
     >
       {/* Base neutral border */}
       <div className="pointer-events-none absolute inset-0 rounded-lg border border-gray-800/40" />
@@ -193,7 +194,7 @@ function CtaButton({
 
       {/* Actual button content */}
       <div
-        className={`relative z-10 flex items-center justify-center rounded-[0.6rem] bg-gray-800/80 backdrop-blur-sm transition-colors duration-200 group-hover:bg-gray-800 ${className}`}
+        className={`relative z-10 flex items-center justify-center rounded-[0.6rem] bg-gray-800/80 backdrop-blur-sm transition-colors duration-200 md:group-hover:bg-gray-800 ${className}`}
       >
         {children}
       </div>
@@ -201,7 +202,7 @@ function CtaButton({
   );
 }
 
-function FeatureCard({ item, index, mousePosition }: FeatureCardProps) {
+function FeatureCard({ item, index, mousePosition, isDesktop }: FeatureCardProps) {
   const blobSize = 220;
   const [blobPosition, setBlobPosition] = useState({
     x: -blobSize,
@@ -249,8 +250,8 @@ function FeatureCard({ item, index, mousePosition }: FeatureCardProps) {
       variants={cardVariants}
       initial="hidden"
       animate="visible"
-      whileHover="hover"
-      className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-gray-900/60 p-[2px] shadow-sm transition-all duration-200 hover:shadow-md"
+      whileHover={isDesktop ? "hover" : undefined}
+      className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-gray-900/60 p-[2px] shadow-sm transition-all duration-200 md:hover:shadow-md"
     >
       {/* Base neutral border */}
       <div className="pointer-events-none absolute inset-0 rounded-xl border border-gray-800/40" />
@@ -279,8 +280,8 @@ function FeatureCard({ item, index, mousePosition }: FeatureCardProps) {
       </div>
 
       {/* Actual card content */}
-      <div className="relative z-10 flex h-full flex-col items-center rounded-[0.6rem] bg-gray-800/80 p-6 text-center backdrop-blur-sm transition-colors duration-200 group-hover:bg-gray-800">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-950 group-hover:bg-gray-900 transition-colors duration-200">
+      <div className="relative z-10 flex h-full flex-col items-center rounded-[0.6rem] bg-gray-800/80 p-6 text-center backdrop-blur-sm transition-colors duration-200 md:group-hover:bg-gray-800">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-950 md:group-hover:bg-gray-900 transition-colors duration-200">
           <Icon className="size-6 text-white" />
         </div>
         <h3 className="mb-2 text-base font-semibold text-gray-100">
@@ -299,6 +300,7 @@ export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     // Force dark mode on this page
@@ -318,6 +320,11 @@ export default function Home() {
     if (isBot) {
       return;
     }
+
+    // Check if desktop for hover effects
+    setIsDesktop(window.innerWidth >= 768);
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
 
     // Track mouse position for spotlight effect
     const handleMouseMove = (e: MouseEvent) => {
@@ -347,6 +354,7 @@ export default function Home() {
       window.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseenter", handleMouseEnter);
       document.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener('resize', handleResize);
     };
   }, [hasUserInteracted]);
 
@@ -623,6 +631,7 @@ export default function Home() {
                 item={item}
                 index={index}
                 mousePosition={mousePosition}
+                isDesktop={isDesktop}
               />
             ))}
           </motion.div>
@@ -640,9 +649,9 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Website"
-                whileHover={{ scale: 1.1 }}
+                whileHover={isDesktop ? { scale: 1.1 } : undefined}
                 whileTap={{ scale: 0.95 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 hover:bg-primary/20 hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 md:hover:bg-primary/20 md:hover:text-primary"
               >
                 <Global className="size-5" />
               </motion.a>
@@ -651,9 +660,9 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Telegram"
-                whileHover={{ scale: 1.1 }}
+                whileHover={isDesktop ? { scale: 1.1 } : undefined}
                 whileTap={{ scale: 0.95 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 hover:bg-primary/20 hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 md:hover:bg-primary/20 md:hover:text-primary"
               >
                 <Plain2 className="size-5" />
               </motion.a>
@@ -662,9 +671,9 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                whileHover={{ scale: 1.1 }}
+                whileHover={isDesktop ? { scale: 1.1 } : undefined}
                 whileTap={{ scale: 0.95 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 hover:bg-primary/20 hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 md:hover:bg-primary/20 md:hover:text-primary"
               >
                 <Facebook className="size-5" />
               </motion.a>
@@ -673,9 +682,9 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                whileHover={{ scale: 1.1 }}
+                whileHover={isDesktop ? { scale: 1.1 } : undefined}
                 whileTap={{ scale: 0.95 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 hover:bg-primary/20 hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors duration-200 md:hover:bg-primary/20 md:hover:text-primary"
               >
                 <Linkedin className="size-5" />
               </motion.a>
