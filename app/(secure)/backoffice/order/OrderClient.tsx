@@ -21,7 +21,7 @@ const OrderClient = () => {
         const orderData = await fetchOrder();
         setOrders(orderData);
         if (orderData.length > 0) {
-          const tableIds = [...new Set(orderData.map((item: any) => item.tableId))];
+          const tableIds = Array.from(new Set(orderData.map((item: any) => item.tableId)));
           const tableData = await fetchTableWithIds(tableIds);
           setTables(tableData);
         }
@@ -43,7 +43,7 @@ const OrderClient = () => {
       const updatedOrders = await fetchOrder();
       setOrders(updatedOrders);
       // Update tables if needed
-      const tableIds = [...new Set(updatedOrders.map((item: any) => item.tableId))];
+      const tableIds = Array.from(new Set(updatedOrders.map((item: any) => item.tableId)));
       const tableData = await fetchTableWithIds(tableIds);
       setTables(tableData);
     };
@@ -51,7 +51,7 @@ const OrderClient = () => {
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'order' }, handleOrderChange);
 
     return () => {
-      channel.off('postgres_changes', handleOrderChange);
+      // No specific off method, channel will be unsubscribed in useEffect cleanup
     };
   }, [channel]);
 

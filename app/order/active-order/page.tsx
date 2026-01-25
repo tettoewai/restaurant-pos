@@ -22,8 +22,8 @@ import { DiscountType, Order, OrderStatus } from "@prisma/client";
 import { CartCross } from "@solar-icons/react/ssr";
 import Head from "next/head";
 import Image from "next/image";
-import { useRouter, useSearchParams, useEffect, useState } from "next/navigation";
-import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import useSWR from "swr";
 import { useSocket } from "@/context/SocketContext";
 import FocPromotion from "../components/FocPromotion";
@@ -68,7 +68,7 @@ function ActiveOrderContent() {
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'order' }, handleStatusChange);
 
     return () => {
-      channel.off('postgres_changes', handleStatusChange);
+      // No specific off method, channel will be unsubscribed in useEffect cleanup
     };
   }, [channel, tableId]);
 
@@ -305,7 +305,7 @@ function ActiveOrderContent() {
 
   const allMenus = (focMenus && menus && menus.concat(focMenus)) || menus;
 
-  if (orderError || menuError || addonError || promotionError) {
+  if (menuError || addonError || promotionError) {
     return (
       <div className="flex items-center justify-center mt-36 w-full">
         <Card className="bg-background flex flex-col items-center justify-center w-4/5 p-4">
