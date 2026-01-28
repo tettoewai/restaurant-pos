@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node --max-old-space-size=4096 server.js",
     "build": "prisma generate && next build",
-    "start": "NODE_ENV=production node --max-old-space-size=4096 server.js",
+    "start": "cross-env NODE_ENV=production node --max-old-space-size=4096 server.js",
     "lint": "next lint"
   },
   "prisma": {
@@ -58,6 +58,7 @@
     "@types/react": "^18",
     "autoprefixer": "^10.4.21",
     "baseline-browser-mapping": "^2.9.18",
+    "cross-env": "^10.1.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8.5.6",

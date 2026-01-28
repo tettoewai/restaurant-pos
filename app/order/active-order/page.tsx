@@ -23,8 +23,8 @@ import { CartCross } from "@solar-icons/react/ssr";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import useSWR from "swr";
+import { Suspense, useEffect } from "react";
+import useSWR, { mutate } from "swr";
 import { useSocket } from "@/context/SocketContext";
 import FocPromotion from "../components/FocPromotion";
 import NoticeCancelDialog from "../components/NoticeCancelDialog";
@@ -33,44 +33,38 @@ function ActiveOrderContent() {
   const searchParams = useSearchParams();
   const tableId = Number(searchParams.get("tableId"));
   const router = useRouter();
-  const { channel } = useSocket();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { channel, isConnected } = useSocket();
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      if (tableId) {
-        try {
-          const data = await fetchOrder(tableId);
-          setOrders(data);
-        } catch (error) {
-          console.error('Error loading orders:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    loadOrders();
-  }, [tableId]);
+  // Use SWR for real-time polling with refreshInterval
+  const { data: orders = [], isLoading } = useSWR(
+    tableId ? [`active-orders-${tableId}`, tableId] : null,
+    ([, id]) => fetchOrder(id),
+    {
+      refreshInterval: 5000, // Refresh every 5 seconds
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
+  );
 
+  // Also listen to real-time changes via socket for immediate updates
   useEffect(() => {
-    if (!channel || !tableId) return;
+    if (!channel || !isConnected || !tableId) return;
 
     const handleStatusChange = async (payload: any) => {
       // Check if the change is for this table
       if (payload.new?.tableId === tableId || payload.old?.tableId === tableId) {
-        // Refresh orders
-        const data = await fetchOrder(tableId);
-        setOrders(data);
+        // Trigger SWR revalidation on real-time changes for immediate updates
+        mutate([`active-orders-${tableId}`, tableId]);
       }
     };
 
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'order' }, handleStatusChange);
 
     return () => {
-      // No specific off method, channel will be unsubscribed in useEffect cleanup
+      // Cleanup is handled by channel unsubscribe in SocketContext
+      // The channel.on() listeners are automatically cleaned up when channel is unsubscribed
     };
-  }, [channel, tableId]);
+  }, [channel, isConnected, tableId]);
 
   const { data: promotionUsage } = useSWR(
     orders && tableId && orders.length ? "promotionUsage" : null,
@@ -82,8 +76,8 @@ function ActiveOrderContent() {
 
   const canceledOrder = orders
     ? orders
-        .filter((item) => item.status === "CANCELED")
-        .map((item) => item.itemId)
+      .filter((item) => item.status === "CANCELED")
+      .map((item) => item.itemId)
     : [""];
 
   const { data: canceledOrderData } = useSWR(
@@ -175,12 +169,12 @@ function ActiveOrderContent() {
   const { data: menuAddonPrices } = useSWR(
     orderData && orderData.length > 0
       ? [
-          "menu-addon-prices",
-          orderData.map((order) => ({
-            menuId: order.menu?.id,
-            addonIds: order.addons?.map((a) => a.id) || [],
-          })),
-        ]
+        "menu-addon-prices",
+        orderData.map((order) => ({
+          menuId: order.menu?.id,
+          addonIds: order.addons?.map((a) => a.id) || [],
+        })),
+      ]
       : null,
     async ([, orders]: [string, Array<{ menuId?: number; addonIds: number[] }>]) => {
       const priceMap = new Map<string, number>();
@@ -336,11 +330,11 @@ function ActiveOrderContent() {
                   Total price:{" "}
                   {totalPrice && discountedPrice
                     ? `${totalPrice}-${discountedPrice} = ${formatCurrency(
-                        totalPrice - discountedPrice
-                      )}`
+                      totalPrice - discountedPrice
+                    )}`
                     : totalPrice
-                    ? formatCurrency(totalPrice)
-                    : null}
+                      ? formatCurrency(totalPrice)
+                      : null}
                 </span>
               ) : null}
             </div>
@@ -356,16 +350,15 @@ function ActiveOrderContent() {
                 return (
                   <div key={item.itemId}>
                     {isLoading &&
-                    menuLoading &&
-                    addonLoading &&
-                    addonCatLoading &&
-                    promotionLoading ? (
+                      menuLoading &&
+                      addonLoading &&
+                      addonCatLoading &&
+                      promotionLoading ? (
                       <MenuLoading />
                     ) : (
                       <Card
-                        className={`w-[11em] h-60 bg-background relative ${
-                          item.isFoc ? "border-primary border-1" : ""
-                        }`}
+                        className={`w-[11em] h-60 bg-background relative ${item.isFoc ? "border-primary border-1" : ""
+                          }`}
                       >
                         {item.isFoc ? (
                           <div className="w-12 h-12 -scale-x-100 absolute right-0 top-0">
@@ -408,42 +401,41 @@ function ActiveOrderContent() {
                           <div className="text-xs font-thin mt-1">
                             {item.addons && item.addons.length > 0
                               ? item.addons?.map((addon) => {
-                                  const validAddonCat =
-                                    addonCategory &&
-                                    addonCategory.find(
-                                      (addonCat) =>
-                                        addonCat.id === addon.addonCategoryId
-                                    );
-                                  return (
-                                    <div
-                                      key={addon.id}
-                                      className="flex justify-between"
-                                    >
-                                      <span>{validAddonCat?.name}</span>
-                                      <span>{addon.name}</span>
-                                    </div>
+                                const validAddonCat =
+                                  addonCategory &&
+                                  addonCategory.find(
+                                    (addonCat) =>
+                                      addonCat.id === addon.addonCategoryId
                                   );
-                                })
+                                return (
+                                  <div
+                                    key={addon.id}
+                                    className="flex justify-between"
+                                  >
+                                    <span>{validAddonCat?.name}</span>
+                                    <span>{addon.name}</span>
+                                  </div>
+                                );
+                              })
                               : ""}
                           </div>
                           <div className="text-sm font-thin mt-1 flex justify-between items-center">
                             <span>Status :</span>
                             <span
-                              className={`font-bold flex items-center justify-center ${
-                                item.status === OrderStatus.PENDING
-                                  ? "text-red-500"
-                                  : item.status === OrderStatus.COMPLETE
+                              className={`font-bold flex items-center justify-center ${item.status === OrderStatus.PENDING
+                                ? "text-red-500"
+                                : item.status === OrderStatus.COMPLETE
                                   ? "text-green-500"
                                   : item.status === OrderStatus.COOKING
-                                  ? "text-orange-500"
-                                  : item.status === OrderStatus.CANCELED
-                                  ? "text-gray-500"
-                                  : ""
-                              }`}
+                                    ? "text-orange-500"
+                                    : item.status === OrderStatus.CANCELED
+                                      ? "text-gray-500"
+                                      : ""
+                                }`}
                             >
                               {item.status}
                               {unseenCanceledOrder &&
-                              !unseenCanceledOrder.userKnow ? (
+                                !unseenCanceledOrder.userKnow ? (
                                 <NoticeCancelDialog
                                   id={unseenCanceledOrder.id}
                                   reason={unseenCanceledOrder.reason}
